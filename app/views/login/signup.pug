@@ -1,0 +1,13 @@
+extends ../index.pug
+
+block body
+	h2 Crear usuario
+	form(action="signup/register", method="post")
+		div
+			label(for="user") Correo
+			input#user(type="email", name="user" placeholder="ejemplo@correo.com")
+		div
+			label(for="password") Contraseña
+			input#password(type="password", name="password")
+		button(type="submit" class="btn waves-effect waves-light") Registrar
+			i(class="material-icons right") send

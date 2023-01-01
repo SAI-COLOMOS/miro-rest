@@ -1,0 +1,12 @@
+extends ../index.pug
+
+block body
+	h2 Iniciar sesión
+	form(action="login/auth", method="post")
+		div
+			label(for="user") Correo
+			input#user(type="email", name="user" placeholder="ejemplo@correo.com")
+		div
+			label(for="password") Contraseña
+			input#password(type="password", name="password")
+		input(type="submit", value="Iniciar sesion")

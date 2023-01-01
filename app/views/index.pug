@@ -1,1 +1,35 @@
-h1 El servidor está siendo ejecutado en #{puerto}
+html 
+  head 
+    title SAI Project
+    link(rel="stylesheet", href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css")
+    link(rel="stylesheet", href="https://fonts.googleapis.com/icon?family=Material+Icons")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0") 
+
+  body(style={'display': 'flex', 'min-height': '100vh', 'flex-direction': 'column'})
+
+    //- Cabecera
+    header
+      nav
+        div(class="nav-wrapper purple darken-4")
+          div(class="container")
+            a(href="/") SAI Project
+            ul(id="nav-mobile" class="right hide-on-med-and-down") 
+              li: a(href="logout") Salir
+
+    //- Cuerpo de la aplicación
+    div(class="container")
+      block body
+
+    //- Pie de página
+    footer(class="page-footer deep-purple darken-2") 
+      div(class="container")
+        div(class="row")
+          div(class="col l6 s12")
+            h5(class="white-text") SAI Project
+            p(class="grey-text text-lighten-4") Legacy application
+      
+      div(class="footer-copyright deep-purple darken-4")
+        div(class="container")
+          p © 2023 SAI Copyright
+      
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js") 
