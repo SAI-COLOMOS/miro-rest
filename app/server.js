@@ -7,14 +7,11 @@ import morgan from 'morgan';
 import passport from "passport";
 import path from 'path';
 import { fileURLToPath } from "url";
-import conection from "./database/database.js";
+import conection from "./database.js";
 import pass from "./passport/Auth.js";
 
 // Importaciones de controladores
-import Index from "./routes/index.js";
-import Login from "./routes/auth/login.js";
-import Signup from "./routes/auth/signup.js";
-import Logout from "./routes/auth/logout.js";
+import Web from "./routes/web.js";
 
 /* Variables */
 const app = express();
@@ -25,6 +22,7 @@ const __dirname = path.dirname(__filename);
 app.set('views', path.join(__dirname, 'views'));
 app.set('port', process.env.PORT || 3000);
 app.set('view engine', 'pug');
+app.use(express.static(__dirname + '/public'));
 
 /* Middlewares */
 app.use(morgan('dev'));
@@ -40,10 +38,7 @@ app.use(passport.session());
 /* Código del servidor */
 
 // Rutas
-app.use('/', Index);
-app.use('/login', Login);
-app.use('/signup', Signup);
-app.use('/logout', Logout);
+app.use('/', Web);
 
 // Escucha del puerto
 app.listen(app.get('port'), () => {
