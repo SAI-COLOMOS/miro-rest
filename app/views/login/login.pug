@@ -2,11 +2,13 @@ extends ../index.pug
 
 block body
 	h2 Iniciar sesión
-	form(action="login/auth", method="post")
+	form(action="", method="post", style={'max-width': '35em'})
 		div
-			label(for="user") Correo
-			input#user(type="email", name="user" placeholder="ejemplo@correo.com")
+			label(for="user") Usuario, correo electrónico o teléfono
+			input#user(type="text", name="user" placeholder="ejemplo@correo.com")
 		div
 			label(for="password") Contraseña
 			input#password(type="password", name="password")
-		input(type="submit", value="Iniciar sesion")
+		
+		button(type="submit" class="btn waves-effect waves-light purple accent-3" style={'font-family': 'Lexend Deca, sans-serif'}) Iniciar sesion
+			i(class="material-icons right") send
