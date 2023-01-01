@@ -1,31 +1,15 @@
 /* Importaciones */
 import { Router } from 'express';
+import passport from "passport";
+import isAuthenticated from "../passport/Verify_auth.js";
 
 /* Varaibles */
-const index = Router();
+const route = Router();
 
 /* Rutas */
-index.get('/', (req, res, next) => {
+route.get('/', isAuthenticated, (req, res, next) => {
     res.render('index', {puerto: 3000})
-})
-
-index.post('/', (req, res, next) => {
-    res.status(200).send({
-        'data': {
-            'status': 418,
-            'message': `I'm a teapot`,
-            'req': req.headers
-        }
-    });
-})
-
-index.put('/', (req, res, next) => {
-    // Aquí va lo que quieras que haga
-})
-
-index.delete('/', (req, res, next) => {
-    res.status(404);
-})
+}) 
 
 /* Exportaciones */
-export default index;
+export default route;
