@@ -1,39 +1,42 @@
 import passport from "passport";
 import Local from "passport-local";
 import Credentials from "../models/Credentials.js";
+import User from "../models/User.js";
 
-passport.serializeUser((credential, done) => {
-    done(null, credential.id);
+passport.serializeUser((user, done) => {
+    done(null, user.id);
 });
 
 passport.deserializeUser(async (id, done) => {
-    const credential = await Credentials.findById(id);
-    done(null, credential);
+    const user = await User.findById(id);
+    done(null, user);
 });
 
-passport.use('signup', new Local.Strategy({
-    usernameField: 'user',
+passport.use('register', new Local.Strategy({
+    usernameField: 'email',
     passwordField: 'password',
-    passReqToCallback: true
-}, async (req, user, password, done) => {
-    if(await Credentials.findOne({user: user})) {
-        console.error(`El usuario ${user} ya existe.`);
+    passReqToCallback: true,
+}, async (req, username, password, done) => {
+    if(await User.findOne({email: username})) {
+        console.error(`El usuario ${username} ya existe.`);
         done(null, false);
     } else {
-        const credential = new Credentials();
-        credential.user = user;
-        credential.password = credential.encrypt_password(password);
-        await credential.save();
-        done(null, credential);
+        const user = new User();
+        user.first_name = req.body.first_name;
+        user.last_name = req.body.last_name;
+        user.email = username;
+        user.password = user.encrypt_password(password);
+        await user.save();
+        done(null, user);
     }
 }));
 
 passport.use('login', new Local.Strategy({
-    usernameField: 'user',
+    usernameField: 'email',
     passwordField: 'password',
-    passReqToCallback: true
-}, async (req, user, password, done) => {
-    user = await Credentials.findOne({user});
+    passReqToCallback: true,
+}, async (req, username, password, done) => {
+    const user = await User.findOne({email: username});
     if(!user) {
         console.error('No existe el usuario.');
         return done(null, false);
