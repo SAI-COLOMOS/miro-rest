@@ -11,7 +11,11 @@ import conection from "./database.js";
 import pass from "./passport/Auth.js";
 
 // Importaciones de controladores
-import Web from "./routes/web.js";
+import UsersAdmon from "./routes/UsersAdmon.js";
+import Dashboard from "./routes/Dashboard.js";
+import Login from "./routes/Login.js";
+import Logout from "./routes/Logout.js";
+import NotFound from "./routes/NotFound.js";
 
 /* Variables */
 const app = express();
@@ -26,6 +30,7 @@ app.use(express.static(__dirname + '/public'));
 
 /* Middlewares */
 app.use(morgan('dev'));
+app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(session({
     secret: 'El Jonathan se la come :v',
@@ -38,7 +43,12 @@ app.use(passport.session());
 /* Código del servidor */
 
 // Rutas
-app.use('/', Web);
+app.use(Login);
+app.use(Logout);
+app.use(Dashboard);
+app.use(UsersAdmon);
+
+app.use(NotFound);
 
 // Escucha del puerto
 app.listen(app.get('port'), () => {
