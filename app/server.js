@@ -10,7 +10,8 @@ import { fileURLToPath } from "url";
 import conection from "./database.js";
 import pass from "./passport/Auth.js";
 
-// Importaciones de controladores
+// Importaciones de rutas
+import Root from "./routes/Root.js";
 import UsersAdmon from "./routes/UsersAdmon.js";
 import Dashboard from "./routes/Dashboard.js";
 import Login from "./routes/Login.js";
@@ -43,6 +44,7 @@ app.use(passport.session());
 /* Código del servidor */
 
 // Rutas
+app.use(Root);
 app.use(Login);
 app.use(Logout);
 app.use(Dashboard);
