@@ -32,9 +32,9 @@ app.use(express.static(__dirname + '/public'));
 /* Middlewares */
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: 'El Jonathan se la come :v',
+    secret: '70d45581874c292eb0a7b74ff29890b6',
     resave: false,
     saveUninitialized: false
 }));
