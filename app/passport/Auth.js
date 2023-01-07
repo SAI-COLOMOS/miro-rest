@@ -21,13 +21,31 @@ passport.use('register', new Local.Strategy({
         console.error(`El usuario ${username} ya existe.`);
         done(null, false);
     } else {
-        const user = new User();
-        user.first_name = req.body.first_name;
-        user.last_name = req.body.last_name;
-        user.email = username;
-        user.password = user.encrypt_password(password);
-        await user.save();
-        done(null, user);
+        try {
+            const user = new User();
+
+            user.register = req.body.register;
+            user.first_name = req.body.first_name;
+            user.last_name = req.body.last_name;
+            user.age = req.body.age;
+            user.email = username;
+            user.phone = req.body.phone;
+            user.password = user.encrypt_password(password);
+            user.emergency_contact = req.body.emergency_contact;
+            user.emergency_phone = req.body.emergency_phone;
+            user.blood_type = req.body.blood_type;
+            user.provider_type = req.body.provider_type;
+            user.from = req.body.from;
+            user.assignment_area = req.body.assignment_area;
+            user.status = req.body.status;
+            user.school = req.body.school;
+            user.role = req.body.role;
+
+            await user.save();
+            done(null, user);
+        } catch (error) {
+            done(error);
+        }
     }
 }));
 
