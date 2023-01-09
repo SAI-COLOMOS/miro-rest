@@ -1,7 +1,27 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
+import {model, Schema, Document} from "mongoose";
+import Bycrypt from "bcrypt";
 
-const UserSchema = new mongoose.Schema({
+export interface UserInterface extends Document {
+    register: string;
+    first_name: string;
+    last_name: string;
+    age: string;
+    email: string;
+    phone: string;
+    password: string;
+    emergency_contact: string;
+    emergency_phone: string;
+    blood_type: string;
+    provider_type: string;
+    from: string;
+    assignment_area: string;
+    status: string;
+    school: string;
+    role: string;
+    validatePassword: (password: string) => Promise<boolean>;
+}
+
+const UserSchema = new Schema({
     register: {
         type: String,
         required: true,
@@ -87,12 +107,18 @@ const UserSchema = new mongoose.Schema({
     timestamps: true
 });
 
-UserSchema.methods.encrypt_password = (password) => {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(10))
+UserSchema.pre<UserInterface>("save", async function(next) {
+    if(!this.isModified('password')) {
+        return next();
+    }
+
+    this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10));
+
+    next();
+});
+
+UserSchema.methods.validatePassword = async function(password: string): Promise<boolean> {
+    return await Bycrypt.compare(password, this.password);
 }
 
-UserSchema.methods.validate_password = function (password) {
-    return bcrypt.compareSync(password, this.password);
-}
-
-export default mongoose.model('users', UserSchema);
+export default model<UserInterface>("Users", UserSchema);
