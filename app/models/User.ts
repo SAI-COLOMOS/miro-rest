@@ -1,4 +1,4 @@
-import {model, Schema, Document} from "mongoose";
+import { model, Schema, Document } from "mongoose";
 import Bycrypt from "bcrypt";
 
 export interface UserInterface extends Document {
@@ -18,6 +18,7 @@ export interface UserInterface extends Document {
     status: string;
     school: string;
     role: string;
+    createdAt: string;
     validatePassword: (password: string) => Promise<boolean>;
 }
 
@@ -87,7 +88,7 @@ const UserSchema = new Schema({
         required: true
     },
     assignment_area: {
-        type:  String,
+        type: String,
         required: true
     },
     status: {
@@ -107,8 +108,8 @@ const UserSchema = new Schema({
     timestamps: true
 });
 
-UserSchema.pre<UserInterface>("save", async function(next) {
-    if(!this.isModified('password')) {
+UserSchema.pre<UserInterface>("save", async function (next) {
+    if (!this.isModified('password')) {
         return next();
     }
 
@@ -117,7 +118,7 @@ UserSchema.pre<UserInterface>("save", async function(next) {
     next();
 });
 
-UserSchema.methods.validatePassword = async function(password: string): Promise<boolean> {
+UserSchema.methods.validatePassword = async function (password: string): Promise<boolean> {
     return await Bycrypt.compare(password, this.password);
 }
 
