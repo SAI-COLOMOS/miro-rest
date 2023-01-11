@@ -1,24 +1,24 @@
-import {model, Schema, Document} from "mongoose";
-import Bycrypt from "bcrypt";
+import {model, Schema, Document} from "mongoose"
+import Bycrypt from "bcrypt"
 
 export interface UserInterface extends Document {
-    register: string;
-    first_name: string;
-    last_name: string;
-    age: string;
-    email: string;
-    phone: string;
-    password: string;
-    emergency_contact: string;
-    emergency_phone: string;
-    blood_type: string;
-    provider_type: string;
-    from: string;
-    assignment_area: string;
-    status: string;
-    school: string;
-    role: string;
-    validatePassword: (password: string) => Promise<boolean>;
+    register: string
+    first_name: string
+    last_name: string
+    age: string
+    email: string
+    phone: string
+    password: string
+    emergency_contact: string
+    emergency_phone: string
+    blood_type: string
+    provider_type: string
+    from: string
+    assignment_area: string
+    status: string
+    school: string
+    role: string
+    validatePassword: (password: string) => Promise<boolean>
 }
 
 const UserSchema = new Schema({
@@ -105,20 +105,20 @@ const UserSchema = new Schema({
 }, {
     versionKey: false,
     timestamps: true
-});
+})
 
 UserSchema.pre<UserInterface>("save", async function(next) {
     if(!this.isModified('password')) {
-        return next();
+        return next()
     }
 
-    this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10));
+    this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
 
-    next();
-});
+    next()
+})
 
 UserSchema.methods.validatePassword = async function(password: string): Promise<boolean> {
-    return await Bycrypt.compare(password, this.password);
+    return await Bycrypt.compare(password, this.password)
 }
 
-export default model<UserInterface>("Users", UserSchema);
+export default model<UserInterface>("Users", UserSchema)

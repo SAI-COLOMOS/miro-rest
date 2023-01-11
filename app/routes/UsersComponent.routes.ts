@@ -1,10 +1,16 @@
-import { Router } from "express";
-import { UserGet } from "../controllers/UsersComponent/User.controller";
-import Passport from "passport";
+import { Router } from "express"
+import { UserGet, UsersPost } from "../controllers/UsersComponent/Users.controller"
+import { isAdministradorOrEncargado } from "../middleware/RoleControl"
+import Passport from "passport"
 
-const route = Router();
-const path = 'users';
+const route = Router()
+const path = 'users'
 
-route.get(`/${path}/user`, Passport.authenticate('jwt',{session: false}), UserGet);
+route.use(Passport.authenticate('jwt',{session: false}))
+route.use(isAdministradorOrEncargado);
 
-export default route;
+route.get(`/${path}`, UserGet)
+
+route.post(`/${path}`, UsersPost)
+
+export default route

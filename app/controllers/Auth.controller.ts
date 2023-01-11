@@ -1,32 +1,31 @@
-import { Request, Response } from "express";
-import User, { UserInterface } from "../models/User";
-import JWT from "jsonwebtoken";
-import Enviroment from "../config/Enviroment";
+import { Request, Response } from "express"
+import User, { UserInterface } from "../models/User"
+import JWT from "jsonwebtoken"
+import Enviroment from "../config/Enviroment"
 
 function createToken(user: UserInterface) {
     return JWT.sign({
         id: user.id,
-        email: user.email
     },
     Enviroment.JWT.secret,
     {
-        expiresIn: 86400
-    });
+        expiresIn: "90d"
+    })
 }
 
 export const LoginPost = async (req: Request, res: Response) => {
     if(!req.body.email) {
         return res.status(400).json({
             message: "Faltan datos"
-        });
+        })
     }
 
-    const user = await User.findOne({email: req.body.email});
+    const user = await User.findOne({email: req.body.email})
     
     if(!user) {
         return res.status(400).json({
             message: "Usuario no encontrado"
-        });
+        })
     }
 
     if(await user.validatePassword(req.body.password)) {
@@ -45,17 +44,17 @@ export const RegisterPost = async (req: Request, res: Response): Promise<Respons
     if(!req.body.email) {
         return res.status(400).json({
             message: "Faltan datos"
-        });
+        })
     }
 
     if(await User.findOne({email: req.body.email})) {
         return res.status(400).json({
             message: "Algunos datos ya están ocupados"
-        });
+        })
     }
 
     try {
-        const newUser = await new User(req.body).save();
+        const newUser = await new User(req.body).save()
         return res.status(201).json({
             message: "Usuario creado",
             data: newUser
