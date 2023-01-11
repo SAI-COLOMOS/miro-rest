@@ -4,7 +4,7 @@
 import express from 'express';
 import morgan from 'morgan';
 import passport from "passport";
-import ControlAccess from "./middleware/ControlAccess";
+import ControlAccess from "./middleware/AccessControl";
 //import path from 'path';
 //import { fileURLToPath } from "url";
 
