@@ -5,5 +5,9 @@ export default {
     },
     MonogoDB: {
         uri: 'mongodb://127.0.0.1:27017/sai_database'
+    },
+    Mailer: {
+        email: "a19310153@ceti.mx",
+        appPass: "dydvejpzdbuzhbvs"
     }
 };
