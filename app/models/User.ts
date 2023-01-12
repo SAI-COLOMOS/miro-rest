@@ -1,5 +1,7 @@
-import {model, Schema, Document} from "mongoose"
+import {model, Schema, Document, Model} from "mongoose"
 import Bycrypt from "bcrypt"
+
+import Place from "./Place";
 
 export interface UserInterface extends Document {
     register: string
@@ -13,7 +15,7 @@ export interface UserInterface extends Document {
     emergency_phone: string
     blood_type: string
     provider_type: string
-    from: string
+    place: string
     assignment_area: string
     status: string
     school: string
@@ -82,7 +84,7 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
-    from: {
+    place: {
         type: String,
         required: true
     },
@@ -107,10 +109,46 @@ const UserSchema = new Schema({
     timestamps: true
 })
 
+async function newRegisterForProvider(inputPlace: string, inputAssignment_area: string): Promise<string> {
+    const [year, month] = new Date().toISOString().split('-')
+    const seasson = Number(month) <= 6 ? 'A' : 'B'
+    const place: any = await Place.findOne({"place_name": inputPlace})
+    const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
+    const lastRegister = await User.findOne().sort({"register": "desc"}).select('register').where({'assignment_area': area.area_name})
+    let serie = "001"
+
+    if(lastRegister) {
+        let nextSerie = Number(lastRegister.register.substring(lastRegister.register.length - 3)) + 1
+
+        if(nextSerie < 10) {
+            serie = "00" + nextSerie
+        } else if (nextSerie < 100) {
+            serie = "0" + nextSerie
+        } else {
+            serie = nextSerie.toString()
+        }
+    }
+
+    return `${year}${seasson}${place.place_identifier}${area[0].area_identifier}${serie}`
+
+}
+
 UserSchema.pre<UserInterface>("save", async function(next) {
-    if(!this.isModified('password')) {
+    if(!this.isModified('password') || !this.isModified('register')) {
         return next()
     }
+
+    newRegisterForProvider(this.place, this.assignment_area)
+    .then(
+        (response) => {
+            console.log(response)
+            this.register = response
+        }
+    ).catch(
+        (error) => console.log(error)
+    )
+
+    console.log("Hola")
 
     this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
 
@@ -121,4 +159,6 @@ UserSchema.methods.validatePassword = async function(password: string): Promise<
     return await Bycrypt.compare(password, this.password)
 }
 
-export default model<UserInterface>("Users", UserSchema)
+const User = model<UserInterface>("Users", UserSchema)
+
+export default User
