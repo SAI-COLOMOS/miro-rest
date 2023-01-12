@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { LoginPost, RegisterPost } from "../controllers/Auth.controller";
-import { RecoverPassword } from "../controllers/PasswordRecovery.controller";
+import { LoginPost, RegisterPost, sendRecoveryToken } from "../controllers/Auth.controller";
 
 const routes = Router();
 
@@ -8,6 +7,6 @@ routes.post('/login', LoginPost);
 
 routes.post('/register', RegisterPost);
 
-routes.post('/recoverPassword', RecoverPassword);
+routes.post('/recoverPassword', sendRecoveryToken);
 
 export default routes;
