@@ -2,7 +2,7 @@ import Enviroment from "./Enviroment"
 
 const nodemailer = require("nodemailer")
 
-export const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 465,
     secure: true,
@@ -12,6 +12,17 @@ export const transporter = nodemailer.createTransport({
     },
 })
 
-transporter.verify().then(() => {
-    console.log('Transporter ready')
-})
+export const link = (link: String) => {
+    return `<b>Porfavor haga click en el siguiente link si es que solicitó recuperación de contraseña</b>
+    <a href=${link}>=${link}</a>`
+}
+
+export const sendEmail = async (from: String, to: String, subject: String, body: String) => {
+    await transporter.sendMail({
+        from: from,
+        to: to,
+        subject: subject,
+        html: body
+
+    })
+}
