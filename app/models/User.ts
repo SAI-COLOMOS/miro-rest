@@ -1,6 +1,5 @@
 import {model, Schema, Document, Model} from "mongoose"
 import Bycrypt from "bcrypt"
-
 import Place from "./Place";
 
 export interface UserInterface extends Document {
@@ -43,7 +42,6 @@ const UserSchema = new Schema({
     },
     second_last_name: {
         type: String,
-        required: true,
         trim: true
     },
     age: {
@@ -137,22 +135,39 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
     return `${year}${seasson}${place.place_identifier}${area[0].area_identifier}${serie}`
 }
 
+async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssignment_area: string): Promise<string> {
+    const first_name = inputFirst_name.substring(0,2).toUpperCase();
+    const first_last_name = inputFirst_last_name.substring(0,2).toUpperCase();
+    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0,2).toUpperCase() : "XX"
+    const place: any = await Place.findOne({"place_name": inputPlace})
+    const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
+    const random: string = Math.floor(Math.random() * 999).toString()
+
+    return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
+}
+
 UserSchema.pre<UserInterface>("save", async function(next) {
     if(!this.isModified('password') || !this.isModified('register')) {
         return next()
     }
 
-    newRegisterForProvider(this.place, this.assignment_area)
-    .then(
-        (response) => {
-            console.log(response)
-            this.register = response
-        }
-    ).catch(
-        (error) => console.log(error)
-    )
-
-    console.log("Hola")
+    if(this.role === "Prestador") {
+        newRegisterForProvider(this.place, this.assignment_area).then(
+            (response) => {
+                this.register = response
+            }
+        ).catch(
+            (error) => console.log(error)
+        )
+    } else if(this.role === "Administrador" || this.role === "Encargado") {
+        newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
+            (response) => {
+                this.register = response
+            }
+        ).catch(
+            (error) => console.log(error)
+        )
+    }
 
     this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
 
