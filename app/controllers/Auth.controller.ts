@@ -1,17 +1,16 @@
 import { Request, Response } from "express";
 import User, { UserInterface } from "../models/User";
-import JWT from "jsonwebtoken";
+import JWT, { JwtPayload } from "jsonwebtoken";
 import Enviroment from "../config/Enviroment";
-import { transporter } from "../config/Mailer";
+import { link, sendEmail } from "../config/Mailer";
 
-function createToken(user: UserInterface, time: String) {
+function createToken(user: UserInterface) {
     return JWT.sign({
         id: user.id,
-        time_stamp: user.createdAt
     },
         Enviroment.JWT.secret,
         {
-            expiresIn: time === "" ? 86400 : time.toString()
+            expiresIn: 86400
         });
 }
 
@@ -33,7 +32,7 @@ export const LoginPost = async (req: Request, res: Response) => {
     if (await user.validatePassword(req.body.password)) {
         return res.status(200).json({
             message: "Sesión iniciada",
-            token: createToken(user, "")
+            token: createToken(user)
         })
     } else {
         return res.status(400).json({
@@ -72,10 +71,11 @@ export const RegisterPost = async (req: Request, res: Response): Promise<Respons
 export const sendRecoveryToken = async (req: Request, res: Response) => {
 
     try {
-        var user = await User.findOne({ email: req.body.email })
+        var user = await User.findOne({ email: req.body.email, phone: req.body.phone, register: req.body.register }).sort({ "register": "desc" })
 
         if (!user) {
-            return res.status(400).json({
+            return res.status(200).json({
+                status: 406,
                 message: "Usuario no encontrado"
             })
         }
@@ -86,19 +86,17 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         })
     }
 
-    const token = createToken(user, "5m")
-    const newRoute = `localhost:3000/recoverPassword/${token}`
+    const token = createToken(user)
+    const newRoute = `localhost:3000/recovery/changePassword?tkn=${token}`
 
     try {
-        await transporter.sendMail({
-            from: '"Correo de prueba desde la api" <a19310153@gmail.com>',
-            to: "a19310166@ceti.mx",
-            subject: "El Miguel se la come entera",
-            html: `
-            <b>Porfavor haga click en el siguiente link si es que solicitó recuperación de contraseña</b>
-            <a href=${newRoute}>=${newRoute}</a>
-            `,
-        })
+        // const from = `"Recuperación de contraseña SAI" ${Enviroment.Mailer.email}`
+        // const to = "a19310166@ceti.mx"
+        // const subject = "Recuperación de contraseña"
+        // const body = link(newRoute)
+
+        // sendEmail(from, to, subject, body)
+
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error",
@@ -108,6 +106,46 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 
     return res.status(200).json({
         message: "Correo enviado",
-        link: newRoute
+        route: newRoute
+    })
+}
+
+export const recoverPassword = async (req: Request, res: Response) => {
+    try {
+        var token = JWT.verify(String(req.query.tkn), Enviroment.JWT.secret) as JwtPayload
+    } catch (error) {
+        return res.status(500).json({
+            message: "El link ha caducado"
+        })
+    }
+
+    try {
+        var user = await User.findOne({ id: token.id }).sort({ "register": "desc" })
+        if (!user) {
+            return res.status(200).json({
+                status: 406,
+                message: "Usuario no encontrado"
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un error"
+        })
+    }
+
+    try {
+        user.password = req.body.password
+        await user.save()
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un error"
+        })
+    }
+
+    return res.status(200).json({
+        message: "Contraseña actualizada con éxico",
+        data: {
+            tkn: token.id
+        }
     })
 }
