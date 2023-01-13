@@ -114,7 +114,7 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
     const seasson = Number(month) <= 6 ? 'A' : 'B'
     const place: any = await Place.findOne({"place_name": inputPlace})
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
-    const lastRegister = await User.findOne().sort({"register": "desc"}).select('register').where({'assignment_area': area.area_name})
+    const lastRegister = await User.findOne().sort({"register": "desc"}).select('register').where({'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' }})
     let serie = "001"
 
     if(lastRegister) {
@@ -130,7 +130,6 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
     }
 
     return `${year}${seasson}${place.place_identifier}${area[0].area_identifier}${serie}`
-
 }
 
 UserSchema.pre<UserInterface>("save", async function(next) {
