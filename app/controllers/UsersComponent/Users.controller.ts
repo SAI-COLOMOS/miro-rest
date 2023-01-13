@@ -48,7 +48,7 @@ export const UserGet = async (req: Request, res: Response) => {
     }
 }
 
-export const UsersPost = async (req: Request, res: Response) => {
+export const UserPost = async (req: Request, res: Response) => {
     try {
         const newUser = await new User(req.body).save()
         return res.status(201).json({

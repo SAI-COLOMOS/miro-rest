@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { UsersGet, UserGet, UsersPost } from "../controllers/UsersComponent/Users.controller"
+import { UsersGet, UserGet, UserPost } from "../controllers/UsersComponent/Users.controller"
 import { isAdministradorOrEncargado } from "../middleware/RoleControl"
 import Passport from "passport"
 
@@ -11,7 +11,7 @@ const path = 'users'
 
 route.get(`/${path}`, UsersGet)
 route.get(`/${path}/:id`, UserGet)
-route.post(`/${path}`, UsersPost)
+route.post(`/${path}`, UserPost)
 
 
 export default route
