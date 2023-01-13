@@ -18,7 +18,6 @@ export interface UserInterface extends Document {
     status: string;
     school: string;
     role: string;
-    createdAt: string;
     validatePassword: (password: string) => Promise<boolean>;
 }
 
