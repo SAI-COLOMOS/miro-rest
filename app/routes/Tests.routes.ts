@@ -5,52 +5,17 @@ const routes = Router()
 
 routes.post('/tests', async (req: Request, res: Response) => {
     try {
-        const [year, month] = new Date().toISOString().split('-')
-        const seasson = Number(month) < 6 ? 'A' : 'B'
         
+        const first_name = req.body.first_name.substring(0,2).toUpperCase();
+        const first_last_name = req.body.first_last_name.substring(0,2).toUpperCase();
+        const second_last_name = req.body.second_last_name ? req.body.second_last_name.substring(0,2).toUpperCase() : "XX";
         const place: any = await Place.findOne({"place_name": req.body.place})
-
-        let area_id
-        place.place_areas.forEach((area: any) => {
-            if(area.area_name.includes(req.body.assignment_area)) {
-                area_id = area.area_identifier
-            }
-        });
-
-        place.place_areas.map((ar: any) => {
-            console.log(ar);
-            if(ar.area_name.includes(req.body.assignment_area)) {
-                return ar.area_identifier
-            }
-        })
-        
-        const newRegister = `${year.toString()}${seasson}${place.place_identifier}${area_id}`
-
-        const lastRegister = await User.find({"register": { $regex: newRegister + '.*' }}, 'register').sort({"register": "desc"})
-
-        let id = "001"
-        let number = 0
-        if(lastRegister.length > 0) {
-            number = Number(lastRegister[0].register.substring(lastRegister[0].register.length - 3)) + 1
-
-            if(number < 10) {
-                id = "00" + number
-            } else if (number < 100) {
-                id = "0" + number
-            } else {
-                id = number.toString()
-            }
-            console.log('No hay')
-        }
-
-        const newnewRegister = `${year.toString()}${seasson}${place.place_identifier}${area_id}${id}`
-
+        const area = place.place_areas.filter((item: any) => item.area_name === req.body.assignment_area ? true : null)
+        const random: string = Math.floor(Math.random() * 999).toString()
 
         res.json({
-            lastRegister,
-            newRegister,
-            number,
-            newnewRegister
+            message: "Hola",
+            register: `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
         })
     } catch (error) {
         res.status(500).json({
