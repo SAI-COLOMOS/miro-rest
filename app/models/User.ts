@@ -26,18 +26,18 @@ export interface UserInterface extends Document {
 const UserSchema = new Schema({
     register: {
         type: String,
-        required: true,
+        required: [true, "El registro es necesario"],
         unique: true,
         index: true
     },
     first_name: {
         type: String,
-        required: true,
+        required: [true, "El nombre es necesario"],
         trim: true
     },
     first_last_name: {
         type: String,
-        required: true,
+        required: [true, "Un apellido es necesario"],
         trim: true
     },
     second_last_name: {
@@ -46,23 +46,23 @@ const UserSchema = new Schema({
     },
     age: {
         type: String,
-        required: true,
+        required: [true, "La edad es necesaria"],
         trim: true
     },
     email: {
         type: String,
-        required: true,
+        required: [true, "El correo es necesario"],
         trim: true
     },
     phone: {
         type: String,
-        required: true,
+        required: [true, "El teléfono de contacto es necesario"],
         minLength: [10, 'El número telefónico tiene que ser igual a 10 digitos'],
         maxLength: [10, 'El número telefónico tiene que ser igual a 10 digitos']
     },
     password: {
         type: String,
-        required: true
+        required: [true, "La contraseña es necesaria"]
     },
     avatar: {
         type: String,
@@ -70,30 +70,30 @@ const UserSchema = new Schema({
     },
     emergency_contact: {
         type: String,
-        required: true
+        required: [true, "El contacto de emergencia es necesario"]
     },
     emergency_phone: {
         type: String,
         minLength: [10, 'El número telefónico tiene que ser igual a 10 digitos'],
         maxLength: [10, 'El número telefónico tiene que ser igual a 10 digitos'],
-        required: true
+        required: [true, "El teléfono de emergencia es necesario"]
     },
     blood_type: {
         type: String,
-        required: true,
+        required: [true, "El tipo de sangre es necesario"],
         uppercase: true
     },
     provider_type: {
         type: String,
-        required: true
+        required: [true, "El tipo de prestador es necesario"]
     },
     place: {
         type: String,
-        required: true
+        required: [true, "El lugar es necesario"]
     },
     assignment_area: {
         type:  String,
-        required: true
+        required: [true, "El área de asignación es necesaria"]
     },
     status: {
         type: String,
@@ -101,11 +101,11 @@ const UserSchema = new Schema({
     },
     school: {
         type: String,
-        required: true
+        required: [true, "La escuela es necesaria"]
     },
     role: {
         type: String,
-        required: true
+        required: [true, "El rol es necesario"]
     }
 }, {
     versionKey: false,
