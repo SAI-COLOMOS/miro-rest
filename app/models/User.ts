@@ -6,7 +6,8 @@ import Place from "./Place";
 export interface UserInterface extends Document {
     register: string
     first_name: string
-    last_name: string
+    first_last_name: string
+    second_last_name: string
     age: string
     email: string
     phone: string
@@ -35,7 +36,12 @@ const UserSchema = new Schema({
         required: true,
         trim: true
     },
-    last_name: {
+    first_last_name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    second_last_name: {
         type: String,
         required: true,
         trim: true
@@ -47,7 +53,6 @@ const UserSchema = new Schema({
     },
     email: {
         type: String,
-        unique: true,
         required: true,
         trim: true
     },
