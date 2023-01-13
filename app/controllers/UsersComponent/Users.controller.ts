@@ -8,6 +8,27 @@ export const UsersGet = (req: Request, res: Response) => {
     })
 }
 
+export const UserGet = async (req: Request, res: Response) => {
+    try {
+        const user = await User.findOne({'register': req.params.id})
+        if(user) {
+            return res.status(200).json({
+                message: "Listo",
+                user
+            })
+        }
+
+        res.status(200).json({
+            message: `Usuario ${req.params.id} no encontrado`
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un error",
+            error
+        })
+    }
+}
+
 export const UsersPost = async (req: Request, res: Response) => {
     try {
         const newUser = await new User(req.body).save()
