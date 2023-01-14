@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { UsersGet, UserGet, UserPost, UserDelete, UserPatch } from "../controllers/UsersComponent/Users.controller"
+import { UsersGet, UserGet, UserPost, UserDelete, UserPatch } from "../controllers/Users.controller"
 import { isAdministradorOrEncargado } from "../middleware/RoleControl"
 import Passport from "passport"
 
