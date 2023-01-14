@@ -9,4 +9,4 @@ export default {
         email: "a19310153@ceti.mx",
         appPass: "dydvejpzdbuzhbvs"
     }
-};
+}

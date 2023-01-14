@@ -1,11 +1,11 @@
-import { Router } from "express";
-import { LoginPost, recoverPassword, RegisterPost, sendRecoveryToken } from "../controllers/Auth.controller";
+import { Router } from "express"
+import { LoginPost, RegisterPost, sendRecoveryToken, recoverPassword } from "../controllers/Auth.controller"
 
-const routes = Router();
+const routes = Router()
 
-routes.post('/login', LoginPost);
+routes.post('/login', LoginPost)
 
-routes.post('/register', RegisterPost);
+routes.post('/register', RegisterPost)
 
 const recoverPrefix = "/recovery"
 

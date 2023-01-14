@@ -10,7 +10,7 @@
 	// 	"scope": "javascript,typescript",
 	// 	"prefix": "log",
 	// 	"body": [
-	// 		"console.log('$1');",
+	// 		"console.log('$1')",
 	// 		"$2"
 	// 	],
 	// 	"description": "Log output to console"
@@ -20,10 +20,10 @@
 		"prefix": "create::view",
 		"body": [
 			"/* Importaciones */",
-			"const express = require('express');",
+			"const express = require('express')",
 			"",
 			"/* Varaibles */",
-			"const router = express.Router();",
+			"const router = express.Router()",
 			"",
 			"/* Rutas */",
 			"router.get('$1', (req, res, next) => {",
@@ -43,7 +43,7 @@
 			"})",
 			"",
 			"/* Exportaciones */",
-			"module.exports = router;",
+			"module.exports = router",
 		],
 		"description": "Retorna un bloque de código para la declaración de una vista simple."
 	}
