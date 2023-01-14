@@ -62,3 +62,23 @@ export const UserPost = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const UserDelete = async (req: Request, res: Response) => {
+    try {
+        const user = await User.deleteOne({'register': req.params.id})
+        if(user.deletedCount !== 0) {
+            return res.status(200).json({
+                message: "Usuario eliminado",
+            })
+        }
+
+        return res.status(404).json({
+            message: "Usuario no encontrado",
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un error",
+            error: error
+        })
+    }
+}
