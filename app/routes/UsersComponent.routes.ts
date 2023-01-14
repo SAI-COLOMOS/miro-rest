@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { UsersGet, UserGet, UserPost, UserDelete } from "../controllers/UsersComponent/Users.controller"
+import { UsersGet, UserGet, UserPost, UserDelete, UserPatch } from "../controllers/UsersComponent/Users.controller"
 import { isAdministradorOrEncargado } from "../middleware/RoleControl"
 import Passport from "passport"
 
@@ -13,6 +13,6 @@ route.get(`/${path}`, UsersGet)
 route.get(`/${path}/:id`, UserGet)
 route.post(`/${path}`, UserPost)
 route.delete(`/${path}/:id`, UserDelete)
-
+route.patch(`/${path}/:id`, UserPatch)
 
 export default route

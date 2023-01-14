@@ -82,3 +82,32 @@ export const UserDelete = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const UserPatch = async (req: Request, res: Response) => {
+    try {
+        const informationUpdated = req.body.informationUpdated
+
+        if(!informationUpdated) {
+            return res.status(400).json({
+                message: "Faltan datos"
+            })
+        }
+
+        const result = await User.updateOne({'register': req.params.id}, informationUpdated)
+
+        if(result.modifiedCount > 0) {
+            return res.status(200).json({
+                message: `Se actualizó la información del usuario ${req.params.id}`
+            })
+        }
+
+        return res.status(404).json({
+            message: `Usuario ${req.params.id} no encontrado`
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un error",
+            error: error
+        })
+    }
+}
