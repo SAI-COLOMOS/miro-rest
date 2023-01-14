@@ -37,7 +37,7 @@ export const UserGet = async (req: Request, res: Response) => {
             })
         }
 
-        res.status(200).json({
+        res.status(404).json({
             message: `Usuario ${req.params.id} no encontrado`
         })
     } catch (error) {
@@ -73,7 +73,7 @@ export const UserDelete = async (req: Request, res: Response) => {
         }
 
         return res.status(404).json({
-            message: "Usuario no encontrado",
+            message: `Usuario ${req.params.id} no encontrado`
         })
     } catch (error) {
         return res.status(500).json({
