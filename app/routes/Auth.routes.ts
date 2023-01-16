@@ -1,16 +1,13 @@
 import { Router } from "express"
-import { LoginPost, RegisterPost, sendRecoveryToken, recoverPassword } from "../controllers/Auth.controller"
+import { LoginPost, sendRecoveryToken, recoverPassword } from "../controllers/Auth.controller"
 
 const routes = Router()
+const prefix = "/auth"
 
-routes.post('/login', LoginPost)
+routes.get(`${prefix}/login`, LoginPost)
 
-routes.post('/register', RegisterPost)
+routes.get(`${prefix}/recoverPassword`, sendRecoveryToken)
 
-const recoverPrefix = "/recovery"
-
-routes.post(`${recoverPrefix}`, sendRecoveryToken);
-
-routes.post(`${recoverPrefix}/changePassword`, recoverPassword);
+routes.post(`${prefix}/changePassword`, recoverPassword)
 
 export default routes;
