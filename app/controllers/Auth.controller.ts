@@ -91,17 +91,33 @@ export const recoverPassword = async (req: Request, res: Response) => {
                 message: "El link ha caducado",
             })
         }
-        user = await User.findById(token.id)
-        if (user) {
-            user.password = req.body.password
-            await user.save()
+
+        const result = await User.updateOne({'register': token.register}, {'password': req.body.password})
+
+        console.log(result)
+        
+
+        if(result.modifiedCount > 0) {
             return res.status(200).json({
-                message: "Contraseña actualizada con éxito",
+                message: `Se actualizó la contraseña del usuario ${req.params.id}`
             })
         }
+
         return res.status(400).json({
-            message: "Hubo un problema en el proceso",
+            message: `No se pudo completar la operación`
         })
+
+        //user = await User.findById(token.id)
+        //if (user) {
+        //    user.password = req.body.password
+        //    await user.save()
+        //    return res.status(200).json({
+        //        message: "Contraseña actualizada con éxito",
+        //    })
+        //}
+        //return res.status(400).json({
+        //    message: "Hubo un problema en el proceso",
+        //})
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al connectarse con el servidor"

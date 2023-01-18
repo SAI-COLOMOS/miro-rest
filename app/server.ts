@@ -11,7 +11,7 @@ import ControlAccess from "./middleware/AccessControl"
 // Importaciones de rutas
 import Tests from "./routes/Tests.routes";
 import Auth from "./routes/Auth.routes"
-import UsersComponent from "./routes/UsersComponent.routes"
+import Users from "./routes/Users.routes"
 import Profile from "./routes/Profile.routes";
 
 /* Variables */
@@ -37,7 +37,7 @@ passport.use(ControlAccess)
 // Rutas
 app.use(Tests)
 app.use(Auth)
-app.use(UsersComponent)
+app.use(Users)
 app.use(Profile)
 
 export default app
