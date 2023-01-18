@@ -105,6 +105,7 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
+        enum: ['Administrador', 'Encargado', 'Prestador'],
         required: [true, "El rol es necesario"]
     }
 }, {
