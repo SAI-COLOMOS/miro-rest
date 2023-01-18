@@ -1,4 +1,4 @@
-import {model, Schema, Document, Model} from "mongoose"
+import { model, Schema, Document, Model } from "mongoose"
 import Bycrypt from "bcrypt"
 import Place from "./Place";
 
@@ -92,7 +92,7 @@ const UserSchema = new Schema({
         required: [true, "El lugar es necesario"]
     },
     assignment_area: {
-        type:  String,
+        type: String,
         required: [true, "El área de asignación es necesaria"]
     },
     status: {
@@ -115,15 +115,15 @@ const UserSchema = new Schema({
 async function newRegisterForProvider(inputPlace: string, inputAssignment_area: string): Promise<string> {
     const [year, month] = new Date().toISOString().split('-')
     const seasson = Number(month) <= 6 ? 'A' : 'B'
-    const place: any = await Place.findOne({"place_name": inputPlace})
+    const place: any = await Place.findOne({ "place_name": inputPlace })
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
-    const lastRegister = await User.findOne().sort({"register": "desc"}).select('register').where({'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' }})
+    const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register').where({ 'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' } })
     let serie = "001"
 
-    if(lastRegister) {
+    if (lastRegister) {
         let nextSerie = Number(lastRegister.register.substring(lastRegister.register.length - 3)) + 1
 
-        if(nextSerie < 10) {
+        if (nextSerie < 10) {
             serie = "00" + nextSerie
         } else if (nextSerie < 100) {
             serie = "0" + nextSerie
@@ -136,22 +136,22 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
 }
 
 async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssignment_area: string): Promise<string> {
-    const first_name = inputFirst_name.substring(0,2).toUpperCase();
-    const first_last_name = inputFirst_last_name.substring(0,2).toUpperCase();
-    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0,2).toUpperCase() : "XX"
-    const place: any = await Place.findOne({"place_name": inputPlace})
+    const first_name = inputFirst_name.substring(0, 2).toUpperCase();
+    const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase();
+    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0, 2).toUpperCase() : "XX"
+    const place: any = await Place.findOne({ "place_name": inputPlace })
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
     const random: string = Math.floor(Math.random() * 999).toString()
 
     return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
 }
 
-UserSchema.pre<UserInterface>("save", async function(next) {
-    if(!this.isModified('password') || !this.isModified('register')) {
+UserSchema.pre<UserInterface>("save", async function (next) {
+    if (!this.isModified('password') || !this.isModified('register')) {
         return next()
     }
 
-    if(this.role === "Prestador") {
+    if (this.role === "Prestador") {
         newRegisterForProvider(this.place, this.assignment_area).then(
             (response) => {
                 this.register = response
@@ -159,7 +159,7 @@ UserSchema.pre<UserInterface>("save", async function(next) {
         ).catch(
             (error) => console.log(error)
         )
-    } else if(this.role === "Administrador" || this.role === "Encargado") {
+    } else if (this.role === "Administrador" || this.role === "Encargado") {
         newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
             (response) => {
                 this.register = response
@@ -174,7 +174,7 @@ UserSchema.pre<UserInterface>("save", async function(next) {
     next()
 })
 
-UserSchema.methods.validatePassword = async function(password: string): Promise<boolean> {
+UserSchema.methods.validatePassword = async function (password: string): Promise<boolean> {
     return await Bycrypt.compare(password, this.password)
 }
 
