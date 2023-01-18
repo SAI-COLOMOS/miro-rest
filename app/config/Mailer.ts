@@ -43,7 +43,7 @@ export const link = (link: String) => {
                 <img style="height: 150px;width: 400px;" src="cid:SAI@logo" />
             </div>
             <div style="width: 100%; text-align: center;color: #e3f2fd;">
-                <h2 style="text-align: center;">Porfavor haga click en el siguiente link si es que solicitó
+                <h2 style="text-align: center;">Por favor, haga click en el siguiente link si es que solicitó
                     recuperación de
                     contraseña</h2>
                 <a href=${link}><button
