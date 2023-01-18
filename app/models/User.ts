@@ -147,29 +147,29 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
-    if (!this.isModified('password') || !this.isModified('register')) {
-        return next()
+    if (this.isModified('password')) {
+        this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
     }
 
-    if (this.role === "Prestador") {
-        newRegisterForProvider(this.place, this.assignment_area).then(
-            (response) => {
-                this.register = response
-            }
-        ).catch(
-            (error) => console.log(error)
-        )
-    } else if (this.role === "Administrador" || this.role === "Encargado") {
-        newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
-            (response) => {
-                this.register = response
-            }
-        ).catch(
-            (error) => console.log(error)
-        )
+    if (this.isModified('register')) {
+        if (this.role === "Prestador") {
+            newRegisterForProvider(this.place, this.assignment_area).then(
+                (response) => {
+                    this.register = response
+                }
+            ).catch(
+                (error) => console.log(error)
+            )
+        } else if (this.role === "Administrador" || this.role === "Encargado") {
+            newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
+                (response) => {
+                    this.register = response
+                }
+            ).catch(
+                (error) => console.log(error)
+            )
+        }
     }
-
-    this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
 
     next()
 })
