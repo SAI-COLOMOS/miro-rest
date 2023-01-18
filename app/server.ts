@@ -12,6 +12,7 @@ import ControlAccess from "./middleware/AccessControl"
 import Tests from "./routes/Tests.routes";
 import Auth from "./routes/Auth.routes"
 import UsersComponent from "./routes/UsersComponent.routes"
+import Profile from "./routes/Profile.routes";
 
 /* Variables */
 const app = express()
@@ -37,5 +38,6 @@ passport.use(ControlAccess)
 app.use(Tests)
 app.use(Auth)
 app.use(UsersComponent)
+app.use(Profile)
 
 export default app
