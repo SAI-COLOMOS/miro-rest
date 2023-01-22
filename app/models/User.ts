@@ -148,6 +148,7 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
+
     if (this.isModified('password')) {
         this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
     }
@@ -171,6 +172,14 @@ UserSchema.pre<UserInterface>("save", async function (next) {
             )
         }
     }
+
+    next()
+})
+
+UserSchema.pre("updateOne", { document: true, query: false }, async function (next) {
+    // const doc = await this.model.findOne(this.getQuery());
+    const update = this.getUpdate();
+
 
     next()
 })
