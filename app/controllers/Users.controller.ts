@@ -11,7 +11,7 @@ export const UsersGet = async (req: Request, res: Response) => {
                 if(result.length > 0) {
                     return res.status(200).json({
                         message: "Listo",
-                        result
+                        users: result
                     })
                 } else {
                     res.status(200).json({
@@ -45,7 +45,7 @@ export const UserGet = async (req: Request, res: Response) => {
                 if(result) {
                     return res.status(200).json({
                         message: "Listo",
-                        result
+                        user: result
                     })
                 } else {
                     res.status(404).json({
