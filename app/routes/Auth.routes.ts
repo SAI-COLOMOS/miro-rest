@@ -5,9 +5,7 @@ const routes = Router()
 const prefix = "/auth"
 
 routes.get(`${prefix}/login`, LoginGet)
-
-routes.get(`${prefix}/recoverPassword`, sendRecoveryToken)
-
-routes.post(`${prefix}/changePassword`, recoverPassword)
+routes.get(`${prefix}/recovery`, sendRecoveryToken)
+routes.patch(`${prefix}/recovery`, recoverPassword)
 
 export default routes;
