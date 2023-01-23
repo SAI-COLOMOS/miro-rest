@@ -26,7 +26,6 @@ export interface UserInterface extends Document {
 const UserSchema = new Schema({
     register: {
         type: String,
-        required: [true, "El registro es necesario"],
         unique: true,
         index: true
     },
@@ -148,7 +147,6 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
-
     if (this.isNew) {
         if (this.role === "Prestador") {
             newRegisterForProvider(this.place, this.assignment_area).then(
@@ -166,17 +164,20 @@ UserSchema.pre<UserInterface>("save", async function (next) {
             ).catch(
                 (error) => console.log(error)
             )
+
+            this.provider_type = "No aplica"
+            this.school = "No aplica"
         }
     }
 
     next()
-
 })
 
 UserSchema.pre<UserInterface>("save", async function (next) {
     if (this.isModified('password')) {
         this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
     }
+
     next()
 })
 
