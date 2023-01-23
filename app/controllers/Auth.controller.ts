@@ -53,6 +53,12 @@ export const LoginGet = async (req: Request, res: Response) => {
 }
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
+    if (!req.body.credential) {
+        return res.status(404).json({
+            message: "Faltan datos"
+        })
+    }
+
     let user, newRoute
     try {
         if (req.body.credential.search('@') !== -1) {
@@ -65,7 +71,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 
         if (user) {
             const token = createToken(user, "5m")
-            newRoute = `localhost:3000/auth/changePassword?tkn=${token}`
+            newRoute = `localhost:3000/auth/recovery?tkn=${token}`
             const from = `"Recuperación de contraseña SAI" ${Enviroment.Mailer.email}`
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
@@ -74,7 +80,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         }
 
         return res.status(200).json({
-            message: "Correo enviado",
+            message: "Si se encontró el usuario se mandó un correo de recuperación",
             newRoute
         })
     } catch (error) {
@@ -95,14 +101,15 @@ export const recoverPassword = async (req: Request, res: Response) => {
             })
         }
 
-        const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
-        if (user) {
-            user.password = req.body.password
-            user.save()
-            return res.status(200).json({
-                message: "Se actualizó la contraseña del usuario"
-            })
-        }
+        await User.findOne({ register: token.register }).sort({ "register": "desc" }).then(user => {
+            if (user) {
+                user.password = req.body.password
+                user.save()
+                return res.status(200).json({
+                    message: "Se actualizó la contraseña del usuario"
+                })
+            }
+        })
 
         return res.status(400).json({
             message: `No se pudo completar la operación`
@@ -112,5 +119,4 @@ export const recoverPassword = async (req: Request, res: Response) => {
             message: "Ocurrió un error al connectarse con el servidor",
         })
     }
-
 }
