@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import User, { UserInterface } from "../models/User";
 import JWT, { JwtPayload } from "jsonwebtoken";
 import Enviroment from "../config/Enviroment";
-import { link, sendEmail } from "../config/Mailer";
+import { link, mensaje, sendEmail } from "../config/Mailer";
 
 function createToken(user: UserInterface, time: String) {
     return JWT.sign({
@@ -72,7 +72,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         if (user) {
             const token = createToken(user, "5m")
             newRoute = `localhost:3000/auth/recovery?tkn=${token}`
-            const from = `"Recuperación de contraseña SAI" ${Enviroment.Mailer.email}`
+            const from = `"SAI" ${Enviroment.Mailer.email}`
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
             const body = link(newRoute)
@@ -101,15 +101,30 @@ export const recoverPassword = async (req: Request, res: Response) => {
             })
         }
 
-        await User.findOne({ register: token.register }).sort({ "register": "desc" }).then(user => {
-            if (user) {
-                user.password = req.body.password
-                user.save()
-                return res.status(200).json({
-                    message: "Se actualizó la contraseña del usuario"
+        if (!(req.body.password.length >= 8) || !(/[A-Z]/).test(req.body.password) || !(/\d/).test(req.body.password) || !(/\W/).test(req.body.password)) {
+            return res.status(400).json({
+                message: "La contraseña no cumple con la estructura deseada"
+            })
+        }
+
+        const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
+        if (user) {
+            if (await user.validatePassword(req.body.password)) {
+                return res.status(400).json({
+                    message: "La contraseña no cumple con la estructura deseada"
                 })
             }
-        })
+            user.password = req.body.password
+            user.save()
+            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const to = String(user.email)
+            const subject = "Recuperación de contraseña"
+            const body = mensaje("Se actualizó la contraseña de su usuario.")
+            await sendEmail(from, to, subject, body)
+            return res.status(200).json({
+                message: "Se actualizó la contraseña del usuario"
+            })
+        }
 
         return res.status(400).json({
             message: `No se pudo completar la operación`
