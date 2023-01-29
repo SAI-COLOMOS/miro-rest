@@ -25,6 +25,43 @@ export const sendEmail = async (from: String, to: String, subject: String, body:
     })
 }
 
+export const mensaje = (mensaje: String) => `
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+
+    <body style="width: 100%;background-color: rgb(15, 15, 15); font-family: Lexend Deca, sans-serif; color: #e3f2fd;">
+
+        <div style="width: 100%;padding-top: 20px;padding-bottom: 20px;">
+            <div style="width: 100%; text-align: center;">
+                <img style="height: 150px;width: 400px;" src="cid:SAI@logo" />
+            </div>
+            <div style="width: 100%; text-align: center;color: #e3f2fd;">
+                <h2 style="text-align: center;">${mensaje}</h2>
+            </div>
+        </div>
+
+        
+        </body>
+        <footer style="width: 100%;color: #e3f2fd;">
+            <div style="width: 100%;background-color: #4a148c;">
+                <div style="padding: 10px 0px 10px 30px">
+                    <p>
+                        © 2023 SAI Copyright
+                    </p>
+                </div>
+            </div>
+
+        </footer>
+        
+    </html>
+`
+
 export const link = (link: String) => {
     return `
     <!DOCTYPE html>
