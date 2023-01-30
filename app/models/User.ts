@@ -1,4 +1,4 @@
-import {model, Schema, Document, Model} from "mongoose"
+import { model, Schema, Document, Model } from "mongoose"
 import Bycrypt from "bcrypt"
 import Place from "./Place";
 
@@ -26,7 +26,6 @@ export interface UserInterface extends Document {
 const UserSchema = new Schema({
     register: {
         type: String,
-        required: [true, "El registro es necesario"],
         unique: true,
         index: true
     },
@@ -85,6 +84,7 @@ const UserSchema = new Schema({
     },
     provider_type: {
         type: String,
+        enum: ['Servicio social', 'Prácticas profesionales', 'No aplica'],
         required: [true, "El tipo de prestador es necesario"]
     },
     place: {
@@ -92,7 +92,7 @@ const UserSchema = new Schema({
         required: [true, "El lugar es necesario"]
     },
     assignment_area: {
-        type:  String,
+        type: String,
         required: [true, "El área de asignación es necesaria"]
     },
     status: {
@@ -105,6 +105,7 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
+        enum: ['Administrador', 'Encargado', 'Prestador'],
         required: [true, "El rol es necesario"]
     }
 }, {
@@ -115,15 +116,15 @@ const UserSchema = new Schema({
 async function newRegisterForProvider(inputPlace: string, inputAssignment_area: string): Promise<string> {
     const [year, month] = new Date().toISOString().split('-')
     const seasson = Number(month) <= 6 ? 'A' : 'B'
-    const place: any = await Place.findOne({"place_name": inputPlace})
+    const place: any = await Place.findOne({ "place_name": inputPlace })
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
-    const lastRegister = await User.findOne().sort({"register": "desc"}).select('register').where({'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' }})
+    const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register').where({ 'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' } })
     let serie = "001"
 
-    if(lastRegister) {
+    if (lastRegister) {
         let nextSerie = Number(lastRegister.register.substring(lastRegister.register.length - 3)) + 1
 
-        if(nextSerie < 10) {
+        if (nextSerie < 10) {
             serie = "00" + nextSerie
         } else if (nextSerie < 100) {
             serie = "0" + nextSerie
@@ -136,45 +137,52 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
 }
 
 async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssignment_area: string): Promise<string> {
-    const first_name = inputFirst_name.substring(0,2).toUpperCase();
-    const first_last_name = inputFirst_last_name.substring(0,2).toUpperCase();
-    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0,2).toUpperCase() : "XX"
-    const place: any = await Place.findOne({"place_name": inputPlace})
+    const first_name = inputFirst_name.substring(0, 2).toUpperCase();
+    const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase();
+    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0, 2).toUpperCase() : "XX"
+    const place: any = await Place.findOne({ "place_name": inputPlace })
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
     const random: string = Math.floor(Math.random() * 999).toString()
 
     return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
 }
 
-UserSchema.pre<UserInterface>("save", async function(next) {
-    if(!this.isModified('password') || !this.isModified('register')) {
-        return next()
-    }
+UserSchema.pre<UserInterface>("save", async function (next) {
+    if (this.isNew) {
+        if (this.role === "Prestador") {
+            newRegisterForProvider(this.place, this.assignment_area).then(
+                (response) => {
+                    this.register = response
+                }
+            ).catch(
+                (error) => console.log(error)
+            )
+        } else if (this.role === "Administrador" || this.role === "Encargado") {
+            newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
+                (response) => {
+                    this.register = response
+                }
+            ).catch(
+                (error) => console.log(error)
+            )
 
-    if(this.role === "Prestador") {
-        newRegisterForProvider(this.place, this.assignment_area).then(
-            (response) => {
-                this.register = response
-            }
-        ).catch(
-            (error) => console.log(error)
-        )
-    } else if(this.role === "Administrador" || this.role === "Encargado") {
-        newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
-            (response) => {
-                this.register = response
-            }
-        ).catch(
-            (error) => console.log(error)
-        )
+            this.provider_type = "No aplica"
+            this.school = "No aplica"
+        }
     }
-
-    this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
 
     next()
 })
 
-UserSchema.methods.validatePassword = async function(password: string): Promise<boolean> {
+UserSchema.pre<UserInterface>("save", async function (next) {
+    if (this.isModified('password')) {
+        this.password = await Bycrypt.hash(this.password, await Bycrypt.genSalt(10))
+    }
+
+    next()
+})
+
+UserSchema.methods.validatePassword = async function (password: string): Promise<boolean> {
     return await Bycrypt.compare(password, this.password)
 }
 
