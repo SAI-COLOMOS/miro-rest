@@ -1,5 +1,4 @@
 # Sistema administrativo de la información (SAI)
----
 Posteriormente encontrarás la estructura que deben de llevar las peticiones para la API, así como su respuesta a dicha petición.
 
 ## Recuperación de contraseña

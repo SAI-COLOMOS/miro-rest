@@ -76,12 +76,11 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
             const body = link(newRoute)
-            //await sendEmail(from, to, subject, body)
+            await sendEmail(from, to, subject, body)
         }
 
         return res.status(200).json({
-            message: "Si se encontró el usuario se mandó un correo de recuperación",
-            newRoute
+            message: "Si se encontró el usuario se mandó un correo de recuperación"
         })
     } catch (error) {
         return res.status(500).json({
@@ -120,7 +119,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
             const body = mensaje("Se actualizó la contraseña de su usuario.")
-            //await sendEmail(from, to, subject, body)
+            await sendEmail(from, to, subject, body)
             return res.status(200).json({
                 message: "Se actualizó la contraseña del usuario"
             })
