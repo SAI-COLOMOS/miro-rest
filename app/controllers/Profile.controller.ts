@@ -1,11 +1,9 @@
 import { Request, Response } from "express"
-import User, { UserInterface } from "../models/User"
+import User from "../models/User"
 
 export const ProfileGet = async (req: Request, res: Response) => {
     try {
         const user = await User.findOne({ 'register': req.params.id })
-
-        console.log(req.user)
 
         if (user) {
             return res.status(200).json({
