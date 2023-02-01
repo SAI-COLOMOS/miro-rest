@@ -9,12 +9,12 @@ const options: StrategyOptions = {
 
 export default new Strategy(options, async (payload, done) => {
     try {
-        const user = await User.findOne({'register': payload.register})
+        const user = await User.findOne({ 'register': payload.register })
 
-        if(user) {
+        if (user) {
             return done(null, user)
         }
-    
+
         return done(null, false)
     } catch (error) {
         return done(error)
