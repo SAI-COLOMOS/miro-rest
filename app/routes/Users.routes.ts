@@ -6,13 +6,19 @@ import Passport from "passport"
 const route = Router()
 const path = 'users'
 
-route.use(Passport.authenticate('jwt',{session: false}))
-route.use(isAdministradorOrEncargado);
+// Retornar usuarios
+route.get(`/${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UsersGet)
 
-route.get(`/${path}`, UsersGet)
-route.get(`/${path}/:id`, UserGet)
-route.post(`/${path}`, UserPost)
-route.delete(`/${path}/:id`, UserDelete)
-route.patch(`/${path}/:id`, UserPatch)
+// Retornar un solo usuario
+route.get(`/${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserGet)
+
+// Crear un usuario
+route.post(`/${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserPost)
+
+// Borrar un usuario
+route.delete(`/${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserDelete)
+
+// Actualizar mi usuario
+route.patch(`/${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserPatch)
 
 export default route
