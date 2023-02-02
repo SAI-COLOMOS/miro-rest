@@ -54,7 +54,7 @@ export const LoginGet = async (req: Request, res: Response) => {
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
     if (!req.body.credential) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "Faltan datos"
         })
     }
@@ -80,7 +80,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         }
 
         return res.status(200).json({
-            message: "Si se encontró el usuario se mandó un correo de recuperación"
+            message: "Si se encontró el usuario; se mandó un correo de recuperación"
         })
     } catch (error) {
         return res.status(500).json({
