@@ -13,6 +13,7 @@ import Tests from "./routes/Tests.routes";
 import Auth from "./routes/Auth.routes"
 import Users from "./routes/Users.routes"
 import Profile from "./routes/Profile.routes";
+import Card from './routes/Card.routes';
 
 /* Variables */
 const app = express()
@@ -39,5 +40,6 @@ app.use(Tests)
 app.use(Auth)
 app.use(Users)
 app.use(Profile)
+app.use(Card)
 
 export default app
