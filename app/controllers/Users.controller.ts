@@ -75,9 +75,6 @@ export const UserPost = async (req: Request, res: Response) => {
         await new User(req.body).save().then(
             async (result) => {
                 if (result) {
-                    if (result.role === "Prestador") {
-                        CardPost(result.register)
-                    }
                     return res.status(201).json({
                         message: "Usuario creado",
                         data: result
