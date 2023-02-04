@@ -1,6 +1,7 @@
-import { model, Schema, Document, Model } from "mongoose"
+import { model, Schema, Document } from "mongoose"
 import Bycrypt from "bcrypt"
 import Place from "./Place";
+import Card from "./Card";
 
 export interface UserInterface extends Document {
     register: string
@@ -151,8 +152,9 @@ UserSchema.pre<UserInterface>("save", async function (next) {
     if (this.isNew) {
         if (this.role === "Prestador") {
             newRegisterForProvider(this.place, this.assignment_area).then(
-                (response) => {
+                async (response) => {
                     this.register = response
+                    await new Card({ "provider_register": response }).save()
                 }
             ).catch(
                 (error) => console.log(error)
