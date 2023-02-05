@@ -1,7 +1,18 @@
 import { Request, Response } from "express";
 import Card from "../models/Card";
 
+function __ThrowError(message: string) { throw message }
+
 export const getCards = async (req: Request, res: Response) => {
+    try {
+        typeof req.body.items === "number" ? null : __ThrowError("El campo 'items' debe ser tipo 'number'")
+        typeof req.body.page === "number" ? null : __ThrowError("El campo 'page' debe ser tipo 'number'")
+    } catch (error) {
+        return res.status(400).json({
+            error
+        })
+    }
+
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
@@ -13,11 +24,11 @@ export const getCards = async (req: Request, res: Response) => {
                         message: "Listo",
                         cards: result
                     })
-                } else {
-                    res.status(200).json({
-                        message: "Sin resultados"
-                    })
                 }
+
+                res.status(200).json({
+                    message: "Sin resultados"
+                })
             })
     } catch (error) {
         return res.status(500).json({
@@ -34,11 +45,11 @@ export const getProviderHours = async (req: Request, res: Response) => {
                     message: "Tarjetón de usuario encontrado",
                     tarjeton: result.activities
                 })
-            } else {
-                return res.status(404).json({
-                    message: `No se encontró el tarjetón del usuario ${req.params.id}`
-                })
             }
+
+            return res.status(404).json({
+                message: `El tarjetón del usuario ${req.params.id} no se encontró`
+            })
         })
     } catch (error) {
         return res.status(500).json({
@@ -48,9 +59,12 @@ export const getProviderHours = async (req: Request, res: Response) => {
 }
 
 export const CardPost = async (req: Request, res: Response) => {
-    if (!req.body.provider_register) {
+    try {
+        req.body.provider_register ? null : __ThrowError("El campo 'provider_register' es obligatorio")
+        typeof req.body.provider_register === "string" ? null : __ThrowError("El campo 'provider_register' debe ser tipo 'string'")
+    } catch (error) {
         return res.status(400).json({
-            message: "Faltan datos"
+            error
         })
     }
 
@@ -60,11 +74,10 @@ export const CardPost = async (req: Request, res: Response) => {
                 return res.status(201).json({
                     message: "Se creó el tarjetón del prestador"
                 })
-            } else {
-                return res.status(500).json({
-                    message: "Ocurrió un error interno en la base de datos"
-                })
             }
+            return res.status(500).json({
+                message: "Ocurrió un error interno en la base de datos"
+            })
         })
     } catch (error) {
         return res.status(500).json({
@@ -75,9 +88,18 @@ export const CardPost = async (req: Request, res: Response) => {
 }
 
 export const AddHoursToCard = async (req: Request, res: Response) => {
-    if (!req.body.activity.activity_name || !req.body.activity.hours || !req.body.activity.responsible_register) {
+    try {
+        req.body.activity_name ? null : __ThrowError("El campo 'activity_name' es obligatorio")
+        typeof req.body.activity_name === "string" ? null : __ThrowError("El campo 'activity_name' debe ser tipo 'string'")
+
+        req.body.hours ? null : __ThrowError("El campo 'hours' es obligatorio")
+        typeof req.body.hours === "number" ? null : __ThrowError("El campo 'hours' debe ser tipo 'number'")
+
+        req.body.responsible_register ? null : __ThrowError("El campo 'responsible_register' es obligatorio")
+        typeof req.body.responsible_register === "string" ? null : __ThrowError("El campo 'responsible_register' debe ser tipo 'string'")
+    } catch (error) {
         return res.status(400).json({
-            message: "Faltan datos"
+            error
         })
     }
 
@@ -85,9 +107,9 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
         await Card.updateOne({ "provider_register": req.params.id }, {
             $push: {
                 "activities": {
-                    "activity_name": req.body.activity.activity_name,
-                    "hours": req.body.activity.hours,
-                    "responsible_register": req.body.activity.responsible_register
+                    "activity_name": req.body.activity_name,
+                    "hours": req.body.hours,
+                    "responsible_register": req.body.responsible_register
                 }
             }
         }).then(result => {
@@ -95,11 +117,11 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
                 return res.status(201).json({
                     message: "Se añadieron las horas al prestador"
                 })
-            } else {
-                return res.status(500).json({
-                    message: "El usuario no se encontró"
-                })
             }
+
+            return res.status(404).json({
+                message: `El usuario ${req.params.id} no se encontró`
+            })
         })
     } catch (error) {
         return res.status(500).json({
@@ -109,31 +131,28 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
 }
 
 export const RemoveHoursFromCard = async (req: Request, res: Response) => {
-    if (!req.body.activity_name || !req.body.responsible_register) {
+    try {
+        req.body._id ? null : __ThrowError("El campo '_id' es obligatorio")
+        typeof req.body._id === "string" ? null : __ThrowError("El campo '_id' debe ser tipo 'string'")
+    } catch (error) {
         return res.status(400).json({
-            message: "Faltan datos"
+            error
         })
     }
 
     try {
-        await Card.updateOne({ "provider_register": req.params.id }, {
-            $pull: {
-                "activities": {
-                    "activity_name": req.body.activity_name,
-                    "responsible_register": req.body.responsible_register
+        await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.body._id } } })
+            .then(result => {
+                if (result.modifiedCount > 0) {
+                    return res.status(200).json({
+                        message: "Se eliminaron las horas del prestador"
+                    })
                 }
-            }
-        }).then(result => {
-            if (result.modifiedCount > 0) {
-                return res.status(200).json({
-                    message: "Se eliminaron las horas del prestador"
-                })
-            } else {
+
                 return res.status(404).json({
                     message: "No se encontró la actividad"
                 })
-            }
-        })
+            })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse al servidor"

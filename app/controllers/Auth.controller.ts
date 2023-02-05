@@ -4,6 +4,8 @@ import JWT, { JwtPayload } from "jsonwebtoken";
 import Enviroment from "../config/Enviroment";
 import { link, mensaje, sendEmail } from "../config/Mailer";
 
+function __ThrowError(message: string) { throw message }
+
 function createToken(user: UserInterface, time: String) {
     return JWT.sign({
         register: user.register
@@ -15,11 +17,18 @@ function createToken(user: UserInterface, time: String) {
 }
 
 export const LoginGet = async (req: Request, res: Response) => {
-    if (!req.body.credential || !req.body.password) {
+    try {
+        req.body.credential ? null : __ThrowError("El campo 'credential' es obligatorio")
+        typeof req.body.credential === "string" ? null : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+
+        req.body.password ? null : __ThrowError("El campo 'password' es obligatorio")
+        typeof req.body.password === "string" ? null : __ThrowError("El campo 'password' debe ser tipo 'string'")
+    } catch (error) {
         return res.status(400).json({
-            message: "Faltan datos"
+            error
         })
     }
+
     let user = null
     try {
 
@@ -53,9 +62,12 @@ export const LoginGet = async (req: Request, res: Response) => {
 }
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
-    if (!req.body.credential) {
+    try {
+        req.body.credential ? null : __ThrowError("El campo 'credential' es obligatorio")
+        typeof req.body.credential === "string" ? null : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+    } catch (error) {
         return res.status(400).json({
-            message: "Faltan datos"
+            error
         })
     }
 
@@ -80,7 +92,8 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         }
 
         return res.status(200).json({
-            message: "Si se encontró el usuario; se mandó un correo de recuperación"
+            message: "Si se encontró el usuario; Se mandó un correo de recuperación",
+            newRoute
         })
     } catch (error) {
         return res.status(500).json({
@@ -92,20 +105,28 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 export const recoverPassword = async (req: Request, res: Response) => {
     let token
     try {
-        try {
-            token = JWT.verify(String(req.query.tkn), Enviroment.JWT.secret) as JwtPayload
-        } catch (error) {
-            return res.status(400).json({
-                message: "El link ha caducado",
-            })
-        }
+        token = JWT.verify(String(req.query.tkn), Enviroment.JWT.secret) as JwtPayload
+    } catch (error) {
+        return res.status(400).json({
+            message: "El link ha caducado",
+        })
+    }
 
-        if (!(req.body.password.length >= 8) || !(/[A-Z]/).test(req.body.password) || !(/\d/).test(req.body.password) || !(/\W/).test(req.body.password)) {
-            return res.status(400).json({
-                message: "La contraseña no cumple con la estructura deseada"
-            })
-        }
+    try {
+        req.body.password ? null : __ThrowError("El campo 'password' es obligatorio")
+        typeof req.body.password === "string" ? null : __ThrowError("El campo 'password' debe ser tipo 'string'")
+        req.body.password.length >= 8 ? null : __ThrowError("El campo 'password' debe tener una longitud mínima de 8 carácteres")
+        req.body.password.match(/[A-Z]/) ? null : __ThrowError("El campo 'password' debe contener al menos una letra mayúscula")
+        req.body.password.match(/\d/) ? null : __ThrowError("El campo 'password' debe contener al menos un dígito númerico")
+        req.body.password.match(/\W/) ? null : __ThrowError("El campo 'password' debe contener al menos un carácter especial")
+        // (/^.*(?=.{8,})(?=.*[A-Z])(?=.*\d)(?=.*\W).*$/).test(req.body.password) ? null : __ThrowError("La contraseña no cumple con la estructura deseada")
+    } catch (error) {
+        return res.status(400).json({
+            error
+        })
+    }
 
+    try {
         const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
         if (user) {
             if (await user.validatePassword(req.body.password)) {
@@ -120,12 +141,13 @@ export const recoverPassword = async (req: Request, res: Response) => {
             const subject = "Recuperación de contraseña"
             const body = mensaje("Se actualizó la contraseña de su usuario.")
             await sendEmail(from, to, subject, body)
+
             return res.status(200).json({
                 message: "Se actualizó la contraseña del usuario"
             })
         }
 
-        return res.status(400).json({
+        return res.status(500).json({
             message: `No se pudo completar la operación`
         })
     } catch (error) {
