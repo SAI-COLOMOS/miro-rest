@@ -1,6 +1,6 @@
 # Sistema administrativo de la información (SAI)
 Posteriormente encontrarás la estructura que deben de llevar las peticiones para la API, así como su respuesta a dicha petición.
-
+<!-- -------------------------------------------------- -->
 ## Inicio de sesión
 La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
 >localhost:3000/auth/login
@@ -31,6 +31,7 @@ Dicha petición debe tener la siguiente estructura:
 }
 ```
 
+<!-- -------------------------------------------------- -->
 ## Recuperación de contraseña
 En el proceso de recuperación consiste de dos pasos:
 1. Solicitud del token para validar la operación del cambio de datos.
@@ -82,3 +83,82 @@ Dicha petición debe tener la siguiente estructura:
     message: String
 }
 ```
+
+<!-- -------------------------------------------------- -->
+## CRUD Tarjetón
+### Obtener los tarjetones de todos los prestadores
+La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
+>localhost:3000/cards
+
+Dicha petición debe de tener la siguiente estructura:
+```
+{
+   items: Number,
+   page: Number 
+}
+```
+Ambos campos son opcionales.
+- El campo `items` debe contener la cantidad de tarjetones que se quieren recuperar.
+- El campo `page` debe contener la página a la cual se quiere acceder.
+#### Respuesta
+```
+{
+    message: String,
+    cards: Array
+}
+```
+El array del parámetro `cards` contiene todos los tarjetones en forma de objetos.
+### Obtener el tarjetón de un solo prestador
+La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
+>localhost:3000/cards/:id
+
+El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
+#### Respuesta
+```
+{
+    message: String,
+    card: Array
+}
+```
+El array del parámetro `card` contiene todas las actividades del prestador en forma de objetos.
+### Añadir un objeto de horas al tarjetón de un prestador
+La petición debe ser enviada con el método `POST` hacia la siguiente ruta:
+>localhost:3000/cards/:id
+
+El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
+Dicha petición debe tener la siguiente estructura:
+```
+{
+    activity_name: String,
+    hours: Number,
+    responsible_register
+}
+```
+- El campo `activity_name` debe contener el nombre de la actividad o evento.
+- El campo `hours` debe contener la cantidad de horas que van a ser añadidas (Puede ser un número negativo).
+- El campo `responsible_register` debe contener el registro del encargado que está asignando éstas horas.
+#### Respuesta
+```
+{
+    message: String
+}
+```
+### Eliminar un objeto de horas al tarjetón de un prestador
+La petición debe ser enviada con el método `DELETE` hacia la siguiente ruta:
+>localhost:3000/cards/:id
+
+El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
+Dicha petición debe tener la siguiente estructura:
+```
+{
+    _id: String
+}
+```
+- El campo `_id` debe contener el ObjetId del objeto de horas que se va a eliminar.
+#### Respuesta
+```
+{
+    message: String
+}
+```
+<!-- -------------------------------------------------- -->
