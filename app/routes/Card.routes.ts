@@ -4,7 +4,7 @@ import Passport from "passport";
 import { AddHoursToCard, CardPost, getCards, getProviderHours, RemoveHoursFromCard } from "../controllers/Card.controller";
 
 const route = Router()
-const path = "/hours"
+const path = "/cards"
 
 // Obtener el tarjeton del usuario
 route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getProviderHours)
@@ -16,7 +16,7 @@ route.get(`${path}`, Passport.authenticate('jwt', { session: false }), isAdminis
 route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, CardPost)
 
 // Añadir horas al tarjetón de un prestador
-route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, AddHoursToCard)
+route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, AddHoursToCard)
 
 // Eliminar horas del tarjetón de un prestador
 route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, RemoveHoursFromCard)

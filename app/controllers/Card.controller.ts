@@ -43,7 +43,7 @@ export const getProviderHours = async (req: Request, res: Response) => {
             if (result) {
                 return res.status(200).json({
                     message: "Tarjetón de usuario encontrado",
-                    tarjeton: result.activities
+                    card: result.activities
                 })
             }
 
