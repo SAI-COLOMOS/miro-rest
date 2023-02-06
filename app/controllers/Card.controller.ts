@@ -9,10 +9,10 @@ export const getCards = async (req: Request, res: Response) => {
     try {
         if (req.body.status) {
             typeof req.body.status === "string" ?
-                ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'].map(s => req.body.status.contains(s) ? flag = true : null)
+                ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'].map(s => req.body.status === s ? flag = true : null)
                 : __ThrowError("El campo 'status' debe ser tipo 'string'")
 
-            flag ? status = req.body.status : __ThrowError("El campo 'status' debe contener uno de las siguientes strings: 'Activo', 'Suspendido', 'Inactivo', 'Finalizado'")
+            flag ? status = req.body.status : __ThrowError("El campo 'status' debe contener uno de las siguientes strings: 'Activo', 'Suspendido', 'Inactivo' o 'Finalizado'")
         }
 
         req.body.items ?
@@ -37,6 +37,7 @@ export const getCards = async (req: Request, res: Response) => {
                 await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
                     if (result.length > 0) {
                         return res.status(200).json({
+                            message: "Listo",
                             cards: result
                         })
                     }
