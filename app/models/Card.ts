@@ -28,7 +28,7 @@ const CardSchema = new Schema({
         },
         assignation_date: {
             type: Date,
-            default: Date.now
+            default: new Date().toISOString()
         },
         responsible_register: {
             type: String,
