@@ -18,11 +18,17 @@ function createToken(user: UserInterface, time: String) {
 
 export const LoginGet = async (req: Request, res: Response) => {
     try {
-        req.body.credential ? null : __ThrowError("El campo 'credential' es obligatorio")
-        typeof req.body.credential === "string" ? null : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+        req.body.credential ?
+            typeof req.body.credential === "string" ? null : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+            : __ThrowError("El campo 'credential' es obligatorio")
 
-        req.body.password ? null : __ThrowError("El campo 'password' es obligatorio")
-        typeof req.body.password === "string" ? null : __ThrowError("El campo 'password' debe ser tipo 'string'")
+        req.body.password ?
+            typeof req.body.password === "string" ? null : __ThrowError("El campo 'password' debe ser tipo 'string'")
+            : __ThrowError("El campo 'password' es obligatorio")
+
+        req.body.keepAlive ?
+            typeof req.body.keepAlive === "boolean" ? null : __ThrowError("El campo 'keepAlive' debe ser tipo 'boolean'")
+            : null
     } catch (error) {
         return res.status(400).json({
             error
@@ -63,8 +69,9 @@ export const LoginGet = async (req: Request, res: Response) => {
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
     try {
-        req.body.credential ? null : __ThrowError("El campo 'credential' es obligatorio")
-        typeof req.body.credential === "string" ? null : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+        req.body.credential ?
+            typeof req.body.credential === "string" ? null : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+            : __ThrowError("El campo 'credential' es obligatorio")
     } catch (error) {
         return res.status(400).json({
             error
@@ -113,13 +120,12 @@ export const recoverPassword = async (req: Request, res: Response) => {
     }
 
     try {
-        req.body.password ? null : __ThrowError("El campo 'password' es obligatorio")
-        typeof req.body.password === "string" ? null : __ThrowError("El campo 'password' debe ser tipo 'string'")
-        req.body.password.length >= 8 ? null : __ThrowError("El campo 'password' debe tener una longitud mínima de 8 carácteres")
-        req.body.password.match(/[A-Z]/) ? null : __ThrowError("El campo 'password' debe contener al menos una letra mayúscula")
-        req.body.password.match(/\d/) ? null : __ThrowError("El campo 'password' debe contener al menos un dígito númerico")
-        req.body.password.match(/\W/) ? null : __ThrowError("El campo 'password' debe contener al menos un carácter especial")
-        // (/^.*(?=.{8,})(?=.*[A-Z])(?=.*\d)(?=.*\W).*$/).test(req.body.password) ? null : __ThrowError("La contraseña no cumple con la estructura deseada")
+        req.body.password ?
+            typeof req.body.password === "string" ?
+                (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password) ? null
+                    : __ThrowError("La contraseña no cumple con la estructura deseada")
+                : __ThrowError("El campo 'password' debe ser tipo 'string'")
+            : __ThrowError("El campo 'password' es obligatorio")
     } catch (error) {
         return res.status(400).json({
             error

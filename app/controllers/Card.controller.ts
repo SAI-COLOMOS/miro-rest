@@ -9,15 +9,19 @@ export const getCards = async (req: Request, res: Response) => {
     try {
         if (req.body.status) {
             typeof req.body.status === "string" ?
-                (['Activo', 'Suspendido', 'Inactivo', 'Finalizado']).map(s => req.body.status.contains(s) ? flag = true : null) : __ThrowError("El campo 'status' debe ser tipo 'string'")
+                ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'].map(s => req.body.status.contains(s) ? flag = true : null)
+                : __ThrowError("El campo 'status' debe ser tipo 'string'")
 
             flag ? status = req.body.status : __ThrowError("El campo 'status' debe contener uno de las siguientes strings: 'Activo', 'Suspendido', 'Inactivo', 'Finalizado'")
         }
 
-        req.body.items ? (typeof req.body.items === "number" ? null : __ThrowError("El campo 'items' debe ser tipo 'number'")) : null
+        req.body.items ?
+            typeof req.body.items === "number" ? null : __ThrowError("El campo 'items' debe ser tipo 'number'")
+            : null
 
-        req.body.page ? (typeof req.body.page === "number" ? null : __ThrowError("El campo 'page' debe ser tipo 'number'")) : null
-
+        req.body.page ?
+            typeof req.body.page === "number" ? null : __ThrowError("El campo 'page' debe ser tipo 'number'")
+            : null
     } catch (error) {
         return res.status(400).json({
             error
@@ -30,37 +34,20 @@ export const getCards = async (req: Request, res: Response) => {
 
         await User.find({ 'status': status }).sort({ "createdAt": "desc" }).then(async users => {
             if (users.length > 0) {
-                await Card.find({
-                    'provider_register': { $in: users.map(user => user.register) }
-                }).then(result => {
+                await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
                     if (result.length > 0) {
                         return res.status(200).json({
                             cards: result
                         })
                     }
+
                     return res.status(200).json({
                         message: "Sin resultados"
                     })
-                }
-                )
+                })
             }
         }
         )
-
-        // await Card.find().sort({ "createdAt": "desc" }).limit(items).skip(page * items)
-        //     .then(
-        //         result => {
-        //             if (result.length > 0) {
-        //                 return res.status(200).json({
-        //                     message: "Listo",
-        //                     cards: result
-        //                 })
-        //             }
-
-        //             res.status(200).json({
-        //                 message: "Sin resultados"
-        //             })
-        //         })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse con el servidor"
@@ -91,8 +78,10 @@ export const getProviderHours = async (req: Request, res: Response) => {
 
 export const CardPost = async (req: Request, res: Response) => {
     try {
-        req.body.provider_register ? null : __ThrowError("El campo 'provider_register' es obligatorio")
-        typeof req.body.provider_register === "string" ? null : __ThrowError("El campo 'provider_register' debe ser tipo 'string'")
+        req.body.provider_register ?
+            typeof req.body.provider_register === "string" ? null
+                : __ThrowError("El campo 'provider_register' debe ser tipo 'string'")
+            : __ThrowError("El campo 'provider_register' es obligatorio")
     } catch (error) {
         return res.status(400).json({
             error
@@ -119,14 +108,20 @@ export const CardPost = async (req: Request, res: Response) => {
 
 export const AddHoursToCard = async (req: Request, res: Response) => {
     try {
-        req.body.activity_name ? null : __ThrowError("El campo 'activity_name' es obligatorio")
-        typeof req.body.activity_name === "string" ? null : __ThrowError("El campo 'activity_name' debe ser tipo 'string'")
+        req.body.activity_name ?
+            typeof req.body.activity_name === "string" ? null
+                : __ThrowError("El campo 'activity_name' debe ser tipo 'string'")
+            : __ThrowError("El campo 'activity_name' es obligatorio")
 
-        req.body.hours ? null : __ThrowError("El campo 'hours' es obligatorio")
-        typeof req.body.hours === "number" ? null : __ThrowError("El campo 'hours' debe ser tipo 'number'")
+        req.body.hours ?
+            typeof req.body.hours === "number" ? null
+                : __ThrowError("El campo 'hours' debe ser tipo 'number'")
+            : __ThrowError("El campo 'hours' es obligatorio")
 
-        req.body.responsible_register ? null : __ThrowError("El campo 'responsible_register' es obligatorio")
-        typeof req.body.responsible_register === "string" ? null : __ThrowError("El campo 'responsible_register' debe ser tipo 'string'")
+        req.body.responsible_register ?
+            typeof req.body.responsible_register === "string" ? null
+                : __ThrowError("El campo 'responsible_register' debe ser tipo 'string'")
+            : __ThrowError("El campo 'responsible_register' es obligatorio")
     } catch (error) {
         return res.status(400).json({
             error
@@ -162,8 +157,10 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
 
 export const RemoveHoursFromCard = async (req: Request, res: Response) => {
     try {
-        req.body._id ? null : __ThrowError("El campo '_id' es obligatorio")
-        typeof req.body._id === "string" ? null : __ThrowError("El campo '_id' debe ser tipo 'string'")
+        req.body._id ?
+            typeof req.body._id === "string" ? null
+                : __ThrowError("El campo '_id' debe ser tipo 'string'")
+            : __ThrowError("El campo '_id' es obligatorio")
     } catch (error) {
         return res.status(400).json({
             error
