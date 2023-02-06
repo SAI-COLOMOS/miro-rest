@@ -94,12 +94,19 @@ Dicha petición debe de tener la siguiente estructura:
 ```
 {
    items: Number,
-   page: Number 
+   page: Number,
+   status: string
 }
 ```
 Ambos campos son opcionales.
 - El campo `items` debe contener la cantidad de tarjetones que se quieren recuperar.
 - El campo `page` debe contener la página a la cual se quiere acceder.
+- El campo `status` debe contener solo una de las siguientes strings:
+    - Activo
+    - Inactivo
+    - Suspendido
+    - Finalizado
+
 #### Respuesta
 ```
 {
