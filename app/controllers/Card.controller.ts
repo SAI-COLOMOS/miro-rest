@@ -1,12 +1,23 @@
 import { Request, Response } from "express";
 import Card from "../models/Card";
+import User from "../models/User";
 
 function __ThrowError(message: string) { throw message }
 
 export const getCards = async (req: Request, res: Response) => {
+    let status = "Activo", flag = false
     try {
-        typeof req.body.items === "number" ? null : __ThrowError("El campo 'items' debe ser tipo 'number'")
-        typeof req.body.page === "number" ? null : __ThrowError("El campo 'page' debe ser tipo 'number'")
+        if (req.body.status) {
+            typeof req.body.status === "string" ?
+                (['Activo', 'Suspendido', 'Inactivo', 'Finalizado']).map(s => req.body.status.contains(s) ? flag = true : null) : __ThrowError("El campo 'status' debe ser tipo 'string'")
+
+            flag ? status = req.body.status : __ThrowError("El campo 'status' debe contener uno de las siguientes strings: 'Activo', 'Suspendido', 'Inactivo', 'Finalizado'")
+        }
+
+        req.body.items ? (typeof req.body.items === "number" ? null : __ThrowError("El campo 'items' debe ser tipo 'number'")) : null
+
+        req.body.page ? (typeof req.body.page === "number" ? null : __ThrowError("El campo 'page' debe ser tipo 'number'")) : null
+
     } catch (error) {
         return res.status(400).json({
             error
@@ -17,19 +28,39 @@ export const getCards = async (req: Request, res: Response) => {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
 
-        await Card.find().sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
-            result => {
-                if (result.length > 0) {
+        await User.find({ 'status': status }).sort({ "createdAt": "desc" }).then(async users => {
+            if (users.length > 0) {
+                await Card.find({
+                    'provider_register': { $in: users.map(user => user.register) }
+                }).then(result => {
+                    if (result.length > 0) {
+                        return res.status(200).json({
+                            cards: result
+                        })
+                    }
                     return res.status(200).json({
-                        message: "Listo",
-                        cards: result
+                        message: "Sin resultados"
                     })
                 }
+                )
+            }
+        }
+        )
 
-                res.status(200).json({
-                    message: "Sin resultados"
-                })
-            })
+        // await Card.find().sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+        //     .then(
+        //         result => {
+        //             if (result.length > 0) {
+        //                 return res.status(200).json({
+        //                     message: "Listo",
+        //                     cards: result
+        //                 })
+        //             }
+
+        //             res.status(200).json({
+        //                 message: "Sin resultados"
+        //             })
+        //         })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse con el servidor"
@@ -82,7 +113,6 @@ export const CardPost = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al connectarse con el servidor",
-            error: error?.toString()
         })
     }
 }
