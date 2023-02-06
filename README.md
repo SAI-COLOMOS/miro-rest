@@ -1,6 +1,6 @@
 # Sistema administrativo de la información (SAI)
 Posteriormente encontrarás la estructura que deben de llevar las peticiones para la API, así como su respuesta a dicha petición.
-<!-- -------------------------------------------------- -->
+
 ## Inicio de sesión
 La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
 >localhost:3000/auth/login
@@ -31,7 +31,6 @@ Dicha petición debe tener la siguiente estructura:
 }
 ```
 
-<!-- -------------------------------------------------- -->
 ## Recuperación de contraseña
 En el proceso de recuperación consiste de dos pasos:
 1. Solicitud del token para validar la operación del cambio de datos.
@@ -84,7 +83,6 @@ Dicha petición debe tener la siguiente estructura:
 }
 ```
 
-<!-- -------------------------------------------------- -->
 ## CRUD Tarjetón
 ### Obtener los tarjetones de todos los prestadores
 La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
@@ -95,10 +93,10 @@ Dicha petición debe de tener la siguiente estructura:
 {
    items: Number,
    page: Number,
-   status: string
+   status: String
 }
 ```
-Ambos campos son opcionales.
+Todos los campos son opcionales.
 - El campo `items` debe contener la cantidad de tarjetones que se quieren recuperar.
 - El campo `page` debe contener la página a la cual se quiere acceder.
 - El campo `status` debe contener solo una de las siguientes strings:
@@ -138,7 +136,7 @@ Dicha petición debe tener la siguiente estructura:
 {
     activity_name: String,
     hours: Number,
-    responsible_register
+    responsible_register: String
 }
 ```
 - El campo `activity_name` debe contener el nombre de la actividad o evento.
@@ -168,4 +166,3 @@ Dicha petición debe tener la siguiente estructura:
     message: String
 }
 ```
-<!-- -------------------------------------------------- -->
