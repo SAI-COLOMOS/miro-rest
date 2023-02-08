@@ -6,30 +6,59 @@ export const UsersGet = async (req: Request, res: Response) => {
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
+        const filter: object = req.body.filters ? req.body.filters : null
 
-        await User.find().sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
-            (result) => {
-                if (result.length > 0) {
-                    return res.status(200).json({
-                        message: "Listo",
-                        users: result
-                    })
-                } else {
-                    res.status(200).json({
-                        message: `Sin resultados`
+        if(req.body.search) {
+            await User.find({$or:[
+                {"first_name": {$regex: '.*' + req.body.search + '.*'}},
+                {"first_last_name": {$regex: '.*' + req.body.search + '.*'}},
+                {"second_last_name": {$regex: '.*' + req.body.search + '.*'}},
+                {"register": {$regex: '.*' + req.body.search + '.*'}},
+                {"phone": {$regex: '.*' + req.body.search + '.*'}}
+            ]}).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
+                (result) => {
+                    if (result.length > 0) {
+                        return res.status(200).json({
+                            message: "Listo",
+                            users: result
+                        })
+                    } else {
+                        res.status(200).json({
+                            message: `Sin resultados`
+                        })
+                    }
+                }
+            ).catch(
+                (error) => {
+                    return res.status(500).json({
+                        message: "Ocurrió un error interno con la base de datos",
+                        error: error?.toString()
                     })
                 }
-            }
-        ).catch(
-            (error) => {
-                return res.status(500).json({
-                    message: "Ocurrió un error interno con la base de datos",
-                    error: error?.toString()
-                })
-            }
-        )
-
-
+            )
+        } else {
+            await User.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
+                (result) => {
+                    if (result.length > 0) {
+                        return res.status(200).json({
+                            message: "Listo",
+                            users: result
+                        })
+                    } else {
+                        res.status(200).json({
+                            message: `Sin resultados`
+                        })
+                    }
+                }
+            ).catch(
+                (error) => {
+                    return res.status(500).json({
+                        message: "Ocurrió un error interno con la base de datos",
+                        error: error?.toString()
+                    })
+                }
+            )
+        }
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error",
