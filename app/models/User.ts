@@ -62,7 +62,6 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
-        required: [true, "La contraseña es necesaria"]
     },
     avatar: {
         type: String,
@@ -143,7 +142,7 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
     const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0, 2).toUpperCase() : "XX"
     const place: any = await Place.findOne({ "place_name": inputPlace })
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
-    const random: string = Math.floor(Math.random() * 999).toString()
+    const random: string = `${Math.floor(Math.random() * 9).toString()}${Math.floor(Math.random() * 9).toString()}`
 
     return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
 }
@@ -151,22 +150,18 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
 UserSchema.pre<UserInterface>("save", async function (next) {
     if (this.isNew) {
         if (this.role === "Prestador") {
-            newRegisterForProvider(this.place, this.assignment_area).then(
-                async (response) => {
-                    this.register = response
-                    await new Card({ "provider_register": response }).save()
-                }
-            ).catch(
-                (error) => console.log(error)
-            )
+            const register = await newRegisterForProvider(this.place, this.assignment_area)
+
+            this.register = register
+            this.password = register
+
+            await new Card({ "provider_register": register }).save()
+
         } else if (this.role === "Administrador" || this.role === "Encargado") {
-            newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area).then(
-                (response) => {
-                    this.register = response
-                }
-            ).catch(
-                (error) => console.log(error)
-            )
+            const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area)
+
+            this.register = register
+            this.password = register
 
             this.provider_type = "No aplica"
             this.school = "No aplica"
