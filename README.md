@@ -29,7 +29,7 @@ La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
 
 Dicha petición debe tener la siguiente estructura:
 
-```JSON
+```
 {
     credential: string,
     password: string,
