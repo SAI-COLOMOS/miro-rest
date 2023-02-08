@@ -104,7 +104,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             message: "Si se encontró el usuario; Se mandó un correo de recuperación",
-            newRoute
+            newRoute: newRoute
         })
     } catch (error) {
         return res.status(500).json({
@@ -141,7 +141,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
         if (user) {
             if (await user.validatePassword(req.body.password)) {
                 return res.status(400).json({
-                    message: "La contraseña no cumple con la estructura deseada"
+                    message: "La nueva contraseña no puede ser la actual"
                 })
             }
             user.password = req.body.password
