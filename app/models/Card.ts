@@ -16,11 +16,13 @@ const CardSchema = new Schema({
     provider_register: {
         type: String,
         unique: true,
+        index: true,
         required: [true, "El registro del prestador es necesario"]
     },
     activities: [{
         activity_name: {
             type: String,
+            required: [true, "El nombre de la actividad es necesario"]
         },
         hours: {
             type: Number,

@@ -100,36 +100,6 @@ export const getProviderHours = async (req: Request, res: Response) => {
     }
 }
 
-export const CardPost = async (req: Request, res: Response) => {
-    try {
-        req.body.provider_register ?
-            typeof req.body.provider_register === "string" ? null
-                : __ThrowError("El campo 'provider_register' debe ser tipo 'string'")
-            : __ThrowError("El campo 'provider_register' es obligatorio")
-    } catch (error) {
-        return res.status(400).json({
-            error
-        })
-    }
-
-    try {
-        await new Card({ "provider_register": req.body.provider_register }).save().then(result => {
-            if (result) {
-                return res.status(201).json({
-                    message: "Se creó el tarjetón del prestador"
-                })
-            }
-            return res.status(500).json({
-                message: "Ocurrió un error interno en la base de datos"
-            })
-        })
-    } catch (error) {
-        return res.status(500).json({
-            message: "Ocurrió un error al connectarse con el servidor",
-        })
-    }
-}
-
 export const AddHoursToCard = async (req: Request, res: Response) => {
     try {
         req.body.activity_name ?

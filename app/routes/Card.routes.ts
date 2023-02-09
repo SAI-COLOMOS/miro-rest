@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { isAdministrador, isAdministradorOrEncargado } from "../middleware/RoleControl";
+import { isAdministradorOrEncargado } from "../middleware/RoleControl";
 import Passport from "passport";
-import { AddHoursToCard, CardPost, getCards, getProviderHours, RemoveHoursFromCard } from "../controllers/Card.controller";
+import { AddHoursToCard, getCards, getProviderHours, RemoveHoursFromCard } from "../controllers/Card.controller";
 
 const route = Router()
 const path = "/cards"
@@ -11,9 +11,6 @@ route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getPr
 
 // Obtener todos los tarjetones de todos los prestadores
 route.get(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getCards)
-
-// Crear el tarjetón 
-route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministrador, CardPost)
 
 // Añadir horas al tarjetón de un prestador
 route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, AddHoursToCard)
