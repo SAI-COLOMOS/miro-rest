@@ -5,16 +5,7 @@ import User from "../models/User";
 function __ThrowError(message: string) { throw message }
 
 export const getCards = async (req: Request, res: Response) => {
-    let status = "Activo", flag = false
     try {
-        if (req.body.status) {
-            typeof req.body.status === "string" ?
-                ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'].map(s => req.body.status === s ? flag = true : null)
-                : __ThrowError("El campo 'status' debe ser tipo 'string'")
-
-            flag ? status = req.body.status : __ThrowError("El campo 'status' debe contener uno de las siguientes strings: 'Activo', 'Suspendido', 'Inactivo' o 'Finalizado'")
-        }
-
         req.body.items ?
             typeof req.body.items === "number" ? null : __ThrowError("El campo 'items' debe ser tipo 'number'")
             : null
@@ -31,24 +22,56 @@ export const getCards = async (req: Request, res: Response) => {
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
+        const filter: object = req.body.filters ? req.body.filters : null
 
-        await User.find({ 'status': status }).sort({ "createdAt": "desc" }).then(async users => {
-            if (users.length > 0) {
-                await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
-                    if (result.length > 0) {
+        if (req.body.search) {
+            await User.find({
+                $or: [
+                    { "first_name": { $regex: '.*' + req.body.search + '.*' } },
+                    { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                    { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                    { "register": { $regex: '.*' + req.body.search + '.*' } },
+                    { "phone": { $regex: '.*' + req.body.search + '.*' } }
+                ]
+            }).sort({ "createdAt": "desc" }).then(async users => {
+                if (users.length > 0) {
+                    await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
+                        if (result.length > 0) {
+                            return res.status(200).json({
+                                message: "Listo",
+                                cards: result
+                            })
+                        }
                         return res.status(200).json({
-                            message: "Listo",
-                            cards: result
+                            message: "Sin resultados"
                         })
-                    }
-
-                    return res.status(200).json({
-                        message: "Sin resultados"
                     })
+                }
+            }).catch(error => {
+                return res.status(500).json({
+                    message: "Ocurrió un error interno con la base de datos"
                 })
+            })
+
+        } else {
+            await User.find(filter).sort({ "createdAt": "desc" }).then(async users => {
+                if (users.length > 0) {
+                    await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
+                        if (result.length > 0) {
+                            return res.status(200).json({
+                                message: "Listo",
+                                cards: result
+                            })
+                        }
+
+                        return res.status(200).json({
+                            message: "Sin resultados"
+                        })
+                    })
+                }
             }
+            )
         }
-        )
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse con el servidor"
