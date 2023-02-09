@@ -1,19 +1,18 @@
-# Sistema Administrativo de la Información (SAI) - API
+# Manual de uso de la API REST
 
 ![Logotoipo de Sistema Administrativo de la Información](/app/public/logo.png)
 
 ## Indice
 
 - [Acerca del proyecto](#acerca-del-proyecto)
-- [Manual de uso de la API](#manual-de-uso-de-la-api-rest)
+- [Autenticación](#autenticación)
+  - [Inicio de sesión](#inicio-de-sesión)
+  - [Solicitud de recuperación de contraseña](#solicitud-de-recuperación-de-contraseña)
+  - [Restablecimiento de la contraseña](#restablecimiento-de-la-contraseña)
 
 ## Acerca del proyecto
 
 Este trabajo es parte de nuestro proyecto de titulación, el cual consiste en una plataforma que conformada por una API (este repositorio) y una [aplicación móvil](https://www.github.com/SAI-AMBU/sai-app). Con el fin de modernizar y automatizar las diferentes áreas dentro de la Agencia Metropolitana de Bosques Urbanos del Área Metropolitana de Guadalajara.
-
-Posteriormente encontrarás la estructura que deben de llevar las peticiones para la API, así como su respuesta a dicha petición.
-
-## Manual de uso de la API REST
 
 A continuación, se documenta el cómo realizar las peticiones a nuestra API REST, que van desde los _endpoints_ que se disponen, el formato de la petición y qué valores son obligatorios y cuales opciones.
 
@@ -22,104 +21,114 @@ Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempr
 > - ❗ Es necesario que el desarrollador sea lo más explícito y claro posible al documentar su nueva funcionalidad, así evitaremos malos entendidos y no habrá necesidad de molestarle para preguntar sobre cómo es que tenemos que hacer para utilizar su función.
 > - ❗ Es importante cuidar la gramática y ortografía al momento de documentar, no por que no podamos programar con acentos y en inglés, signifique que tengamos que docuemntar sin respetar las reglas de nuestro idioma.
 
-## Inicio de sesión
+## Autenticación
 
-La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
->localhost:3000/auth/login
+### Inicio de sesión
 
-Dicha petición debe tener la siguiente estructura:
+----------
 
+> GET /auth/login
+
+Funciona para autenticar un usuario.
+
+**Petición**
+```dart
+var request = await http.get(Uri.http('/auth/login'), body: {
+    'credential': '2023A0103001',
+    'password': '@A1B2C3D4'
+});
 ```
+Capos obligatorios
+- `credential`: Campo de tipo `string`, en él se transporta la credencial del usuario, el cual puede ser: correo, número telefónico o registro.
+- `password`: Campo de tipo `string`, en el se transporta la contraseña del usuario.
+
+Campos opcionales
+- `keepAlive`: Campo de tipo `booleano`, cuando es `true` el servidor responde con un token con vencimiento de 90 días, caso contrario, la vigencia del token es de tres días.
+
+**Respuesta**
+```json
 {
-    credential: string,
-    password: string,
-    keepAlive: boolean
+    "message": "Sesión iniciada",
+    "user": {
+        "_id": "63e3f0b06f1f5983422e3dbc",
+        "register": "2023A0201001",
+        "first_name": "Cynthia Gabriela",
+        "first_last_name": "Ibarra",
+        "second_last_name": "Ponce",
+        "age": "19",
+        "email": "cgip",
+        "phone": "3332569494",
+        "password": "Contraseña encriptada",
+        "avatar": "/protected/default.png",
+        "emergency_contact": "Martha Ponce Triscareño",
+        "emergency_phone": "3313467985",
+        "blood_type": "RH O+",
+        "provider_type": "Servicio social",
+        "place": "Parque Metropolitano",
+        "assignment_area": "Servicios generales",
+        "status": "Activo",
+        "school": "Centro de Enseñanza Técnica Industrial plantel Colomos",
+        "role": "Prestador",
+        "createdAt": "2023-02-08T18:57:52.184Z",
+        "updatedAt": "2023-02-08T18:57:52.184Z"
+    },
+    "token": "token"
 }
 ```
 
-- El campo `credential` debe contener solamente uno de los siguientes datos:
-  - El email del usuario.
-  - El registro del usuario.
-  - El número teléfonico del usuario.
+### Solicitud de recuperación de contraseña
 
-- El campo `password` debe contener la contraseña del usuario.
+----------
 
-- El campo `keepAlive` debe contener un booleano para definir si la duración del token será de 3 días o 3 meses.
+> GET /auth/recovery
 
-### Respuesta
+Solicita un token especial para recuperar la cuenta del usuario en caso de que este haya olvidado su contraseña
 
+**Petición**
+```dart
+var request = await http.get(Uri.http('/auth/recovery'), body: {
+    'credential': '2023A0103001'
+});
 ```
+Capos obligatorios
+- `credential`: Campo de tipo `string`, en él se transporta la credencial del usuario, el cual puede ser: correo, número telefónico o registro.
+
+**Respuesta**
+```json
 {
-    mesasge: String,
-    user: JSON,
-    token: String
+    "message": "Si se encontró el usuario; Se mandó un correo de recuperación"
 }
 ```
 
-## Recuperación de contraseña
+### Restablecimiento de la contraseña
 
-En el proceso de recuperación consiste de dos pasos:
+----------
 
-1. Solicitud del token para validar la operación del cambio de datos.
-2. El cambio de contraseña.
+> PATCH /auth/recover?tkn={TOKEN}
 
-### Solicitud de token
+Realiza el proceso de actualización de contraseña
 
-La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
->localhost:3000/auth/recover
-
-Dicha petición debe de tener la siguiente estructura:
-
+**Petición**
+```dart
+var request = await http.patch(Uri.http('/auth/recovery?tkn={TOKEN}'), body: {
+    'password': '@A1B2C3D4'
+});
 ```
-{
-    credential: String
-}
-```
-
-- El campo de campo `credential` debe contener solamente uno de los siguientes datos:
-  - El email del usuario.
-  - El registro del usuario.
-  - El número teléfonico del usuario.
-
-#### Respuesta
-
-```
-{
-    message: String
-}
-```
-
-En éste caso la respuesta solo va a contener un mensaje de confirmación. Ésto debido a que se envió un correo al que email que tenga asingano el usuario.
-
-### Cambio de contraseña
-
-La petición debe ser enviada con el método `PATCH` hacia la siguiente ruta:
->localhost:3000/auth/recover?tkn={TOKEN-PROPORCIONADA}
-
-La ruta con el token será proporcionada por medio del correo enviado en el paso anterior.
-Dicha petición debe tener la siguiente estructura:
-
-```
-{
-    password: String
-}
-```
-
-- El campo `password` debe contener la nueva contraseña la cual debe cumplir con las siguientes reglas:
+Capos obligatorios
+- `password`: Campo de tipo `string`, en el se transporta la nueva contraseña del usuario, la cual debe de cumplir con los siguientes requisitos:
   - Debe tener una longitud mínima de 8 carácteres.
   - Debe tener al menos una letra mayúscula.
   - Debe tener al menos un carácter especial.
   - Debe tener al menos un número.
 
-#### Respuesta
-
-```
+**Respuesta**
+```json
 {
-    message: String
+    "message": "Se actualizó la contraseña del usuario"
 }
 ```
 
-## CRUD Tarjetón
+## Módulo de horas
 
 ### Obtener los tarjetones de todos los prestadores
 
