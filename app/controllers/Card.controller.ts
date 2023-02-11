@@ -63,14 +63,18 @@ export const getCards = async (req: Request, res: Response) => {
                                 cards: result
                             })
                         }
-
                         return res.status(200).json({
                             message: "Sin resultados"
                         })
                     })
                 }
             }
-            )
+            ).catch(error => {
+                return res.status(500).json({
+                    message: "Ocurrió un error interno con la base de datos",
+                    error: error?.toString()
+                })
+            })
         }
     } catch (error) {
         return res.status(500).json({
@@ -88,9 +92,13 @@ export const getProviderHours = async (req: Request, res: Response) => {
                     card: result.activities
                 })
             }
-
             return res.status(404).json({
                 message: `El tarjetón del usuario ${req.params.id} no se encontró`
+            })
+        }).catch(error => {
+            return res.status(500).json({
+                message: "Ocurrió un error interno con la base de datos",
+                error: error?.toString()
             })
         })
     } catch (error) {
@@ -137,9 +145,13 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
                     message: "Se añadieron las horas al prestador"
                 })
             }
-
             return res.status(404).json({
                 message: `El usuario ${req.params.id} no se encontró`
+            })
+        }).catch(error => {
+            return res.status(500).json({
+                message: "Ocurrió un error interno con la base de datos",
+                error: error?.toString()
             })
         })
     } catch (error) {
@@ -169,9 +181,13 @@ export const RemoveHoursFromCard = async (req: Request, res: Response) => {
                         message: "Se eliminaron las horas del prestador"
                     })
                 }
-
                 return res.status(404).json({
                     message: "No se encontró la actividad"
+                })
+            }).catch(error => {
+                return res.status(500).json({
+                    message: "Ocurrió un error interno con la base de datos",
+                    error: error?.toString()
                 })
             })
     } catch (error) {
