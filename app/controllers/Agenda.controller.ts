@@ -78,11 +78,38 @@ export const createEvent = async (req: Request, res: Response) => {
                     message: "No se pudo crear el evento"
                 })
             }
+        }).catch(error => {
+            return res.status(500).json({
+                message: "Ocurrió un error interno con la base de datos",
+            })
         })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse al servidor",
-            error: error?.toString()
+        })
+    }
+}
+
+export const deleteEvent = async (req: Request, res: Response) => {
+    try {
+        await Agenda.deleteOne({ 'event_identifier': req.params.id }).then(result => {
+            if (result.deletedCount !== 0) {
+                return res.status(200).json({
+                    message: "Evento eliminado"
+                })
+            } else {
+                return res.status(404).json({
+                    message: `No se encontró el evento ${req.params.id}`
+                })
+            }
+        }).catch(error => {
+            return res.status(500).json({
+                message: "Ocurrió un error interno con la base de datos",
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un al conectarse al servidor"
         })
     }
 }
