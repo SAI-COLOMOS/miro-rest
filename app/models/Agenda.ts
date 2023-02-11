@@ -27,12 +27,36 @@ export interface AgendaInterface extends Document {
     belonging_place: String
 }
 
+const AttendeeListSchema = new Schema({
+    attendee_register: {
+        type: String,
+        required: [true, "El registro del usuario es obligatorio"]
+    },
+    status: {
+        type: String,
+        required: [true, "El status del usuario es obligatorio"],
+        enum: ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]
+    },
+    check_in: {
+        type: Date,
+        required: [true, "La fecha de check in es obligatoria"]
+    }
+})
+
+const AttendanceSchema = new Schema({
+    attendee_list: [AttendeeListSchema],
+    status: {
+        type: String,
+        required: [true, "El status es obligatorio"],
+        enum: ["Disponible", "Concluido", "Concluido por sistema"]
+    }
+})
+
 const AgendaSchema = new Schema({
     event_identifier: {
         type: String,
         unique: true,
-        index: true,
-        required: [true, "El identificador de evento es obligatorio"]
+        index: true
     },
     name: {
         type: String,
@@ -50,28 +74,7 @@ const AgendaSchema = new Schema({
         type: Number,
         required: [true, "La cantidad de vacantes es obligatoria"]
     },
-    attendance: {
-        attendee_list: [{
-            attendee_register: {
-                type: String,
-                required: [true, "El registro del usuario es obligatorio"]
-            },
-            status: {
-                type: String,
-                required: [true, "El status del usuario es obligatorio"],
-                enum: ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]
-            },
-            check_in: {
-                type: Date,
-                required: [true, "La fecha de check in es obligatoria"]
-            }
-        }],
-        status: {
-            type: String,
-            required: [true, "El status es obligatorio"],
-            enum: ["Disponible", "Concluido", "Concluido por sistema"]
-        }
-    },
+    attendance: AttendanceSchema,
     starting_date: {
         type: Date,
         required: [true, "La fecha de inicio del evento es obligatoria"]
@@ -86,7 +89,7 @@ const AgendaSchema = new Schema({
     },
     publishing_date: {
         type: Date,
-        required: [true, "La fehca de publicación del evento es obligatoria"]
+        required: [true, "La fecha de publicación del evento es obligatoria"]
     },
     place: {
         type: String,
@@ -103,6 +106,19 @@ const AgendaSchema = new Schema({
 }, {
     versionKey: false,
     timestamps: true
+})
+
+AgendaSchema.pre<AgendaInterface>("save", async function (next) {
+    if (this.isNew) {
+        const pool = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm0123456789"
+        let randomString = ""
+        for (let i = 0; i < 20; i++) {
+            randomString += pool.charAt(Math.floor(Math.random() * pool.length))
+        }
+        this.event_identifier = randomString
+    }
+
+    next()
 })
 
 const Agenda = model<AgendaInterface>("Agenda", AgendaSchema)
