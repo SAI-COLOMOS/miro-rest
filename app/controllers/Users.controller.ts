@@ -1,6 +1,5 @@
 import { Request, Response } from "express"
-import User, { UserInterface } from "../models/User";
-import { CardPost } from "./Card.controller";
+import User from "../models/User";
 
 export const UsersGet = async (req: Request, res: Response) => {
     try {
@@ -8,14 +7,16 @@ export const UsersGet = async (req: Request, res: Response) => {
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
         const filter: object = req.body.filters ? req.body.filters : null
 
-        if(req.body.search) {
-            await User.find({$or:[
-                {"first_name": {$regex: '.*' + req.body.search + '.*'}},
-                {"first_last_name": {$regex: '.*' + req.body.search + '.*'}},
-                {"second_last_name": {$regex: '.*' + req.body.search + '.*'}},
-                {"register": {$regex: '.*' + req.body.search + '.*'}},
-                {"phone": {$regex: '.*' + req.body.search + '.*'}}
-            ]}).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
+        if (req.body.search) {
+            await User.find({
+                $or: [
+                    { "first_name": { $regex: '.*' + req.body.search + '.*' } },
+                    { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                    { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                    { "register": { $regex: '.*' + req.body.search + '.*' } },
+                    { "phone": { $regex: '.*' + req.body.search + '.*' } }
+                ]
+            }).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
                 (result) => {
                     if (result.length > 0) {
                         return res.status(200).json({
@@ -101,19 +102,18 @@ export const UserGet = async (req: Request, res: Response) => {
 
 export const UserPost = async (req: Request, res: Response) => {
     try {
-        await new User(req.body).save().then(
-            async (result) => {
-                if (result) {
-                    return res.status(201).json({
-                        message: "Usuario creado",
-                        data: result
-                    })
-                } else {
-                    return res.status(500).json({
-                        message: "No se pudo crear el usuario",
-                    })
-                }
+        await new User(req.body).save().then(result => {
+            if (result) {
+                return res.status(201).json({
+                    message: "Usuario creado",
+                    data: result
+                })
+            } else {
+                return res.status(500).json({
+                    message: "No se pudo crear el usuario",
+                })
             }
+        }
         ).catch(
             (error) => {
                 return res.status(500).json({
