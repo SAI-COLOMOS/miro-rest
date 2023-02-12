@@ -52,7 +52,7 @@
 		"prefix": "create::response",
 		"body": [
 			"return res.status($1).json({",
-			"\tmessage:`$2`",
+			"\tmessage: `$2`",
 			"})"
 		],
 		"description": "Retorna una plantilla de respuesta"
