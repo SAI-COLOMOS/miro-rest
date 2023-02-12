@@ -1,7 +1,7 @@
 import { Router } from "express";
 import Passport from "passport";
 import { createEvent, deleteEvent, getAgenda, getEvent, updateEvent } from "../controllers/Agenda.controller";
-import { AddAttendee, updateAttendee } from "../controllers/Attendance.controller";
+import { AddAttendee, getAttendees, updateAttendee } from "../controllers/Attendance.controller";
 import { isAdministradorOrEncargado } from "../middleware/RoleControl";
 
 const route = Router()
@@ -20,5 +20,7 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 route.post(`${path}/attendance/:id`, Passport.authenticate('jwt', { session: false }), AddAttendee)
 
 route.patch(`${path}/attendance/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
+
+route.get(`${path}/attendance/:id`, Passport.authenticate('jwt', { session: false }), getAttendees)
 
 export default route

@@ -3,6 +3,31 @@ import Agenda from "../models/Agenda";
 
 function __ThrowError(message: string) { throw message }
 
+export const getAttendees = async (req: Request, res: Response) => {
+    try {
+        await Agenda.findOne({ "event_identifier": req.params.id }).then(result => {
+            if (result) {
+                return res.status(200).json({
+                    message: `Listo`,
+                    attendees: result.attendance.attendee_list
+                })
+            } else {
+                return res.status(404).json({
+                    message: `No se encontró el evento ${req.params.id}`
+                })
+            }
+        }).catch(error => {
+            return res.status(500).json({
+                message: `Ocurrió un error interno con la base de datos`
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error al conectarse al servidor`
+        })
+    }
+}
+
 export const AddAttendee = async (req: Request, res: Response) => {
     try {
         req.body.attendee_register ?
