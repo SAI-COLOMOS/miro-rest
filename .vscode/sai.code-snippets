@@ -27,24 +27,55 @@
 			"",
 			"/* Rutas */",
 			"router.get('$1', (req, res, next) => {",
-				"\t// Aquí va lo que quieras que haga",
+			"\t// Aquí va lo que quieras que haga",
 			"})",
 			"",
 			"router.post('$1', (req, res, next) => {",
-				"\t// Aquí va lo que quieras que haga",
+			"\t// Aquí va lo que quieras que haga",
 			"})",
 			"",
 			"router.put('$1', (req, res, next) => {",
-				"\t// Aquí va lo que quieras que haga",
+			"\t// Aquí va lo que quieras que haga",
 			"})",
 			"",
 			"router.delete('$1', (req, res, next) => {",
-				"\t// Aquí va lo que quieras que haga",
+			"\t// Aquí va lo que quieras que haga",
 			"})",
 			"",
 			"/* Exportaciones */",
 			"module.exports = router",
 		],
 		"description": "Retorna un bloque de código para la declaración de una vista simple."
+	},
+	"Crear respuesta": {
+		"scope": "javascript, typescript",
+		"prefix": "create::response",
+		"body": [
+			"return res.status($1).json({",
+			"\tmessage:`$2`",
+			"})"
+		],
+		"description": "Retorna una plantilla de respuesta"
+	},
+	"Crear validación de un campo obligatorio": {
+		"scope": "javascript, typescript",
+		"prefix": "create::requiredValidation",
+		"body": [
+			"req.body.$1 ?",
+			"\ttypeof req.body.$1 === '$2' ? null",
+			"\t\t: __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
+			"\t: __ThrowError(`El campo '$1' es obligatorio`)"
+		],
+		"description": "Retorna una plantilla de respuesta obligatoria"
+	},
+	"Crear validación de un campo opcional": {
+		"scope": "javascript, typescript",
+		"prefix": "create::optionalValidation",
+		"body": [
+			"req.body.$1 ?",
+			"\ttypeof req.body.$1 === '$2' ? null : __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
+			"\t: null"
+		],
+		"description": "Retorna una plantilla de respuesta obligatoria"
 	}
 }
