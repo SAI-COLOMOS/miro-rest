@@ -87,6 +87,9 @@ const AgendaSchema = new Schema({
         type: String,
         required: [true, "El registro del autor es obligatoria"]
     },
+    modifier_register: {
+        type: String,
+    },
     publishing_date: {
         type: Date,
         required: [true, "La fecha de publicación del evento es obligatoria"]
