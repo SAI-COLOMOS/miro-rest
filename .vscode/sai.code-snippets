@@ -73,9 +73,18 @@
 		"prefix": "create::optionalValidation",
 		"body": [
 			"req.body.$1 ?",
-			"\ttypeof req.body.$1 === '$2' ? null : __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
+			"\ttypeof req.body.$1 === '$2' ? null",
+			"\t\t: __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
 			"\t: null"
 		],
-		"description": "Retorna una plantilla de respuesta obligatoria"
+		"description": "Retorna una plantilla de respuesta opcional"
+	},
+	"Crear ruta": {
+		"scope": "javascript, typescript",
+		"prefix": "create::route",
+		"body": [
+			"route.$1(`${${path}}$2`, Passport.authenticate('jwt', { session: false }), $3)",
+		],
+		"description": "Retorna una plantilla de una ruta general"
 	}
 }
