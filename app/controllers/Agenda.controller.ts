@@ -64,7 +64,7 @@ export const getAgenda = async (req: Request, res: Response) => {
         }
     } catch (error) {
         return res.status(500).json({
-            message: "Ocurrió un al conectarse al servidor"
+            message: "Ocurrió un error al conectarse al servidor"
         })
     }
 }
