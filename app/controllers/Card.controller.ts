@@ -13,6 +13,16 @@ export const getCards = async (req: Request, res: Response) => {
         req.body.page ?
             typeof req.body.page === "number" ? null : __ThrowError("El campo 'page' debe ser tipo 'number'")
             : null
+
+        req.body.search ?
+            typeof req.body.search === 'string' ? null
+                : __ThrowError(`El campo 'search' debe ser tipo 'string'`)
+            : null
+
+        req.body.filter ?
+            typeof req.body.filter === 'object' ? null
+                : __ThrowError(`El campo 'filter' debe ser tipo 'object'`)
+            : null
     } catch (error) {
         return res.status(400).json({
             error

@@ -40,6 +40,12 @@ export const AddAttendee = async (req: Request, res: Response) => {
                 : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
             : __ThrowError(`El campo 'status' es obligatorio`)
 
+        let status_enum = false
+        for (let str of ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]) {
+            req.body.status === str ? status_enum = true : null
+        }
+        status_enum ? null : __ThrowError(`El campo 'status' debe contener solo una de las siguientes strings 'Inscrito', 'Desinscrito', 'Asistió', 'Retardo', 'No asistió'`)
+
         req.body.check_in ?
             typeof req.body.check_in === 'string' ? null
                 : __ThrowError(`El campo 'check_in' debe ser tipo 'string' con la fecha en formato ISO`)
@@ -96,9 +102,17 @@ export const updateAttendee = async (req: Request, res: Response) => {
     let update = {}
     try {
         req.body.status ?
-            typeof req.body.status === 'string' ? { ...update, "attendance.attendee_list.$.status": req.body.status }
+            typeof req.body.status === 'string' ? null
                 : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
             : null
+
+        if (req.body.status) {
+            let status_enum = false
+            for (let str of ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]) {
+                req.body.status === str ? status_enum = true : null
+            }
+            status_enum ? { ...update, "attendance.attendee_list.$.status": req.body.status } : __ThrowError(`El campo 'status' debe contener solo una de las siguientes strings 'Inscrito', 'Desinscrito', 'Asistió', 'Retardo', 'No asistió'`)
+        }
 
         req.body.check_in ?
             typeof req.body.check_in === 'string' ? { ...update, "attendance.attendee_list.$.check_in": req.body.check_in }
