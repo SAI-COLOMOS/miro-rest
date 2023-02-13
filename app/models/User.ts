@@ -102,7 +102,8 @@ const UserSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']
+        enum: ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'],
+        default: 'Activo'
     },
     school: {
         type: String,
