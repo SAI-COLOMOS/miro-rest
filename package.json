@@ -12,11 +12,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/node-schedule": "^2.1.0",
     "bcrypt": "^5.1.0",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.8.0",
     "morgan": "^1.10.0",
+    "node-schedule": "^2.1.1",
     "nodemailer": "^6.8.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
