@@ -96,6 +96,11 @@ export const getEvent = async (req: Request, res: Response) => {
 
 export const createEvent = async (req: Request, res: Response) => {
     try {
+        req.body.is_template ?
+            typeof req.body.is_template === 'boolean' ? null
+                : __ThrowError(`El campo 'is_template' debe ser tipo 'boolean'`)
+            : null
+
         req.body.name ?
             typeof req.body.name === "string" ? null
                 : __ThrowError("El campo 'name' debe ser tipo 'string'")
@@ -186,6 +191,11 @@ export const updateEvent = async (req: Request, res: Response) => {
     try {
         req.body.event_identifier || req.body.author_register || req.body.belonging_area || req.body.belonging_place ?
             __ThrowError("Algunos datos no se pueden modificar")
+            : null
+
+        req.body.is_template ?
+            typeof req.body.is_template === 'boolean' ? null
+                : __ThrowError(`El campo 'is_template' debe ser tipo 'boolean'`)
             : null
 
         req.body.modifier_register ?

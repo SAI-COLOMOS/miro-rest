@@ -92,6 +92,10 @@ const AgendaSchema = new Schema({
     modifier_register: {
         type: String,
     },
+    is_template: {
+        type: Boolean,
+        default: false
+    },
     publishing_date: {
         type: Date,
         required: [true, "La fecha de publicación del evento es obligatoria"]
