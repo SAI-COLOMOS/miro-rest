@@ -22,10 +22,11 @@ export const getCards = async (req: Request, res: Response) => {
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filters ? req.body.filters : null
+        const filter: object = req.body.filter ? req.body.filter : null
 
         if (req.body.search) {
             await User.find({
+                ...filter,
                 $or: [
                     { "first_name": { $regex: '.*' + req.body.search + '.*' } },
                     { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
