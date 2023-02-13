@@ -32,16 +32,19 @@ const UserSchema = new Schema({
     },
     first_name: {
         type: String,
+        lowercase: true,
         required: [true, "El nombre es necesario"],
         trim: true
     },
     first_last_name: {
         type: String,
+        lowercase: true,
         required: [true, "Un apellido es necesario"],
         trim: true
     },
     second_last_name: {
         type: String,
+        lowercase: true,
         trim: true
     },
     age: {
@@ -89,10 +92,12 @@ const UserSchema = new Schema({
     },
     place: {
         type: String,
+        lowercase: true,
         required: [true, "El lugar es necesario"]
     },
     assignment_area: {
         type: String,
+        lowercase: true,
         required: [true, "El área de asignación es necesaria"]
     },
     status: {
@@ -101,6 +106,7 @@ const UserSchema = new Schema({
     },
     school: {
         type: String,
+        lowercase: true,
         required: [true, "La escuela es necesaria"]
     },
     role: {
