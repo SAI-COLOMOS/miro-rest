@@ -147,7 +147,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
             user.password = req.body.password
             user.save()
             const from = `"SAI" ${Enviroment.Mailer.email}`
-            const to = String(user.email)
+            const to = user.email
             const subject = "Recuperación de contraseña"
             const body = mensaje("Se actualizó la contraseña de su usuario.")
             await sendEmail(from, to, subject, body)
