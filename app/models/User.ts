@@ -84,7 +84,7 @@ const UserSchema = new Schema({
     },
     provider_type: {
         type: String,
-        enum: ['Servicio social', 'Prácticas profesionales', 'No aplica'],
+        enum: ['servicio social', 'prácticas profesionales', 'no aplica'],
         required: [true, "El tipo de prestador es necesario"]
     },
     place: {
@@ -97,7 +97,7 @@ const UserSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']
+        enum: ['activo', 'suspendido', 'inactivo', 'finalizado']
     },
     school: {
         type: String,
@@ -105,7 +105,7 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['Administrador', 'Encargado', 'Prestador'],
+        enum: ['administrador', 'encargado', 'prestador'],
         required: [true, "El rol es necesario"]
     }
 }, {
