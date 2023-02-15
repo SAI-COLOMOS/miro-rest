@@ -80,7 +80,7 @@ const UserSchema = new Schema({
     blood_type: {
         type: String,
         required: [true, "El tipo de sangre es necesario"],
-        uppercase: true
+        enum: ['o+', 'o-', 'a+', 'a-', 'b+', 'b-', 'ab+', 'ab-']
     },
     provider_type: {
         type: String,
