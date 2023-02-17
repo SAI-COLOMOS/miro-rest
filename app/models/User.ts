@@ -72,6 +72,7 @@ const UserSchema = new Schema({
     },
     emergency_contact: {
         type: String,
+        lowercase: true,
         required: [true, "El contacto de emergencia es necesario"]
     },
     emergency_phone: {
@@ -83,11 +84,12 @@ const UserSchema = new Schema({
     blood_type: {
         type: String,
         required: [true, "El tipo de sangre es necesario"],
-        uppercase: true
+        lowercase: true
     },
     provider_type: {
         type: String,
-        enum: ['Servicio social', 'Prácticas profesionales', 'No aplica'],
+        lowercase: true,
+        enum: ['servicio social', 'prácticas profesionales', 'no aplica'],
         required: [true, "El tipo de prestador es necesario"]
     },
     place: {
@@ -102,7 +104,8 @@ const UserSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'],
+        lowercase: true,
+        enum: ['activo', 'suspendido', 'inactivo', 'finalizado'],
         default: 'Activo'
     },
     school: {
@@ -112,7 +115,8 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['Administrador', 'Encargado', 'Prestador'],
+        lowercase: true,
+        enum: ['administrador', 'encargado', 'prestador'],
         required: [true, "El rol es necesario"]
     }
 }, {
