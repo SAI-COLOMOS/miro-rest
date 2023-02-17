@@ -45,18 +45,16 @@ export const getCards = async (req: Request, res: Response) => {
 
         await User.find(filter).sort({ "createdAt": "desc" }).then(async users => {
             if (users.length > 0) {
-                await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
-                    .then(result => {
-                        if (result.length > 0) {
-                            return res.status(200).json({
-                                message: "Listo",
-                                cards: result
-                            })
-                        }
-                        return res.status(200).json({
-                            message: "Sin resultados"
-                        })
+                const cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
+                if (cards.length > 0) {
+                    return res.status(200).json({
+                        message: "Listo",
+                        cards: cards
                     })
+                }
+                return res.status(200).json({
+                    message: "Sin resultados"
+                })
             }
             return res.status(200).json({
                 message: "Sin resultados"
@@ -69,6 +67,7 @@ export const getCards = async (req: Request, res: Response) => {
             })
         })
     } catch (error) {
+        console.log("adfshjk")
         return res.status(500).json({
             message: "Ocurrió un error al conectarse con el servidor"
         })

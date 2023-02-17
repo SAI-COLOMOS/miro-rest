@@ -132,17 +132,21 @@ Capos obligatorios
 
 ### Obtener los tarjetones de todos los prestadores
 
-La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
->localhost:3000/cards
+----------
 
-Dicha petición debe de tener la siguiente estructura:
+>GET /cards
 
-```
-{
-   items: Number,
-   page: Number,
-   status: String
-}
+Realiza un fetch de los tarjetones existentes de acuerdo a los parámetros otorgados.
+
+**Petición**
+
+```dart
+var request = await http.get(Uri.http('/auth/recovery'), body: {
+   "items": 10,
+   "page": 2,
+   "status": "Activo"
+});
+
 ```
 
 Todos los campos son opcionales.
@@ -155,39 +159,53 @@ Todos los campos son opcionales.
   - Suspendido
   - Finalizado
 
-#### Respuesta
+**Respuesta**
 
-```
+```json
 {
-    message: String,
-    cards: Array
+    "message": "Listo",
+    "cards": [
+        {
+            "_id": "63e07ed86e42b67d4f554af5",
+            "provider_register": "2023A0103001",
+            "activities": [],
+            "createdAt": "2023-02-06T04:15:20.774Z",
+            "updatedAt": "2023-02-06T04:32:30.644Z"
+        }
+    ]
 }
 ```
-
-El array del parámetro `cards` contiene todos los tarjetones en forma de objetos.
 
 ### Obtener el tarjetón de un solo prestador
 
-La petición debe ser enviada con el método `GET` hacia la siguiente ruta:
->localhost:3000/cards/:id
+------
+
+>GET /cards/:id
 
 El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
 
-#### Respuesta
+**Respuesta**
 
-```
+```json
 {
-    message: String,
-    card: Array
+    "message": "Tarjetón de usuario encontrado",
+    "card": [
+        {
+            "activity_name": "primer actividad",
+            "hours": 12,
+            "assignation_date": "2023-02-13T16:08:01.230Z",
+            "responsible_register": "15",
+            "_id": "63ea61689316834bac264f81"
+        }
+    ]
 }
 ```
 
-El array del parámetro `card` contiene todas las actividades del prestador en forma de objetos.
-
 ### Añadir un objeto de horas al tarjetón de un prestador
 
-La petición debe ser enviada con el método `POST` hacia la siguiente ruta:
->localhost:3000/cards/:id
+---
+
+>POST /cards/:id
 
 El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
 Dicha petición debe tener la siguiente estructura:
