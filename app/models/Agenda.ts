@@ -34,8 +34,9 @@ const AttendeeListSchema = new Schema({
     },
     status: {
         type: String,
+        lowercase: true,
         required: [true, "El status del usuario es obligatorio"],
-        enum: ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]
+        enum: ["inscrito", "desinscrito", "asistió", "retardo", "no asistió"]
     },
     check_in: {
         type: Date,
@@ -47,8 +48,9 @@ const AttendanceSchema = new Schema({
     attendee_list: [AttendeeListSchema],
     status: {
         type: String,
+        lowercase: true,
         required: [true, "El status es obligatorio"],
-        enum: ["Disponible", "Concluido", "Concluido por sistema"]
+        enum: ["disponible", "concluido", "concluido por sistema"]
     }
 })
 
@@ -107,10 +109,12 @@ const AgendaSchema = new Schema({
     },
     belonging_area: {
         type: String,
+        lowercase: true,
         required: [true, "El área al que pertene el parque es obligatoria"]
     },
     belonging_place: {
         type: String,
+        lowercase: true,
         required: [true, "El parque al que pertenece el evento es obligatorio"]
     }
 }, {
