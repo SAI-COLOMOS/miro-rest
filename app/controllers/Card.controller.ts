@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import Card from "../models/Card";
 import User from "../models/User";
-
-function __ThrowError(message: string) { throw message }
+import { __ThrowError } from "../middleware/ValidationControl"
 
 export const getCards = async (req: Request, res: Response) => {
     try {
@@ -32,21 +31,22 @@ export const getCards = async (req: Request, res: Response) => {
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filter ? req.body.filter : null
+        let filter: object = req.body.filter ? req.body.filter : null
+        req.body.search ? filter = {
+            ...req.body.filter,
+            $or: [
+                { "first_name": { $regex: '.*' + req.body.search + '.*' } },
+                { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                { "register": { $regex: '.*' + req.body.search + '.*' } },
+                { "phone": { $regex: '.*' + req.body.search + '.*' } }
+            ]
+        } : null
 
-        if (req.body.search) {
-            await User.find({
-                ...filter,
-                $or: [
-                    { "first_name": { $regex: '.*' + req.body.search + '.*' } },
-                    { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
-                    { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
-                    { "register": { $regex: '.*' + req.body.search + '.*' } },
-                    { "phone": { $regex: '.*' + req.body.search + '.*' } }
-                ]
-            }).sort({ "createdAt": "desc" }).then(async users => {
-                if (users.length > 0) {
-                    await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
+        await User.find(filter).sort({ "createdAt": "desc" }).then(async users => {
+            if (users.length > 0) {
+                await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
+                    .then(result => {
                         if (result.length > 0) {
                             return res.status(200).json({
                                 message: "Listo",
@@ -57,36 +57,17 @@ export const getCards = async (req: Request, res: Response) => {
                             message: "Sin resultados"
                         })
                     })
-                }
-            }).catch(error => {
-                return res.status(500).json({
-                    message: "Ocurrió un error interno con la base de datos"
-                })
-            })
-
-        } else {
-            await User.find(filter).sort({ "createdAt": "desc" }).then(async users => {
-                if (users.length > 0) {
-                    await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items).then(result => {
-                        if (result.length > 0) {
-                            return res.status(200).json({
-                                message: "Listo",
-                                cards: result
-                            })
-                        }
-                        return res.status(200).json({
-                            message: "Sin resultados"
-                        })
-                    })
-                }
             }
-            ).catch(error => {
-                return res.status(500).json({
-                    message: "Ocurrió un error interno con la base de datos",
-                    error: error?.toString()
-                })
+            return res.status(200).json({
+                message: "Sin resultados"
             })
         }
+        ).catch(error => {
+            return res.status(500).json({
+                message: "Ocurrió un error interno con la base de datos",
+                error: error?.toString()
+            })
+        })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse con el servidor"
@@ -100,7 +81,7 @@ export const getProviderHours = async (req: Request, res: Response) => {
             if (result) {
                 return res.status(200).json({
                     message: "Tarjetón de usuario encontrado",
-                    card: result.activities
+                    card: result
                 })
             }
             return res.status(404).json({
@@ -142,29 +123,22 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
     }
 
     try {
-        await Card.updateOne({ "provider_register": req.params.id }, {
-            $push: {
-                "activities": {
-                    "activity_name": req.body.activity_name,
-                    "hours": req.body.hours,
-                    "responsible_register": req.body.responsible_register
+        await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
+            .then(result => {
+                if (result.modifiedCount > 0) {
+                    return res.status(201).json({
+                        message: "Se añadieron las horas al prestador"
+                    })
                 }
-            }
-        }).then(result => {
-            if (result.modifiedCount > 0) {
-                return res.status(201).json({
-                    message: "Se añadieron las horas al prestador"
+                return res.status(404).json({
+                    message: `El usuario ${req.params.id} no se encontró`
                 })
-            }
-            return res.status(404).json({
-                message: `El usuario ${req.params.id} no se encontró`
+            }).catch(error => {
+                return res.status(500).json({
+                    message: "Ocurrió un error interno con la base de datos",
+                    error: error?.toString()
+                })
             })
-        }).catch(error => {
-            return res.status(500).json({
-                message: "Ocurrió un error interno con la base de datos",
-                error: error?.toString()
-            })
-        })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al connectarse con el servidor"
@@ -206,5 +180,4 @@ export const RemoveHoursFromCard = async (req: Request, res: Response) => {
             message: "Ocurrió un error al conectarse al servidor"
         })
     }
-
 }

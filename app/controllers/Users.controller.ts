@@ -1,7 +1,6 @@
 import { Request, Response } from "express"
-import User from "../models/User";
-
-function __ThrowError(message: string) { throw message }
+import User from "../models/User"
+import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
 
 export const UsersGet = async (req: Request, res: Response) => {
     try {
@@ -31,62 +30,38 @@ export const UsersGet = async (req: Request, res: Response) => {
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filter ? req.body.filter : null
-
-        if (req.body.search) {
-            await User.find({
-                ...filter,
-                $or: [
-                    { "first_name": { $regex: '.*' + req.body.search + '.*' } },
-                    { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
-                    { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
-                    { "register": { $regex: '.*' + req.body.search + '.*' } },
-                    { "phone": { $regex: '.*' + req.body.search + '.*' } }
-                ]
-            }).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
-                (result) => {
-                    if (result.length > 0) {
-                        return res.status(200).json({
-                            message: "Listo",
-                            users: result
-                        })
-                    } else {
-                        res.status(200).json({
-                            message: `Sin resultados`
-                        })
-                    }
-                }
-            ).catch(
-                (error) => {
-                    return res.status(500).json({
-                        message: "Ocurrió un error interno con la base de datos",
-                        error: error?.toString()
+        let filter: object = req.body.filter ? req.body.filter : null
+        req.body.search ? filter = {
+            ...req.body.filter,
+            $or: [
+                { "first_name": { $regex: '.*' + req.body.search + '.*' } },
+                { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
+                { "register": { $regex: '.*' + req.body.search + '.*' } },
+                { "phone": { $regex: '.*' + req.body.search + '.*' } }
+            ]
+        } : null
+        await User.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
+            (result) => {
+                if (result.length > 0) {
+                    return res.status(200).json({
+                        message: "Listo",
+                        users: result
+                    })
+                } else {
+                    res.status(200).json({
+                        message: `Sin resultados`
                     })
                 }
-            )
-        } else {
-            await User.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(
-                (result) => {
-                    if (result.length > 0) {
-                        return res.status(200).json({
-                            message: "Listo",
-                            users: result
-                        })
-                    } else {
-                        res.status(200).json({
-                            message: `Sin resultados`
-                        })
-                    }
-                }
-            ).catch(
-                (error) => {
-                    return res.status(500).json({
-                        message: "Ocurrió un error interno con la base de datos",
-                        error: error?.toString()
-                    })
-                }
-            )
-        }
+            }
+        ).catch(
+            (error) => {
+                return res.status(500).json({
+                    message: "Ocurrió un error interno con la base de datos",
+                    error: error?.toString()
+                })
+            }
+        )
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error",
@@ -145,8 +120,8 @@ export const UserPost = async (req: Request, res: Response) => {
             : __ThrowError(`El campo 'second_last_name' es obligatorio`)
 
         req.body.age ?
-            typeof req.body.age === 'number' ? null
-                : __ThrowError(`El campo 'age' debe ser tipo 'number'`)
+            typeof req.body.age === 'string' ? null
+                : __ThrowError(`El campo 'age' debe ser tipo 'string'`)
             : __ThrowError(`El campo 'age' es obligatorio`)
 
         req.body.email ?
@@ -206,9 +181,9 @@ export const UserPost = async (req: Request, res: Response) => {
 
         let status_enum = false
         for (let str of ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']) {
-            req.body.provider_type === str ? status_enum = true : null
+            req.body.status === str ? status_enum = true : null
         }
-        status_enum ? null : __ThrowError(`El campo 'provider_type' debe contener solo una de las siguientes strings 'Activo', 'Suspendido', 'Inactivo', 'Finalizado'`)
+        status_enum ? null : __ThrowError(`El campo 'status' debe contener solo una de las siguientes strings 'Activo', 'Suspendido', 'Inactivo', 'Finalizado'`)
 
         req.body.school ?
             typeof req.body.school === 'string' ? null
@@ -222,7 +197,7 @@ export const UserPost = async (req: Request, res: Response) => {
 
         let role_enum = false
         for (let str of ['Administrador', 'Encargado', 'Prestador']) {
-            req.body.provider_type === str ? role_enum = true : null
+            req.body.role === str ? role_enum = true : null
         }
         role_enum ? null : __ThrowError(`El campo 'provider_type' debe contener solo una de las siguientes strings 'Administrador', 'Encargado', 'Prestador'`)
     } catch (error) {

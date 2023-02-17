@@ -1,7 +1,6 @@
-import { Request, Response } from "express";
-import Agenda from "../models/Agenda";
-
-function __ThrowError(message: string) { throw message }
+import { Request, Response } from "express"
+import Agenda from "../models/Agenda"
+import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
 
 export const getAttendees = async (req: Request, res: Response) => {
     try {
@@ -40,11 +39,8 @@ export const AddAttendee = async (req: Request, res: Response) => {
                 : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
             : __ThrowError(`El campo 'status' es obligatorio`)
 
-        let status_enum = false
-        for (let str of ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]) {
-            req.body.status === str ? status_enum = true : null
-        }
-        status_enum ? null : __ThrowError(`El campo 'status' debe contener solo una de las siguientes strings 'Inscrito', 'Desinscrito', 'Asistió', 'Retardo', 'No asistió'`)
+        __CheckEnum(["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"], req.body.status) ? null
+            : __ThrowError(`El campo 'status' debe contener solo una de las siguientes strings 'Inscrito', 'Desinscrito', 'Asistió', 'Retardo', 'No asistió'`)
 
         req.body.check_in ?
             typeof req.body.check_in === 'string' ? null

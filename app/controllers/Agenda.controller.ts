@@ -1,7 +1,10 @@
 import { Request, Response } from "express";
 import Agenda from "../models/Agenda";
-
-function __ThrowError(message: string) { throw message }
+import User from "../models/User";
+import Enviroment from "../config/Enviroment";
+import schedule from 'node-schedule'
+import { mensaje, sendEmail } from "../config/Mailer"
+import { __ThrowError } from "../middleware/ValidationControl"
 
 export const getAgenda = async (req: Request, res: Response) => {
     try {
@@ -31,48 +34,28 @@ export const getAgenda = async (req: Request, res: Response) => {
     try {
         const items: number = req.body.items > 0 ? req.body.items : 10
         const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filter ? req.body.filter : null
+        let filter: object = req.body.filter ? req.body.filter : null
+        req.body.search ? filter = {
+            ...req.body.filter,
+            $or: [{ "name": { $regex: '.*' + req.body.search + '.*' } }]
+        } : null
 
-        if (req.body.search) {
-            await Agenda.find({
-                ...filter,
-                $or: [
-                    { "name": { $regex: '.*' + req.body.search + '.*' } },
-                ]
-            }).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(result => {
-                if (result.length > 0) {
-                    return res.status(200).json({
-                        message: "Listo",
-                        events: result
-                    })
-                } else {
-                    return res.status(404).json({
-                        message: "Sin resultados"
-                    })
-                }
-            }).catch(error => {
-                return res.status(500).json({
-                    message: "Ocurrió un error interno con la base de datos"
+        await Agenda.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(result => {
+            if (result.length > 0) {
+                return res.status(200).json({
+                    message: "Listo",
+                    events: result
                 })
-            })
-        } else {
-            await Agenda.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items).then(result => {
-                if (result.length > 0) {
-                    return res.status(200).json({
-                        message: "Listo",
-                        events: result
-                    })
-                } else {
-                    return res.status(404).json({
-                        message: "Sin resultados"
-                    })
-                }
-            }).catch(error => {
-                return res.status(500).json({
-                    message: "Ocurrió un error interno con la base de datos"
+            } else {
+                return res.status(404).json({
+                    message: "Sin resultados"
                 })
+            }
+        }).catch(error => {
+            return res.status(500).json({
+                message: "Ocurrió un error interno con la base de datos"
             })
-        }
+        })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error al conectarse al servidor"
@@ -177,6 +160,11 @@ export const createEvent = async (req: Request, res: Response) => {
     try {
         await new Agenda(req.body).save().then(result => {
             if (result) {
+                let time = result.publishing_date
+                time.setHours(time.getHours() - 1)
+                scheduleEmailNotifications(result.event_identifier.toString(), time.toISOString(), result.name.toString())
+                time.setHours(time.getHours() + 2)
+                endEvent(result.event_identifier.toString(), time.toISOString())
                 return res.status(201).json({
                     message: "Evento creado",
                     event: result
@@ -259,9 +247,27 @@ export const updateEvent = async (req: Request, res: Response) => {
         })
     }
 
+    const is_publishing_date: boolean = req.body.publishing_date ? true : false
+    const is_ending_date: boolean = req.body.ending_date ? true : false
+
     try {
-        await Agenda.updateOne({ "event_identifier": req.params.id }, { ...req.body, "modifier_register": req.body.modifier_register }).then(result => {
+        await Agenda.updateOne({ "event_identifier": req.params.id }, req.body).then(async result => {
             if (result.modifiedCount > 0) {
+                const event = is_ending_date || is_publishing_date ? await Agenda.findOne({ "event_identifier": req.params.id }) : null
+                if (event && is_publishing_date) {
+                    let time = event.publishing_date
+                    time.setHours(time.getHours() - 1)
+                    schedule.cancelJob(event.event_identifier.toString())
+                    scheduleEmailNotifications(event.event_identifier.toString(), time.toISOString(), event.name.toString())
+                }
+
+                if (event && is_ending_date) {
+                    let time = event.publishing_date
+                    time.setHours(time.getHours() + 1)
+                    schedule.cancelJob(`end_${event.event_identifier.toString()}`)
+                    endEvent(event.event_identifier.toString(), time.toISOString())
+                }
+
                 return res.status(200).json({
                     message: `Se actualizó la información del evento ${req.params.id}`
                 })
@@ -304,4 +310,30 @@ export const deleteEvent = async (req: Request, res: Response) => {
             message: "Ocurrió un error al conectarse al servidor"
         })
     }
+}
+
+const scheduleEmailNotifications = async (event: string, time: string, name: string) => {
+    schedule.scheduleJob(event, time, async function (name: string, event: string) {
+        const users = await User.find({ "status": "Activo", "role": "Prestador" })
+        const from = `"SAI" ${Enviroment.Mailer.email}`
+        const subject = "Recuperación de contraseña"
+        const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
+        for (let user of users) {
+            const to = user.email
+            await sendEmail(from, to, subject, body)
+        }
+
+        schedule.cancelJob(event)
+    }.bind(null, name, event))
+}
+
+const endEvent = async (event: string, time: string) => {
+    schedule.scheduleJob(`end_${event}`, time, async function (event: string) {
+        const result = await Agenda.findOne({ "event_identifier": event })
+        if (result?.attendance.status === "Disponible") {
+            result.attendance.status = "Concluido por sistema"
+            result.save()
+        }
+        schedule.cancelJob(`end_${event}`)
+    }.bind(null, event))
 }
