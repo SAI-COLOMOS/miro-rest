@@ -18,20 +18,15 @@ function createToken(user: UserInterface, time: String) {
 
 export const LoginGet = async (req: Request, res: Response) => {
     try {
-        req.body.credential ?
-            typeof req.body.credential === "string" ? null
-                : __ThrowError("El campo 'credential' debe ser tipo 'string'")
-            : __ThrowError("El campo 'credential' es obligatorio")
+        req.body.credential ? null : __ThrowError(`El campo 'credential' es obligatorio`)
+        typeof req.body.credential === 'string' ? null : __ThrowError(`El campo 'credential' debe ser tipo 'string'`)
 
-        req.body.password ?
-            typeof req.body.password === "string" ? null
-                : __ThrowError("El campo 'password' debe ser tipo 'string'")
-            : __ThrowError("El campo 'password' es obligatorio")
+        req.body.password ? null : __ThrowError(`El campo 'password' es obligatorio`)
+        typeof req.body.password === 'string' ? null : __ThrowError(`El campo 'password' debe ser tipo 'string'`)
 
-        req.body.keepAlive ?
-            typeof req.body.keepAlive === "boolean" ? null
-                : __ThrowError("El campo 'keepAlive' debe ser tipo 'boolean'")
-            : null
+        !req.body.keepAlive ? null
+            : typeof req.body.keepAlive === 'boolean' ? null
+                : __ThrowError(`El campo 'keepAlive' debe ser tipo 'boolean'`)
     } catch (error) {
         return res.status(400).json({
             error
@@ -53,29 +48,27 @@ export const LoginGet = async (req: Request, res: Response) => {
             if (await user.validatePassword(req.body.password)) {
                 return res.status(200).json({
                     message: "Sesión iniciada",
-                    user,
+                    role: user.role,
                     token: createToken(user, req.body.keepAlive ? "90d" : "3d")
                 })
             }
         }
 
-        return res.status(404).json({
+        return res.status(400).json({
             message: "Hubo un problema al tratar de iniciar sesión",
         })
     } catch (error) {
         return res.status(500).json({
-            message: "Ocurrió un error al connectarse con el servidor",
-            error
+            message: "Ocurrió un error en el servidor",
+            error: error?.toString()
         })
     }
 }
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
     try {
-        req.body.credential ?
-            typeof req.body.credential === "string" ? null
-                : __ThrowError("El campo 'credential' debe ser tipo 'string'")
-            : __ThrowError("El campo 'credential' es obligatorio")
+        req.body.credential ? null : __ThrowError(`El campo 'credential' es obligatorio`)
+        typeof req.body.credential === 'string' ? null : __ThrowError(`El campo 'credential' debe ser tipo 'string'`)
     } catch (error) {
         return res.status(400).json({
             error
@@ -108,7 +101,8 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         })
     } catch (error) {
         return res.status(500).json({
-            message: "Ocurrió un error al connectarse con el servidor",
+            message: "Ocurrió un error en el servidor",
+            error: error?.toString()
         })
     }
 }
@@ -141,9 +135,10 @@ export const recoverPassword = async (req: Request, res: Response) => {
         if (user) {
             if (await user.validatePassword(req.body.password)) {
                 return res.status(400).json({
-                    message: "La nueva contraseña no puede ser la actual"
+                    message: "La nueva contraseña no puede ser igual a la actual"
                 })
             }
+
             user.password = req.body.password
             user.save()
             const from = `"SAI" ${Enviroment.Mailer.email}`
@@ -162,7 +157,8 @@ export const recoverPassword = async (req: Request, res: Response) => {
         })
     } catch (error) {
         return res.status(500).json({
-            message: "Ocurrió un error al connectarse con el servidor",
+            message: "Ocurrió un error en el servidor",
+            error: error?.toString()
         })
     }
 }
