@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import User from "../models/User"
-import { __CheckEnum, __ThrowError } from "../config/ValidationControl"
+import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
 
 export const UsersGet = async (req: Request, res: Response) => {
     try {

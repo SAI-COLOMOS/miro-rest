@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Card from "../models/Card";
 import User from "../models/User";
-import { __ThrowError } from "../config/ValidationControl"
+import { __ThrowError } from "../middleware/ValidationControl"
 
 export const getCards = async (req: Request, res: Response) => {
     try {

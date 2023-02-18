@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import Agenda from "../models/Agenda"
-import { __CheckEnum, __ThrowError } from "../config/ValidationControl"
+import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
 
 export const getAttendees = async (req: Request, res: Response) => {
     try {
