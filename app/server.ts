@@ -14,6 +14,8 @@ import Auth from "./routes/Auth.routes"
 import Users from "./routes/Users.routes"
 import Profile from "./routes/Profile.routes";
 import Card from './routes/Card.routes';
+import Agenda from './routes/Agenda.routes'
+import Place from './routes/Place.routes'
 
 /* Variables */
 const app = express()
@@ -41,5 +43,7 @@ app.use(Auth)
 app.use(Users)
 app.use(Profile)
 app.use(Card)
+app.use(Agenda)
+app.use(Place)
 
 export default app

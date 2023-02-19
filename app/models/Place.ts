@@ -1,4 +1,4 @@
-import {model, Schema, Document} from "mongoose"
+import { model, Schema, Document } from "mongoose"
 
 export interface AreaInterface extends Document {
     area_identifier: string
@@ -20,6 +20,7 @@ const AreaSchema = new Schema({
     },
     area_name: {
         type: String,
+        lowercase: true,
         required: true,
         unique: true,
         index: true
@@ -39,6 +40,7 @@ const PlaceSchema = new Schema({
         type: String,
         required: true,
         unique: true,
+        lowercase: true,
         index: true
     },
     place_areas: {

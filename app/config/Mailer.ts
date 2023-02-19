@@ -1,5 +1,5 @@
 import Enviroment from "./Enviroment"
-const nodemailer = require("nodemailer")
+import nodemailer from "nodemailer"
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
     },
 })
 
-export const sendEmail = async (from: String, to: String, subject: String, body: String) => {
+export const sendEmail = async (from: string, to: string, subject: string, body: string) => {
     await transporter.sendMail({
         from: from,
         to: to,

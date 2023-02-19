@@ -32,16 +32,19 @@ const UserSchema = new Schema({
     },
     first_name: {
         type: String,
+        lowercase: true,
         required: [true, "El nombre es necesario"],
         trim: true
     },
     first_last_name: {
         type: String,
+        lowercase: true,
         required: [true, "Un apellido es necesario"],
         trim: true
     },
     second_last_name: {
         type: String,
+        lowercase: true,
         trim: true
     },
     age: {
@@ -89,18 +92,22 @@ const UserSchema = new Schema({
     },
     place: {
         type: String,
+        lowercase: true,
         required: [true, "El lugar es necesario"]
     },
     assignment_area: {
         type: String,
+        lowercase: true,
         required: [true, "El área de asignación es necesaria"]
     },
     status: {
         type: String,
-        enum: ['activo', 'suspendido', 'inactivo', 'finalizado']
+        enum: ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'],
+        default: 'Activo'
     },
     school: {
         type: String,
+        lowercase: true,
         required: [true, "La escuela es necesaria"]
     },
     role: {
@@ -118,6 +125,7 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
     const seasson = Number(month) <= 6 ? 'A' : 'B'
     const place: any = await Place.findOne({ "place_name": inputPlace })
     const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
+    console.log(area)
     const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register').where({ 'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' } })
     let serie = "001"
 

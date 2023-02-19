@@ -12,6 +12,26 @@ export interface CardInterface extends Document {
     activities: HoursInterface
 }
 
+const ActivitySchema = new Schema({
+    activity_name: {
+        type: String,
+        lowercase: true,
+        required: [true, "El nombre de la actividad es necesario"]
+    },
+    hours: {
+        type: Number,
+        required: [true, "La cantidad de horas son necesarias es necesario"]
+    },
+    assignation_date: {
+        type: Date,
+        default: new Date().toISOString()
+    },
+    responsible_register: {
+        type: String,
+        required: [true, "El registro del encargado es necesario"]
+    }
+})
+
 const CardSchema = new Schema({
     provider_register: {
         type: String,
@@ -19,24 +39,7 @@ const CardSchema = new Schema({
         index: true,
         required: [true, "El registro del prestador es necesario"]
     },
-    activities: [{
-        activity_name: {
-            type: String,
-            required: [true, "El nombre de la actividad es necesario"]
-        },
-        hours: {
-            type: Number,
-            required: [true, "La cantidad de horas son necesarias es necesario"]
-        },
-        assignation_date: {
-            type: Date,
-            default: new Date().toISOString()
-        },
-        responsible_register: {
-            type: String,
-            required: [true, "El registro del encargado es necesario"]
-        }
-    }]
+    activities: [ActivitySchema]
 }, {
     versionKey: false,
     timestamps: true
