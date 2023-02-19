@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import User, { UserInterface } from "../models/User";
-import { CardPost } from "./Card.controller";
+//import { CardPost } from "./Card.controller";
 
 export const UsersGet = async (req: Request, res: Response) => {
     try {
