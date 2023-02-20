@@ -17,7 +17,7 @@ export interface UserInterface extends Document {
     blood_type: string
     provider_type: string
     place: string
-    assignment_area: string
+    assigned_area: string
     status: string
     school: string
     role: string
@@ -97,7 +97,7 @@ const UserSchema = new Schema({
         lowercase: true,
         required: [true, "El lugar es necesario"]
     },
-    assignment_area: {
+    assigned_area: {
         type: String,
         lowercase: true,
         required: [true, "El área de asignación es necesaria"]
@@ -124,12 +124,11 @@ const UserSchema = new Schema({
     timestamps: true
 })
 
-async function newRegisterForProvider(inputPlace: string, inputAssignment_area: string): Promise<string> {
+async function newRegisterForProvider(inputPlace: string, inputAssigned_area: string): Promise<string> {
     const [year, month] = new Date().toISOString().split('-')
     const seasson = Number(month) <= 6 ? 'A' : 'B'
     const place: any = await Place.findOne({ "place_name": inputPlace })
-    const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
-    console.log(area)
+    const area = place.place_areas.filter((item: any) => item.area_name === inputAssigned_area ? true : null)
     const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register').where({ 'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' } })
     let serie = "001"
 
@@ -148,12 +147,12 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
     return `${year}${seasson}${place.place_identifier}${area[0].area_identifier}${serie}`
 }
 
-async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssignment_area: string): Promise<string> {
+async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssigned_area: string): Promise<string> {
     const first_name = inputFirst_name.substring(0, 2).toUpperCase();
     const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase();
     const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0, 2).toUpperCase() : "XX"
     const place: any = await Place.findOne({ "place_name": inputPlace })
-    const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
+    const area = place.place_areas.filter((item: any) => item.area_name === inputAssigned_area ? true : null)
     const random: string = `${Math.floor(Math.random() * 9).toString()}${Math.floor(Math.random() * 9).toString()}`
 
     return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
@@ -161,16 +160,16 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
 
 UserSchema.pre<UserInterface>("save", async function (next) {
     if (this.isNew) {
-        if (this.role === "Prestador") {
-            const register = await newRegisterForProvider(this.place, this.assignment_area)
+        if (this.role === "prestador") {
+            const register = await newRegisterForProvider(this.place, this.assigned_area)
 
             this.register = register
             this.password = register
 
             await new Card({ "provider_register": register }).save()
 
-        } else if (this.role === "Administrador" || this.role === "Encargado") {
-            const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area)
+        } else if (this.role === "administrador" || this.role === "encargado") {
+            const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assigned_area)
 
             this.register = register
             this.password = register

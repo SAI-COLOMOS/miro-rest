@@ -82,7 +82,13 @@ export const UserGet = async (req: Request, res: Response) => {
 }
 
 export const UserPost = async (req: Request, res: Response) => {
+
     try {
+        const user: any = req.user
+        user.role === "encargado" && req.body.role !== "prestador"
+            ? __ThrowError(`El usuario de tipo 'encargado' no puede crear un usuario de tipo ${req.body.role}`)
+            : null
+
         req.body.first_name ? null : __ThrowError(`El campo 'first_name' es obligatorio`)
         typeof req.body.first_name === 'string' ? null : __ThrowError(`El campo 'first_name' debe ser tipo 'string'`)
 
@@ -111,15 +117,12 @@ export const UserPost = async (req: Request, res: Response) => {
         req.body.blood_type ? null : __ThrowError(`El campo 'blood_type' es obligatorio`)
         typeof req.body.blood_type === 'string' ? null : __ThrowError(`El campo 'blood_type' debe ser tipo 'string'`)
 
-        req.body.provider_type ? null : __ThrowError(`El campo 'provider_type' es obligatorio`)
-        typeof req.body.provider_type === 'string' ? null : __ThrowError(`El campo 'provider_type' debe ser tipo 'string'`)
-        __CheckEnum(['servicio social', 'prácticas profesionales', 'no aplica'], req.body.provider_type, "provider_type")
 
         req.body.place ? null : __ThrowError(`El campo 'place' es obligatorio`)
         typeof req.body.place === 'string' ? null : __ThrowError(`El campo 'place' debe ser tipo 'string'`)
 
-        req.body.assignment_area ? null : __ThrowError(`El campo 'assignment_area' es obligatorio`)
-        typeof req.body.assignment_area === 'string' ? null : __ThrowError(`El campo 'assignment_area' debe ser tipo 'string'`)
+        req.body.assigned_area ? null : __ThrowError(`El campo 'assigned_area' es obligatorio`)
+        typeof req.body.assigned_area === 'string' ? null : __ThrowError(`El campo 'assigned_area' debe ser tipo 'string'`)
 
         req.body.status ? null : __ThrowError(`El campo 'status' es obligatorio`)
         typeof req.body.status === 'string' ? null : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
@@ -131,6 +134,14 @@ export const UserPost = async (req: Request, res: Response) => {
         req.body.role ? null : __ThrowError(`El campo 'role' es obligatorio`)
         typeof req.body.role === 'string' ? null : __ThrowError(`El campo 'role' debe ser tipo 'string'`)
         __CheckEnum(['administrador', 'encargado', 'prestador'], req.body.role, "role")
+
+        req.body.provider_type ? null : __ThrowError(`El campo 'provider_type' es obligatorio`)
+        typeof req.body.provider_type === 'string' ? null : __ThrowError(`El campo 'provider_type' debe ser tipo 'string'`)
+
+        __CheckEnum(
+            req.body.role === 'prestador' ? ['servicio social', 'prácticas profesionales'] : ['servicio social', 'prácticas profesionales', 'no aplica']
+            , req.body.provider_type, "provider_type")
+
     } catch (error) {
         return res.status(400).json({
             error
@@ -143,7 +154,6 @@ export const UserPost = async (req: Request, res: Response) => {
         return user
             ? res.status(201).json({
                 message: "Usuario creado",
-                data: user
             })
             : res.status(500).json({
                 message: "No se pudo crear el usuario",
@@ -217,18 +227,14 @@ export const UserPatch = async (req: Request, res: Response) => {
             : typeof req.body.blood_type === 'string' ? null
                 : __ThrowError(`El campo 'blood_type' debe ser tipo 'string'`)
 
-        !req.body.provider_type ? null
-            : typeof req.body.provider_type === 'string'
-                ? __CheckEnum(['servicio social', 'prácticas profesionales', 'no aplica'], req.body.provider_type, "provider_type")
-                : __ThrowError(`El campo 'provider_type' debe ser tipo 'string'`)
 
         !req.body.place ? null
             : typeof req.body.place === 'string' ? null
                 : __ThrowError(`El campo 'place' debe ser tipo 'string'`)
 
-        !req.body.assignment_area ? null
-            : typeof req.body.assignment_area === 'string' ? null
-                : __ThrowError(`El campo 'assignment_area' debe ser tipo 'string'`)
+        !req.body.assigned_area ? null
+            : typeof req.body.assigned_area === 'string' ? null
+                : __ThrowError(`El campo 'assigned_area' debe ser tipo 'string'`)
 
         !req.body.status ? null
             : typeof req.body.status === 'string'
@@ -243,6 +249,11 @@ export const UserPatch = async (req: Request, res: Response) => {
             : typeof req.body.role === 'string'
                 ? __CheckEnum(['administrador', 'encargado', 'prestador'], req.body.role, "role")
                 : __ThrowError(`El campo 'role' debe ser tipo 'string'`)
+
+        !req.body.provider_type ? null
+            : typeof req.body.provider_type === 'string'
+                ? __CheckEnum(['servicio social', 'prácticas profesionales', 'no aplica'], req.body.provider_type, "provider_type")
+                : __ThrowError(`El campo 'provider_type' debe ser tipo 'string'`)
     } catch (error) {
         return res.status(400).json({
             error
