@@ -1,14 +1,14 @@
 import { model, Schema, Document } from "mongoose"
 
 export interface HoursInterface extends Document {
-    activity_name: String,
+    activity_name: string,
     hours: Number,
     assignation_date: Date,
-    responsible_register: String
+    responsible_register: string
 }
 
 export interface CardInterface extends Document {
-    provider_register: String,
+    provider_register: string,
     activities: HoursInterface
 }
 

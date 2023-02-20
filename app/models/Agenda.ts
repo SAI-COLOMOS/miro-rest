@@ -1,30 +1,30 @@
 import { model, Schema, Document } from "mongoose";
 
 export interface AttendeeListInterface extends Document {
-    attendee_register: String,
-    status: String,
+    attendee_register: string,
+    status: string,
     check_in: Date
 }
 
 export interface AttendanceInterface extends Document {
     attendee_list: AttendeeListInterface,
-    status: String
+    status: string
 }
 
 export interface AgendaInterface extends Document {
-    event_identifier: String,
-    name: String,
-    description: String,
-    offered_hours: Number,
-    vacancy: Number,
+    event_identifier: string,
+    name: string,
+    description: string,
+    offered_hours: number,
+    vacancy: number,
     attendance: AttendanceInterface,
     starting_date: Date,
     ending_date: Date,
-    author_register: String,
+    author_register: string,
     publishing_date: Date,
-    place: String,
-    belonging_area: String,
-    belonging_place: String
+    place: string,
+    belonging_area: string,
+    belonging_place: string
 }
 
 const AttendeeListSchema = new Schema({
@@ -34,12 +34,12 @@ const AttendeeListSchema = new Schema({
     },
     status: {
         type: String,
+        lowercase: true,
         required: [true, "El status del usuario es obligatorio"],
-        enum: ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"]
+        enum: ["inscrito", "desinscrito", "asistió", "retardo", "no asistió"]
     },
     check_in: {
-        type: Date,
-        required: [true, "La fecha de check in es obligatoria"]
+        type: Date
     }
 })
 
@@ -47,8 +47,9 @@ const AttendanceSchema = new Schema({
     attendee_list: [AttendeeListSchema],
     status: {
         type: String,
+        lowercase: true,
         required: [true, "El status es obligatorio"],
-        enum: ["Disponible", "Concluido", "Concluido por sistema"]
+        enum: ["disponible", "concluido", "concluido por sistema"]
     }
 })
 
@@ -57,6 +58,13 @@ const AgendaSchema = new Schema({
         type: String,
         unique: true,
         index: true
+    },
+    modifier_register: {
+        type: String,
+    },
+    is_template: {
+        type: Boolean,
+        default: false
     },
     name: {
         type: String,
@@ -89,13 +97,6 @@ const AgendaSchema = new Schema({
         type: String,
         required: [true, "El registro del autor es obligatoria"]
     },
-    modifier_register: {
-        type: String,
-    },
-    is_template: {
-        type: Boolean,
-        default: false
-    },
     publishing_date: {
         type: Date,
         required: [true, "La fecha de publicación del evento es obligatoria"]
@@ -107,10 +108,12 @@ const AgendaSchema = new Schema({
     },
     belonging_area: {
         type: String,
+        lowercase: true,
         required: [true, "El área al que pertene el parque es obligatoria"]
     },
     belonging_place: {
         type: String,
+        lowercase: true,
         required: [true, "El parque al que pertenece el evento es obligatorio"]
     }
 }, {
