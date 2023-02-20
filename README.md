@@ -65,7 +65,7 @@ Campos opcionales
         "blood_type": "RH O+",
         "provider_type": "Servicio social",
         "place": "Parque Metropolitano",
-        "assignment_area": "Servicios generales",
+        "assigned_area": "Servicios generales",
         "status": "Activo",
         "school": "Centro de Enseñanza Técnica Industrial plantel Colomos",
         "role": "Prestador",
