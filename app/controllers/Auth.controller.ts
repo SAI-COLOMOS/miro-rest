@@ -44,19 +44,14 @@ export const LoginGet = async (req: Request, res: Response) => {
             user = await User.findOne({ register: req.body.credential }).sort({ "register": "desc" })
         }
 
-        if (user) {
-            if (await user.validatePassword(req.body.password)) {
-                return res.status(200).json({
-                    message: "Sesión iniciada",
-                    role: user.role,
-                    token: createToken(user, req.body.keepAlive ? "90d" : "3d")
-                })
-            }
-        }
-
-        return res.status(400).json({
-            message: "Hubo un problema al tratar de iniciar sesión",
-        })
+        return user && await user.validatePassword(req.body.password)
+            ? res.status(200).json({
+                message: "Sesión iniciada",
+                token: createToken(user, req.body.keepAlive ? "90d" : "3d")
+            })
+            : res.status(400).json({
+                message: "Hubo un problema al tratar de iniciar sesión",
+            })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
@@ -132,13 +127,8 @@ export const recoverPassword = async (req: Request, res: Response) => {
 
     try {
         const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
-        if (user) {
-            if (await user.validatePassword(req.body.password)) {
-                return res.status(400).json({
-                    message: "La nueva contraseña no puede ser igual a la actual"
-                })
-            }
 
+        if (user && !(await user.validatePassword(req.body.password))) {
             user.password = req.body.password
             user.save()
             const from = `"SAI" ${Enviroment.Mailer.email}`
@@ -152,8 +142,8 @@ export const recoverPassword = async (req: Request, res: Response) => {
             })
         }
 
-        return res.status(500).json({
-            message: `No se pudo completar la operación`
+        return res.status(400).json({
+            message: "La nueva contraseña no puede ser igual a la actual"
         })
     } catch (error) {
         return res.status(500).json({
