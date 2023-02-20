@@ -1,11 +1,11 @@
 import { Router } from "express"
 import { sendRecoveryToken, recoverPassword, LoginGet } from "../controllers/Auth.controller"
 
-const routes = Router()
+const route = Router()
 const prefix = "/auth"
 
-routes.get(`${prefix}/login`, LoginGet)
-routes.get(`${prefix}/recovery`, sendRecoveryToken)
-routes.patch(`${prefix}/recovery`, recoverPassword)
+route.get(`${prefix}/login`, LoginGet)
+route.get(`${prefix}/recovery`, sendRecoveryToken)
+route.patch(`${prefix}/recovery`, recoverPassword)
 
-export default routes;
+export default route;

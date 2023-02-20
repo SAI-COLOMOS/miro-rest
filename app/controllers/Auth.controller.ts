@@ -4,6 +4,8 @@ import JWT, { JwtPayload } from "jsonwebtoken";
 import Enviroment from "../config/Enviroment";
 import { link, mensaje, sendEmail } from "../config/Mailer";
 
+function __ThrowError(message: string) { throw message }
+
 function createToken(user: UserInterface, time: String) {
     return JWT.sign({
         register: user.register
@@ -15,11 +17,27 @@ function createToken(user: UserInterface, time: String) {
 }
 
 export const LoginGet = async (req: Request, res: Response) => {
-    if (!req.body.credential || !req.body.password) {
+    try {
+        req.body.credential ?
+            typeof req.body.credential === "string" ? null
+                : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+            : __ThrowError("El campo 'credential' es obligatorio")
+
+        req.body.password ?
+            typeof req.body.password === "string" ? null
+                : __ThrowError("El campo 'password' debe ser tipo 'string'")
+            : __ThrowError("El campo 'password' es obligatorio")
+
+        req.body.keepAlive ?
+            typeof req.body.keepAlive === "boolean" ? null
+                : __ThrowError("El campo 'keepAlive' debe ser tipo 'boolean'")
+            : null
+    } catch (error) {
         return res.status(400).json({
-            message: "Faltan datos"
+            error
         })
     }
+
     let user = null
     try {
 
@@ -53,9 +71,14 @@ export const LoginGet = async (req: Request, res: Response) => {
 }
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
-    if (!req.body.credential) {
-        return res.status(404).json({
-            message: "Faltan datos"
+    try {
+        req.body.credential ?
+            typeof req.body.credential === "string" ? null
+                : __ThrowError("El campo 'credential' debe ser tipo 'string'")
+            : __ThrowError("El campo 'credential' es obligatorio")
+    } catch (error) {
+        return res.status(400).json({
+            error
         })
     }
 
@@ -76,12 +99,12 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
             const body = link(newRoute)
-            //await sendEmail(from, to, subject, body)
+            await sendEmail(from, to, subject, body)
         }
 
         return res.status(200).json({
-            message: "Si se encontró el usuario se mandó un correo de recuperación",
-            newRoute
+            message: "Si se encontró el usuario; Se mandó un correo de recuperación",
+            newRoute: newRoute
         })
     } catch (error) {
         return res.status(500).json({
@@ -93,40 +116,48 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 export const recoverPassword = async (req: Request, res: Response) => {
     let token
     try {
-        try {
-            token = JWT.verify(String(req.query.tkn), Enviroment.JWT.secret) as JwtPayload
-        } catch (error) {
-            return res.status(400).json({
-                message: "El link ha caducado",
-            })
-        }
+        token = JWT.verify(String(req.query.tkn), Enviroment.JWT.secret) as JwtPayload
+    } catch (error) {
+        return res.status(400).json({
+            message: "El link ha caducado",
+        })
+    }
 
-        if (!(req.body.password.length >= 8) || !(/[A-Z]/).test(req.body.password) || !(/\d/).test(req.body.password) || !(/\W/).test(req.body.password)) {
-            return res.status(400).json({
-                message: "La contraseña no cumple con la estructura deseada"
-            })
-        }
+    try {
+        req.body.password ?
+            typeof req.body.password === "string" ?
+                (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password) ? null
+                    : __ThrowError("La contraseña no cumple con la estructura deseada")
+                : __ThrowError("El campo 'password' debe ser tipo 'string'")
+            : __ThrowError("El campo 'password' es obligatorio")
+    } catch (error) {
+        return res.status(400).json({
+            error
+        })
+    }
 
+    try {
         const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
         if (user) {
             if (await user.validatePassword(req.body.password)) {
                 return res.status(400).json({
-                    message: "La contraseña no cumple con la estructura deseada"
+                    message: "La nueva contraseña no puede ser la actual"
                 })
             }
             user.password = req.body.password
             user.save()
             const from = `"SAI" ${Enviroment.Mailer.email}`
-            const to = String(user.email)
+            const to = user.email
             const subject = "Recuperación de contraseña"
             const body = mensaje("Se actualizó la contraseña de su usuario.")
-            //await sendEmail(from, to, subject, body)
+            await sendEmail(from, to, subject, body)
+
             return res.status(200).json({
                 message: "Se actualizó la contraseña del usuario"
             })
         }
 
-        return res.status(400).json({
+        return res.status(500).json({
             message: `No se pudo completar la operación`
         })
     } catch (error) {
