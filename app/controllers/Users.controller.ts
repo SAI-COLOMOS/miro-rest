@@ -1,6 +1,7 @@
 import { Request, Response } from "express"
 import User from "../models/User"
 import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
+import Card from "../models/Card"
 
 export const UsersGet = async (req: Request, res: Response) => {
     try {
@@ -168,9 +169,20 @@ export const UserPost = async (req: Request, res: Response) => {
 
 export const UserDelete = async (req: Request, res: Response) => {
     try {
-        const result = await User.deleteOne({ 'register': req.params.id })
 
-        return result.deletedCount !== 0
+        const user = await User.findOne({ 'register': req.params.id })
+
+        let deletedCount = 0
+        if (user?.role === "prestador") {
+            const card_result = await Card.deleteOne({ "provider_register": req.params.id })
+            const result = await User.deleteOne({ 'register': req.params.id })
+            deletedCount = card_result.deletedCount + result.deletedCount
+        } else {
+            const result = await User.deleteOne({ 'register': req.params.id })
+            deletedCount = result.deletedCount
+        }
+
+        return deletedCount !== 0
             ? res.status(200).json({
                 message: "Usuario eliminado",
             })
