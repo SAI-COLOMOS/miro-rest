@@ -7,7 +7,7 @@ const route = Router()
 const path = 'users'
 
 // Retornar usuarios
-route.post(`/${path}/get`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UsersGet)
+route.get(`/${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UsersGet)
 
 // Retornar un solo usuario
 route.post(`/${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserGet)

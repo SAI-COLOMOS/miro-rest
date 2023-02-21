@@ -3,8 +3,7 @@ import User, { UserInterface } from "../models/User";
 import JWT, { JwtPayload } from "jsonwebtoken";
 import Enviroment from "../config/Enviroment";
 import { link, mensaje, sendEmail } from "../config/Mailer";
-
-function __ThrowError(message: string) { throw message }
+import { __Optional, __Required, __ThrowError } from "../middleware/ValidationControl";
 
 function createToken(user: UserInterface, time: String) {
     return JWT.sign({
@@ -18,15 +17,11 @@ function createToken(user: UserInterface, time: String) {
 
 export const LoginGet = async (req: Request, res: Response) => {
     try {
-        req.body.credential ? null : __ThrowError(`El campo 'credential' es obligatorio`)
-        typeof req.body.credential === 'string' ? null : __ThrowError(`El campo 'credential' debe ser tipo 'string'`)
+        __Required(req.body.credential, "credential", "string")
 
-        req.body.password ? null : __ThrowError(`El campo 'password' es obligatorio`)
-        typeof req.body.password === 'string' ? null : __ThrowError(`El campo 'password' debe ser tipo 'string'`)
+        __Required(req.body.password, "password", "string")
 
-        !req.body.keepAlive ? null
-            : typeof req.body.keepAlive === 'boolean' ? null
-                : __ThrowError(`El campo 'keepAlive' debe ser tipo 'boolean'`)
+        __Optional(req.body.keepAlive, "keepAlive", "boolean")
     } catch (error) {
         return res.status(400).json({
             error
@@ -35,7 +30,6 @@ export const LoginGet = async (req: Request, res: Response) => {
 
     let user = null
     try {
-
         if (req.body.credential.search('@') !== -1) {
             user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
         } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {
@@ -49,7 +43,7 @@ export const LoginGet = async (req: Request, res: Response) => {
                 message: "Sesión iniciada",
                 token: createToken(user, req.body.keepAlive ? "90d" : "3d")
             })
-            : res.status(400).json({
+            : res.status(401).json({
                 message: "Hubo un problema al tratar de iniciar sesión",
             })
     } catch (error) {
@@ -62,8 +56,7 @@ export const LoginGet = async (req: Request, res: Response) => {
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
     try {
-        req.body.credential ? null : __ThrowError(`El campo 'credential' es obligatorio`)
-        typeof req.body.credential === 'string' ? null : __ThrowError(`El campo 'credential' debe ser tipo 'string'`)
+        __Required(req.body.credential, `credential`, `string`)
     } catch (error) {
         return res.status(400).json({
             error
@@ -113,12 +106,11 @@ export const recoverPassword = async (req: Request, res: Response) => {
     }
 
     try {
-        req.body.password ?
-            typeof req.body.password === "string" ?
-                (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password) ? null
-                    : __ThrowError("La contraseña no cumple con la estructura deseada")
-                : __ThrowError("El campo 'password' debe ser tipo 'string'")
-            : __ThrowError("El campo 'password' es obligatorio")
+        __Required(req.body.password, `password`, `string`);
+
+        (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password)
+            ? null
+            : __ThrowError("La contraseña no cumple con la estructura deseada")
     } catch (error) {
         return res.status(400).json({
             error

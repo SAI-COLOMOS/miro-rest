@@ -15,38 +15,38 @@
 	// 	],
 	// 	"description": "Log output to console"
 	// }
-	"Crear vista": {
-		"scope": "javascript,typescript",
-		"prefix": "create::view",
-		"body": [
-			"/* Importaciones */",
-			"const express = require('express')",
-			"",
-			"/* Varaibles */",
-			"const router = express.Router()",
-			"",
-			"/* Rutas */",
-			"router.get('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"router.post('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"router.put('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"router.delete('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"/* Exportaciones */",
-			"module.exports = router",
-		],
-		"description": "Retorna un bloque de código para la declaración de una vista simple."
-	},
+	// "Crear vista": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "create::view",
+	// 	"body": [
+	// 		"/* Importaciones */",
+	// 		"const express = require('express')",
+	// 		"",
+	// 		"/* Varaibles */",
+	// 		"const router = express.Router()",
+	// 		"",
+	// 		"/* Rutas */",
+	// 		"router.get('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"router.post('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"router.put('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"router.delete('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"/* Exportaciones */",
+	// 		"module.exports = router",
+	// 	],
+	// 	"description": "Retorna un bloque de código para la declaración de una vista simple."
+	// },
 	"Crear respuesta": {
 		"scope": "javascript, typescript",
 		"prefix": "create::response",
@@ -59,22 +59,35 @@
 	},
 	"Crear validación de un campo obligatorio": {
 		"scope": "javascript, typescript",
-		"prefix": "create::requiredValidation",
+		"prefix": "rv",
 		"body": [
-			"req.body.$1 ? null : __ThrowError(`El campo '$1' es obligatorio`)",
-			"typeof req.body.$1 === '$2' ? null : __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
+			"__Required(req.body.$1, `$1`, `$2`)"
 		],
 		"description": "Retorna una plantilla de respuesta obligatoria"
 	},
+	"Crear validación de un campo obligatorio con enums": {
+		"scope": "javascript, typescript",
+		"prefix": "rve",
+		"body": [
+			"__RequiredEnum(req.body.$1, `$1`, `$2`, [$3])"
+		],
+		"description": "Retorna una plantilla de respuesta obligatoria con verificación de enums"
+	},
 	"Crear validación de un campo opcional": {
 		"scope": "javascript, typescript",
-		"prefix": "create::optionalValidation",
+		"prefix": "ov",
 		"body": [
-			"!req.body.$1 ? null",
-			"\t: typeof req.body.$1 === '$2' ? null",
-			"\t\t: __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
+			"__Optional(req.body.$1, `$1`, `$2`)"
 		],
 		"description": "Retorna una plantilla de respuesta opcional"
+	},
+	"Crear validación de un campo opcional con enums": {
+		"scope": "javascript, typescript",
+		"prefix": "ove",
+		"body": [
+			"__OptionalEnum(req.body.$1, `$1`, `$2`, [$3])"
+		],
+		"description": "Retorna una plantilla de respuesta opcional con verificación de enums"
 	},
 	"Crear ruta": {
 		"scope": "javascript, typescript",
