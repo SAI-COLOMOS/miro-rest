@@ -56,8 +56,7 @@ export const LoginGet = async (req: Request, res: Response) => {
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
     try {
-        __Required(req.query.credential, `credential`, `string`)
-        req.query.credential = String(req.query.credential)
+        __Required(req.body.credential, `credential`, `string`)
     } catch (error) {
         return res.status(400).json({
             error
@@ -66,12 +65,12 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 
     let user, newRoute
     try {
-        if (req.query.credential.search('@') !== -1) {
-            user = await User.findOne({ email: req.query.credential }).sort({ "register": "desc" })
-        } else if (!Number.isNaN(req.query.credential) && req.query.credential.length === 10) {
-            user = await User.findOne({ phone: req.query.credential }).sort({ "register": "desc" })
-        } else if (req.query.credential.length === 12) {
-            user = await User.findOne({ register: req.query.credential }).sort({ "register": "desc" })
+        if (req.body.credential.search('@') !== -1) {
+            user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
+        } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {
+            user = await User.findOne({ phone: req.body.credential }).sort({ "register": "desc" })
+        } else if (req.body.credential.length === 12) {
+            user = await User.findOne({ register: req.body.credential }).sort({ "register": "desc" })
         }
 
         if (user) {

@@ -8,10 +8,10 @@ const route = Router()
 const path = "/agenda"
 
 // Obtener todos los eventos
-route.get(`${path}`, Passport.authenticate('jwt', { session: false }), getAgenda)
+route.post(`${path}/get`, Passport.authenticate('jwt', { session: false }), getAgenda)
 
 // Obtener un solo evento
-route.get(`${path}:id`, Passport.authenticate('jwt', { session: false }), getEvent)
+route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getEvent)
 
 // Crear un evento
 route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, createEvent)
@@ -26,7 +26,7 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 route.post(`${path}/attendance/:id`, Passport.authenticate('jwt', { session: false }), AddAttendee)
 
 // Actualizar el estado de un usuario en la lista de asistencia
-route.patch(`${path}/attendance/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
+route.patch(`${path}/attendance/:id/:id2`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
 
 // Obtener todos los usuarios en la lista de asistencia
 route.get(`${path}/attendance/:id`, Passport.authenticate('jwt', { session: false }), getAttendees)

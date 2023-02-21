@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Agenda from "../models/Agenda";
+import Card from "../models/Card";
 import User from "../models/User";
 import Enviroment from "../config/Enviroment";
 import schedule from 'node-schedule'
@@ -159,13 +160,13 @@ export const updateEvent = async (req: Request, res: Response) => {
 
         req.body.belonging_place ? __ThrowError("El campo 'belonging_place' no se puede modificar") : null
 
+        req.body.modifier_register ? null : __ThrowError(`El campo 'modifier_register' es obligatorio`)
+        typeof req.body.modifier_register === 'string' ? null : __ThrowError(`El campo 'modifier_register' debe ser tipo 'string'`)
+
         !req.body.is_template ? null
             : typeof req.body.is_template === 'boolean' ? null
                 : __ThrowError(`El campo 'is_template' debe ser tipo 'boolean'`)
 
-        !req.body.modifier_register ? null
-            : typeof req.body.modifier_register === 'string' ? null
-                : __ThrowError(`El campo 'modifier_register' debe ser tipo 'string'`)
 
         !req.body.name ? null
             : typeof req.body.name === 'string' ? null
@@ -206,8 +207,40 @@ export const updateEvent = async (req: Request, res: Response) => {
 
     const is_publishing_date: boolean = req.body.publishing_date ? true : false
     const is_ending_date: boolean = req.body.ending_date ? true : false
+    const event_status: boolean = req.body.attendance.status ? true : false
 
     try {
+        if (event_status) {
+            const event: any = await Agenda.findOne({ "event_identifier": req.params.id })
+            if (event) {
+                event.attendance.status = req.body.attendance.status
+                event.save()
+                delete req.body.attendance
+            }
+
+            if (event && event.attendance.status === "concluido") {
+                for (let attendee of event.attendance.attendee_list) {
+                    const result = await Card.updateOne({ "provider_register": attendee.attendee_register },
+                        {
+                            $push: {
+                                "activities": {
+                                    "activity_name": event.name,
+                                    "hours": event.offered_hours,
+                                    "responsible_register": req.body.modifier_register
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
+            if (Object.keys(req.body).length === 0) {
+                return res.status(200).json({
+                    message: `Se actualizó la información del evento ${req.params.id}`
+                })
+            }
+        }
+
         const result = await Agenda.updateOne({ "event_identifier": req.params.id }, req.body)
 
         if (result.modifiedCount > 0) {

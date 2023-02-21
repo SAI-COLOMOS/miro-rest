@@ -1,28 +1,24 @@
 import { Request, Response } from "express"
 import User from "../models/User"
-import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
+import { __ThrowError, __Optional, __Required, __RequiredEnum, __OptionalEnum } from "../middleware/ValidationControl"
 import Card from "../models/Card"
 
 export const UsersGet = async (req: Request, res: Response) => {
+    let items: number
     try {
-        !req.body.items ? null
-            : typeof req.body.items === "number" ? null
-                : __ThrowError("El campo 'items' debe ser tipo 'number'")
 
-        !req.body.page ? null
-            : typeof req.body.page === 'number' ? null
-                : __ThrowError(`El campo 'page' debe ser tipo 'number'`)
+        // isNaN(Number(req.query.items)) ? __ThrowError("El campo 'items' debe ser tipo 'number'") : null
+        // console.log(Number(req.query.items))
+        __Optional(Number(req.query.items), `items`, `number`)
 
-        !req.body.search ? null
-            : typeof req.body.search === 'string' ? null
-                : __ThrowError(`El campo 'search' debe ser tipo 'string'`)
+        __Optional(req.body.page, `page`, `number`)
 
-        !req.body.filter ? null
-            : typeof req.body.filter === 'object' ? null
-                : __ThrowError(`El campo 'filter' debe ser tipo 'object'`)
+        __Optional(req.body.search, `search`, `string`)
+
+        __Optional(req.body.filter, `filter`, `object`)
     } catch (error) {
         return res.status(400).json({
-            error
+            error: error?.toString()
         })
     }
 
@@ -85,64 +81,43 @@ export const UserGet = async (req: Request, res: Response) => {
 export const UserPost = async (req: Request, res: Response) => {
 
     try {
+        __RequiredEnum(req.body.role, `role`, `string`, ['administrador', 'encargado', 'prestador'])
+
         const user: any = req.user
         user.role === "encargado" && req.body.role !== "prestador"
             ? __ThrowError(`El usuario de tipo 'encargado' no puede crear un usuario de tipo ${req.body.role}`)
             : null
 
-        req.body.first_name ? null : __ThrowError(`El campo 'first_name' es obligatorio`)
-        typeof req.body.first_name === 'string' ? null : __ThrowError(`El campo 'first_name' debe ser tipo 'string'`)
+        __Required(req.body.first_name, `first_name`, `string`)
 
-        req.body.first_last_name ? null : __ThrowError(`El campo 'first_last_name' es obligatorio`)
-        typeof req.body.first_last_name === 'string' ? null : __ThrowError(`El campo 'first_last_name' debe ser tipo 'string'`)
+        __Required(req.body.first_last_name, `first_last_name`, `string`)
 
-        !req.body.second_last_name ? null
-            : typeof req.body.second_last_name === 'string' ? null
-                : __ThrowError(`El campo 'second_last_name' debe ser tipo 'string'`)
+        __Optional(req.body.second_last_name, `second_last_name`, `string`)
 
-        req.body.age ? null : __ThrowError(`El campo 'age' es obligatorio`)
-        typeof req.body.age === 'string' ? null : __ThrowError(`El campo 'age' debe ser tipo 'string'`)
+        __Required(req.body.age, `age`, `string`)
 
-        req.body.email ? null : __ThrowError(`El campo 'email' es obligatorio`)
-        typeof req.body.email === 'string' ? null : __ThrowError(`El campo 'email' debe ser tipo 'string'`)
+        __Required(req.body.email, `email`, `string`)
 
-        req.body.phone ? null : __ThrowError(`El campo 'phone' es obligatorio`)
-        typeof req.body.phone === 'string' ? null : __ThrowError(`El campo 'phone' debe ser tipo 'string'`)
+        __Required(req.body.phone, `phone`, `string`)
 
-        req.body.emergency_contact ? null : __ThrowError(`El campo 'emergency_contact' es obligatorio`)
-        typeof req.body.emergency_contact === 'string' ? null : __ThrowError(`El campo 'emergency_contact' debe ser tipo 'string'`)
+        __Required(req.body.emergency_contact, `emergency_contact`, `string`)
 
-        req.body.emergency_phone ? null : __ThrowError(`El campo 'emergency_phone' es obligatorio`)
-        typeof req.body.emergency_phone === 'string' ? null : __ThrowError(`El campo 'emergency_phone' debe ser tipo 'string'`)
+        __Required(req.body.emergency_phone, `emergency_phone`, `string`)
 
-        req.body.blood_type ? null : __ThrowError(`El campo 'blood_type' es obligatorio`)
-        typeof req.body.blood_type === 'string' ? null : __ThrowError(`El campo 'blood_type' debe ser tipo 'string'`)
+        __RequiredEnum(req.body.blood_type, `blood_type`, `string`, ['o+', 'o-', 'a+', 'a-', 'b+', 'b-', 'ab+', 'ab-'])
 
+        __Required(req.body.place, `place`, `string`)
 
-        req.body.place ? null : __ThrowError(`El campo 'place' es obligatorio`)
-        typeof req.body.place === 'string' ? null : __ThrowError(`El campo 'place' debe ser tipo 'string'`)
+        __Required(req.body.assigned_area, `assigned_area`, `string`)
 
-        req.body.assigned_area ? null : __ThrowError(`El campo 'assigned_area' es obligatorio`)
-        typeof req.body.assigned_area === 'string' ? null : __ThrowError(`El campo 'assigned_area' debe ser tipo 'string'`)
+        __RequiredEnum(req.body.status, `status`, `string`, ['activo', 'suspendido', 'inactivo', 'finalizado'])
 
-        req.body.status ? null : __ThrowError(`El campo 'status' es obligatorio`)
-        typeof req.body.status === 'string' ? null : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
-        __CheckEnum(['activo', 'suspendido', 'inactivo', 'finalizado'], req.body.status, "status")
+        __Required(req.body.school, `school`, `string`)
 
-        req.body.school ? null : __ThrowError(`El campo 'school' es obligatorio`)
-        typeof req.body.school === 'string' ? null : __ThrowError(`El campo 'school' debe ser tipo 'string'`)
-
-        req.body.role ? null : __ThrowError(`El campo 'role' es obligatorio`)
-        typeof req.body.role === 'string' ? null : __ThrowError(`El campo 'role' debe ser tipo 'string'`)
-        __CheckEnum(['administrador', 'encargado', 'prestador'], req.body.role, "role")
-
-        req.body.provider_type ? null : __ThrowError(`El campo 'provider_type' es obligatorio`)
-        typeof req.body.provider_type === 'string' ? null : __ThrowError(`El campo 'provider_type' debe ser tipo 'string'`)
-
-        __CheckEnum(
-            req.body.role === 'prestador' ? ['servicio social', 'prácticas profesionales'] : ['servicio social', 'prácticas profesionales', 'no aplica']
-            , req.body.provider_type, "provider_type")
-
+        __RequiredEnum(req.body.provider_type, `provider_type`, `string`,
+            req.body.role === 'prestador'
+                ? ['servicio social', 'prácticas profesionales']
+                : ['servicio social', 'prácticas profesionales', 'no aplica'])
     } catch (error) {
         return res.status(400).json({
             error
@@ -199,73 +174,38 @@ export const UserDelete = async (req: Request, res: Response) => {
 
 export const UserPatch = async (req: Request, res: Response) => {
     try {
-        req.body.password || req.body.register ?
-            __ThrowError("Algunos campos no se pueden actualizar")
-            : null
+        req.body.password ? __ThrowError("El campo 'password' no se puede actualizar") : null
+        req.body.register ? __ThrowError("El campo 'register' no se puede actualizar") : null
 
-        !req.body.first_name ? null
-            : typeof req.body.first_name === 'string' ? null
-                : __ThrowError(`El campo 'first_name' debe ser tipo 'string'`)
+        __Optional(req.body.first_name, `first_name`, `string`)
 
-        !req.body.first_last_name ? null
-            : typeof req.body.first_last_name === 'string' ? null
-                : __ThrowError(`El campo 'first_last_name' debe ser tipo 'string'`)
+        __Optional(req.body.first_last_name, `first_last_name`, `string`)
 
-        !req.body.second_last_name ? null
-            : typeof req.body.second_last_name === 'string' ? null
-                : __ThrowError(`El campo 'second_last_name' debe ser tipo 'string'`)
+        __Optional(req.body.second_last_name, `second_last_name`, `string`)
 
-        !req.body.age ? null
-            : typeof req.body.age === 'string' ? null
-                : __ThrowError(`El campo 'age' debe ser tipo 'string'`)
+        __Optional(req.body.age, `age`, `string`)
 
-        !req.body.email ? null
-            : typeof req.body.email === 'string' ? null
-                : __ThrowError(`El campo 'email' debe ser tipo 'string'`)
+        __Optional(req.body.email, `email`, `string`)
 
-        !req.body.phone ? null
-            : typeof req.body.phone === 'string' ? null
-                : __ThrowError(`El campo 'phone' debe ser tipo 'string'`)
+        __Optional(req.body.phone, `phone`, `string`)
 
-        !req.body.emergency_contact ? null
-            : typeof req.body.emergency_contact === 'string' ? null
-                : __ThrowError(`El campo 'emergency_contact' debe ser tipo 'string'`)
+        __Optional(req.body.emergency_contact, `emergency_contact`, `string`)
 
-        !req.body.emergency_phone ? null
-            : typeof req.body.emergency_phone === 'string' ? null
-                : __ThrowError(`El campo 'emergency_phone' debe ser tipo 'string'`)
+        __Optional(req.body.emergency_phone, `emergency_phone`, `string`)
 
-        !req.body.blood_type ? null
-            : typeof req.body.blood_type === 'string' ? null
-                : __ThrowError(`El campo 'blood_type' debe ser tipo 'string'`)
+        __OptionalEnum(req.body.blood_type, `blood_type`, `string`, ['o+', 'o-', 'a+', 'a-', 'b+', 'b-', 'ab+', 'ab-'])
 
+        __Optional(req.body.place, `place`, `string`)
 
-        !req.body.place ? null
-            : typeof req.body.place === 'string' ? null
-                : __ThrowError(`El campo 'place' debe ser tipo 'string'`)
+        __Optional(req.body.assigned_area, `assigned_area`, `string`)
 
-        !req.body.assigned_area ? null
-            : typeof req.body.assigned_area === 'string' ? null
-                : __ThrowError(`El campo 'assigned_area' debe ser tipo 'string'`)
+        __OptionalEnum(req.body.status, `status`, `string`, ['activo', 'suspendido', 'inactivo', 'finalizado'])
 
-        !req.body.status ? null
-            : typeof req.body.status === 'string'
-                ? __CheckEnum(['activo', 'suspendido', 'inactivo', 'finalizado'], req.body.status, "status")
-                : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
+        __Optional(req.body.school, `school`, `string`)
 
-        !req.body.school ? null
-            : typeof req.body.school === 'string' ? null
-                : __ThrowError(`El campo 'school' debe ser tipo 'string'`)
+        __OptionalEnum(req.body.role, `role`, `string`, ['administrador', 'encargado', 'prestador'])
 
-        !req.body.role ? null
-            : typeof req.body.role === 'string'
-                ? __CheckEnum(['administrador', 'encargado', 'prestador'], req.body.role, "role")
-                : __ThrowError(`El campo 'role' debe ser tipo 'string'`)
-
-        !req.body.provider_type ? null
-            : typeof req.body.provider_type === 'string'
-                ? __CheckEnum(['servicio social', 'prácticas profesionales', 'no aplica'], req.body.provider_type, "provider_type")
-                : __ThrowError(`El campo 'provider_type' debe ser tipo 'string'`)
+        __OptionalEnum(req.body.provider_type, `provider_type`, `string`, ['servicio social', 'prácticas profesionales', 'no aplica'])
     } catch (error) {
         return res.status(400).json({
             error

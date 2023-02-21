@@ -6,7 +6,7 @@ const prefix = "/auth"
 
 route.post(`${prefix}/login`, LoginGet)
 
-route.get(`${prefix}/recovery`, sendRecoveryToken)
+route.post(`${prefix}/recovery`, sendRecoveryToken)
 
 route.patch(`${prefix}/recovery`, recoverPassword)
 

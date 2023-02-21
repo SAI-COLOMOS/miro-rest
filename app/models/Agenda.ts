@@ -30,6 +30,7 @@ export interface AgendaInterface extends Document {
 const AttendeeListSchema = new Schema({
     attendee_register: {
         type: String,
+        index: true,
         required: [true, "El registro del usuario es obligatorio"]
     },
     status: {
@@ -84,7 +85,13 @@ const AgendaSchema = new Schema({
         type: Number,
         required: [true, "La cantidad de vacantes es obligatoria"]
     },
-    attendance: AttendanceSchema,
+    attendance: {
+        type: AttendanceSchema,
+        default: {
+            attendee_list: [],
+            status: "disponible"
+        }
+    },
     starting_date: {
         type: Date,
         required: [true, "La fecha de inicio del evento es obligatoria"]
@@ -125,8 +132,14 @@ AgendaSchema.pre<AgendaInterface>("save", async function (next) {
     if (this.isNew) {
         const pool = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm0123456789"
         let randomString = ""
-        for (let i = 0; i < 20; i++) {
-            randomString += pool.charAt(Math.floor(Math.random() * pool.length))
+        let flag = true
+        while (flag) {
+            randomString = ""
+            for (let i = 0; i < 20; i++) {
+                randomString += pool.charAt(Math.floor(Math.random() * pool.length))
+            }
+            const event = await Agenda.findOne({ "event_identifier": randomString })
+            event ? null : flag = false
         }
         this.event_identifier = randomString
     }
