@@ -21,6 +21,10 @@ const AreaSchema = new Schema({
         required: true,
         index: true
     },
+    phone: {
+        type: String,
+        required: [true, "El número de contacto es necesario"]
+    }
 }, {
     versionKey: false
 })
@@ -33,9 +37,36 @@ const PlaceSchema = new Schema({
     },
     place_name: {
         type: String,
-        required: true,
+        required: [true, "El nombre del lugar en necesario"],
         unique: true,
         index: true
+    },
+    municipality: {
+        type: String,
+        required: [true, "El municipio es encesario"]
+    },
+    street: {
+        type: String,
+        required: [true, "La calle es necesaria"]
+    },
+    postal_code: {
+        type: String,
+        required: [true, "El código postal es necesario"]
+    },
+    number: {
+        type: String,
+        required: [true, "El número de dirección es necesario"]
+    },
+    colony: {
+        type: String,
+        required: [true, "La colonia es necesaria"]
+    },
+    phone: {
+        type: String,
+        required: [true, "El número de contacto es necesario"]
+    },
+    reference: {
+        type: String
     },
     place_areas: [AreaSchema]
 }, {
