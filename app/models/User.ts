@@ -32,19 +32,16 @@ const UserSchema = new Schema({
     },
     first_name: {
         type: String,
-        lowercase: true,
         required: [true, "El nombre es necesario"],
         trim: true
     },
     first_last_name: {
         type: String,
-        lowercase: true,
         required: [true, "Un apellido es necesario"],
         trim: true
     },
     second_last_name: {
         type: String,
-        lowercase: true,
         trim: true
     },
     age: {
@@ -72,7 +69,6 @@ const UserSchema = new Schema({
     },
     emergency_contact: {
         type: String,
-        lowercase: true,
         required: [true, "El contacto de emergencia es necesario"]
     },
     emergency_phone: {
@@ -84,39 +80,32 @@ const UserSchema = new Schema({
     blood_type: {
         type: String,
         required: [true, "El tipo de sangre es necesario"],
-        lowercase: true,
         enum: ['o+', 'o-', 'a+', 'a-', 'b+', 'b-', 'ab+', 'ab-']
     },
     provider_type: {
         type: String,
-        lowercase: true,
         enum: ['servicio social', 'prácticas profesionales', 'no aplica'],
         required: [true, "El tipo de prestador es necesario"]
     },
     place: {
         type: String,
-        lowercase: true,
         required: [true, "El lugar es necesario"]
     },
     assigned_area: {
         type: String,
-        lowercase: true,
         required: [true, "El área de asignación es necesaria"]
     },
     status: {
         type: String,
-        lowercase: true,
         enum: ['activo', 'suspendido', 'inactivo', 'finalizado'],
         default: 'Activo'
     },
     school: {
         type: String,
-        lowercase: true,
         required: [true, "La escuela es necesaria"]
     },
     role: {
         type: String,
-        lowercase: true,
         enum: ['administrador', 'encargado', 'prestador'],
         required: [true, "El rol es necesario"]
     }

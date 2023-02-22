@@ -14,14 +14,11 @@ export interface PlaceInterface extends Document {
 const AreaSchema = new Schema({
     area_identifier: {
         type: String,
-        unique: true,
         index: true
     },
     area_name: {
         type: String,
-        lowercase: true,
         required: true,
-        unique: true,
         index: true
     },
 }, {
@@ -38,7 +35,6 @@ const PlaceSchema = new Schema({
         type: String,
         required: true,
         unique: true,
-        lowercase: true,
         index: true
     },
     place_areas: [AreaSchema]
@@ -52,10 +48,10 @@ PlaceSchema.pre<PlaceInterface>("save", async function (next) {
     if (this.isNew) {
         let serie = "01"
 
-        const last_identifier = await Place.findOne().sort({ "place_identifier": "desc" }).select("place_identifier")
+        const last_identifier = await Place.findOne().sort({ "place_identifier": "desc" })
 
         if (last_identifier) {
-            const next_identifier: number = Number(last_identifier) + 1
+            const next_identifier: number = Number(last_identifier.place_identifier) + 1
 
             if (next_identifier < 10) {
                 serie = "0" + next_identifier
@@ -66,30 +62,6 @@ PlaceSchema.pre<PlaceInterface>("save", async function (next) {
 
         this.place_identifier = serie
     }
-
-    // if (this.isModified("place_areas")) {
-    //     let serie = "001"
-    //     const obj = this.toObject()
-
-    //     const name = obj.place_areas[obj.place_areas.length - 1].area_name
-    //     let arr = this.place_areas.toObject()
-
-    //     obj.place_areas.pop()
-    //     obj.place_areas.sort(function (a: any, b: any) { return b.area_identifier - a.area_identifier })
-
-    //     const last_identifier = obj.place_areas[0]
-    //     const next_identifier = Number(last_identifier.area_identifier) + 1
-    //     if (next_identifier < 10) {
-    //         serie = "00" + next_identifier
-    //     } else if (next_identifier < 100) {
-    //         serie = "0" + next_identifier
-    //     } else {
-    //         serie = next_identifier.toString()
-    //     }
-
-    //     arr[arr.findIndex((area: AreaInterface) => area.area_name === name)].area_identifier = serie
-    //     this.place_areas = arr
-    // }
 
     next()
 })
