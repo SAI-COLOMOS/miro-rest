@@ -5,20 +5,10 @@ export function __CheckEnum(arr: Array<string>, value: string, field: string) {
     for (let str of arr) {
         value === str ? is_valid = true : null
     }
-    is_valid ? null : __ThrowError(`El campo '${field}' debe contener uno de los siguientes strings ${arr}'`)
+    is_valid ? null : __ThrowError(`El campo '${field}' debe contener uno de los siguientes strings: ${arr}`)
 }
 
-export function __Required(value: any, field_name: string, value_type: string) {
-    value
-        ? null
-        : __ThrowError(`El campo '${field_name}' es obligatorio`)
-
-    typeof value === value_type
-        ? null
-        : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}'`)
-}
-
-export function __RequiredEnum(value: any, field_name: string, value_type: string, arr: Array<string>) {
+export function __Required(value: any, field_name: string, value_type: string, arr: Array<string> | null) {
     value
         ? null
         : __ThrowError(`El campo '${field_name}' es obligatorio`)
@@ -27,21 +17,31 @@ export function __RequiredEnum(value: any, field_name: string, value_type: strin
         ? null
         : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}'`)
 
-    __CheckEnum(arr, value, field_name)
+    arr ? __CheckEnum(arr, value, field_name) : null
 }
 
-export function __Optional(value: any, field_name: string, value_type: string) {
+export function __Optional(value: any, field_name: string, value_type: string, arr: Array<string> | null) {
     !value
         ? null
         : typeof value === value_type
+            ? arr ? __CheckEnum(arr, value, field_name) : null
+            : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}'`)
+}
+
+export function __Query(value: any, field_name: string, value_type: string) {
+    if (value_type === "number") {
+        !value
             ? null
-            : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}'`)
-}
+            : !isNaN(Number(value))
+                ? null
+                : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}' con un valor numérico válido`)
+    }
 
-export function __OptionalEnum(value: any, field_name: string, value_type: string, arr: Array<string>) {
-    !value
-        ? null
-        : typeof value === value_type
-            ? __CheckEnum(arr, value, field_name)
-            : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}'`)
+    if (value_type === "boolean") {
+        !value
+            ? null
+            : value === "true" || value === "false"
+                ? null
+                : __ThrowError(`El campo '${field_name}' debe ser tipo '${value_type}' con un valor numérico válido`)
+    }
 }

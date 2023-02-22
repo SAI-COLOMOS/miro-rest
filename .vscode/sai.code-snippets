@@ -61,33 +61,25 @@
 		"scope": "javascript, typescript",
 		"prefix": "rv",
 		"body": [
-			"__Required(req.body.$1, `$1`, `$2`)"
+			"__Required(req.body.$1, `$1`, `$2`, $3)"
 		],
 		"description": "Retorna una plantilla de respuesta obligatoria"
-	},
-	"Crear validación de un campo obligatorio con enums": {
-		"scope": "javascript, typescript",
-		"prefix": "rve",
-		"body": [
-			"__RequiredEnum(req.body.$1, `$1`, `$2`, [$3])"
-		],
-		"description": "Retorna una plantilla de respuesta obligatoria con verificación de enums"
 	},
 	"Crear validación de un campo opcional": {
 		"scope": "javascript, typescript",
 		"prefix": "ov",
 		"body": [
-			"__Optional(req.body.$1, `$1`, `$2`)"
+			"__Optional(req.body.$1, `$1`, `$2`, $3)"
 		],
 		"description": "Retorna una plantilla de respuesta opcional"
 	},
-	"Crear validación de un campo opcional con enums": {
+	"Crear validación de un campo query": {
 		"scope": "javascript, typescript",
-		"prefix": "ove",
+		"prefix": "qv",
 		"body": [
-			"__OptionalEnum(req.body.$1, `$1`, `$2`, [$3])"
+			"__Query(req.query.$1, `$1`, `$2`)"
 		],
-		"description": "Retorna una plantilla de respuesta opcional con verificación de enums"
+		"description": "Retorna una plantilla de respuesta opcional"
 	},
 	"Crear ruta": {
 		"scope": "javascript, typescript",
