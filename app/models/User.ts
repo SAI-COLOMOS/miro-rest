@@ -80,11 +80,11 @@ const UserSchema = new Schema({
     blood_type: {
         type: String,
         required: [true, "El tipo de sangre es necesario"],
-        enum: ['o+', 'o-', 'a+', 'a-', 'b+', 'b-', 'ab+', 'ab-']
+        enum: ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']
     },
     provider_type: {
         type: String,
-        enum: ['servicio social', 'prácticas profesionales', 'no aplica'],
+        enum: ['Servicio social', 'Prácticas profesionales', 'No aplica'],
         required: [true, "El tipo de prestador es necesario"]
     },
     place: {
@@ -97,7 +97,7 @@ const UserSchema = new Schema({
     },
     status: {
         type: String,
-        enum: ['activo', 'suspendido', 'inactivo', 'finalizado'],
+        enum: ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'],
         default: 'Activo'
     },
     school: {
@@ -106,7 +106,7 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['administrador', 'encargado', 'prestador'],
+        enum: ['Administrador', 'Encargado', 'Prestador'],
         required: [true, "El rol es necesario"]
     }
 }, {
