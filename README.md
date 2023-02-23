@@ -1,7 +1,6 @@
 
 ![Logotoipo de Sistema Administrativo de la Información](/app/public/logo.png)
 
-
 # Manual de uso de MIRO-REST
 
 Este trabajo es parte de nuestro proyecto de titulación, el cual consiste en una plataforma que conformada por una API (este repositorio) y una [aplicación móvil](https://www.github.com/SAI-AMBU/sai-app). Con el fin de modernizar y automatizar las diferentes áreas dentro de la Agencia Metropolitana de Bosques Urbanos del Área Metropolitana de Guadalajara.
@@ -33,9 +32,13 @@ Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempr
 
 #### Login
 
+- Endpoint
+
 ```http
 POST /auth/login
 ```
+
+- Parameters
 
 | Parameter    | Type      | Description                                                                                        |
 | :----------- | :-------- | :------------------------------------------------------------------------------------------------- |
@@ -43,9 +46,9 @@ POST /auth/login
 | `password`   | `string`  | **Required**. User's password                                                                      |
 | `keepAlive`  | `boolean` | If true, will return an 90 days expiration token, else will return an three days expiration token. |
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../auth/login`,
     {
@@ -62,9 +65,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Sesión iniciada",
     "token": "XXXX.XXXXXXXXXX.XXXXXX"
@@ -73,17 +76,21 @@ fetch(
 
 #### Password reset request
 
+- Endpoint
+
 ```http
 POST /auth/recovery
 ```
+
+- Parameters
 
 | Parameter    | Type     | Description                                         |
 | :----------- | :------- | :-------------------------------------------------- |
 | `credential` | `string` | **Required**. May be the user's id, email or phone  |
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../auth/recovey`,
     {
@@ -99,9 +106,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Si se encontró el usuario; Se mandó un correo de recuperación"
 }
@@ -109,9 +116,13 @@ fetch(
 
 #### Password reset
 
+- Endpoint
+
 ```http
 PATCH /auth/recovery?token=:token
 ```
+
+- Parameters
 
 | Parameter  | Type     | Description                                   |
 | :--------- | :------- | :-------------------------------------------- |
@@ -124,9 +135,9 @@ PATCH /auth/recovery?token=:token
 > - Must have at least one special character.
 > - Must be at least eight characters long.
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../auth/recovey`,
     {
@@ -142,9 +153,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Se actualizó la contraseña del usuario"
 }
@@ -154,13 +165,15 @@ fetch(
 
 #### Get places
 
+- Endpoint
+
 ```http
 GET /places
 ```
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places`,
     {
@@ -174,9 +187,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Listo",
     "places": [
@@ -221,13 +234,15 @@ fetch(
 
 #### Get a place
 
+- Endpoint
+
 ```http
 GET /places/:place_identifier
 ```
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places/${place_identifier}`,
     {
@@ -241,9 +256,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Listo",
     "place": {
@@ -272,9 +287,13 @@ fetch(
 
 #### Create a place
 
+- Endpoint
+
 ```http
 POST /places
 ```
+
+- Parameters
 
 | Parameter      | Type     | Description                             |
 | :------------- | :------- | :-------------------------------------- |
@@ -287,9 +306,9 @@ POST /places
 | `phone`        | `string` | **Required**. Contat phone number       |
 | `reference`    | `string` | Address references                      |
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places/`,
     {
@@ -313,9 +332,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Parque añadido",
     "place": [
@@ -339,9 +358,13 @@ fetch(
 
 #### Update a place
 
+- Endpoint
+
 ```http
 PATCH /places/:place_identifier
 ```
+
+- Parameters
 
 | Parameter      | Type     | Description               |
 | :------------- | :------- | :------------------------ |
@@ -356,9 +379,9 @@ PATCH /places/:place_identifier
 
 > ⚠️ Note: only send the parameters that are going to be updated
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places/${place_identifier}`,
     {
@@ -375,9 +398,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Se actualizó la información del lugar"
 }
@@ -385,18 +408,22 @@ fetch(
 
 #### Create an area
 
+- Endpoint
+
 ```http
 POST /places/:place_identifier
 ```
+
+- Parameters
 
 | Parameter   | Type     | Description                                    |
 | :---------- | :------- | :--------------------------------------------- |
 | `area_name` | `string` | **Required**. Name of the new area             |
 | `phone`     | `string` | **Required**. Contact phone number of the area |
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places/${place_identifier}`,
     {
@@ -414,9 +441,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Se añadió el area"
 }
@@ -424,9 +451,13 @@ fetch(
 
 #### Update an area
 
+- Endpoint
+
 ```http
 PATCH /places/:place_identifier/:area_identifier
 ```
+
+- Parameters
 
 | Parameter   | Type     | Description                      |
 | :---------- | :------- | :------------------------------- |
@@ -435,9 +466,9 @@ PATCH /places/:place_identifier/:area_identifier
 
 > ⚠️ Note: only send the parameters that are going to be updated
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places/${place_identifier}/${area_identifier}`,
     {
@@ -454,9 +485,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "El área fue modificado"
 }
@@ -464,13 +495,15 @@ fetch(
 
 #### Delete an area
 
+- Endpoint
+
 ```http
 DELETE /places/:place_identifier/:area_identifier
 ```
 
-```javascript
-// Request
+- Request
 
+```javascript
 fetch(
     `.../places/${place_identifier}/${area_identifier}`,
     {
@@ -484,9 +517,9 @@ fetch(
 )
 ```
 
-```json
-// Response
+- Response
 
+```json
 {
     "message": "Se eliminó el área"
 }
