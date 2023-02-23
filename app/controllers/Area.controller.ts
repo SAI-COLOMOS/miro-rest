@@ -30,13 +30,15 @@ export const addArea = async (req: Request, res: Response) => {
                 }
             }
 
-            const body: object = {
-                "area_identifier": serie,
-                "area_name": req.body.area_name,
-                "phone": req.body.phone
-            }
-
-            const result = await Place.updateOne({ "place_identifier": req.params.id }, { $push: { "place_areas": body } })
+            const result = await Place.updateOne({ "place_identifier": req.params.id }, {
+                $push: {
+                    "place_areas": {
+                        "area_identifier": serie,
+                        "area_name": req.body.area_name,
+                        "phone": req.body.phone
+                    }
+                }
+            })
 
             return result.modifiedCount > 0
                 ? res.status(201).json({
