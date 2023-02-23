@@ -5,41 +5,28 @@ import User from "../models/User";
 import Enviroment from "../config/Enviroment";
 import schedule from 'node-schedule'
 import { mensaje, sendEmail } from "../config/Mailer"
-import { __ThrowError } from "../middleware/ValidationControl"
+import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getAgenda = async (req: Request, res: Response) => {
     try {
-        !req.body.items ? null
-            : typeof req.body.items === 'number' ? null
-                : __ThrowError(`El campo 'items' debe ser tipo 'number'`)
+        __Query(req.query.items, `items`, `number`)
 
-        !req.body.page ? null
-            : typeof req.body.page === 'number' ? null
-                : __ThrowError(`El campo 'page' debe ser tipo 'number'`)
-
-        !req.body.search ? null
-            : typeof req.body.search === 'string' ? null
-                : __ThrowError(`El campo 'search' debe ser tipo 'string'`)
-
-        !req.body.filter ? null
-            : typeof req.body.filter === 'object' ? null
-                : __ThrowError(`El campo 'filter' debe ser tipo 'object'`)
+        __Query(req.query.page, `page`, `number`)
     } catch (error) {
         return res.status(400).json({
             error
         })
     }
-
     try {
-        const items: number = req.body.items > 0 ? req.body.items : 10
-        const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filter ?
-            req.body.search ?
+        const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+        const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
+        const filter: object = req.query.filter ?
+            req.query.search ?
                 {
-                    ...req.body.filter,
+                    ...JSON.parse(String(req.query.filter)),
                     $or: [{ "name": { $regex: '.*' + req.body.search + '.*' } }]
                 }
-                : req.body.filter
+                : JSON.parse(String(req.query.filter))
             : null
 
         const result = await Agenda.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
@@ -82,42 +69,29 @@ export const getEvent = async (req: Request, res: Response) => {
 
 export const createEvent = async (req: Request, res: Response) => {
     try {
-        req.body.name ? null : __ThrowError(`El campo 'name' es obligatorio`)
-        typeof req.body.name === 'string' ? null : __ThrowError(`El campo 'name' debe ser tipo 'string'`)
+        __Required(req.body.name, `name`, `string`, null)
 
-        req.body.description ? null : __ThrowError(`El campo 'description' es obligatorio`)
-        typeof req.body.description === 'string' ? null : __ThrowError(`El campo 'description' debe ser tipo 'string'`)
+        __Required(req.body.description, `description`, `string`, null)
 
-        req.body.offered_hours ? null : __ThrowError(`El campo 'offered_hours' es obligatorio`)
-        typeof req.body.offered_hours === 'number' ? null : __ThrowError(`El campo 'offered_hours' debe ser tipo 'number'`)
+        __Required(req.body.offered_hours, `offered_hours`, `number`, null)
 
-        req.body.vacancy ? null : __ThrowError(`El campo 'vacancy' es obligatorio`)
-        typeof req.body.vacancy === 'number' ? null : __ThrowError(`El campo 'vacancy' debe ser tipo 'number'`)
+        __Required(req.body.vacancy, `vacancy`, `number`, null)
 
-        req.body.starting_date ? null : __ThrowError(`El campo 'starting_date' es obligatorio`)
-        typeof req.body.starting_date === 'string' ? null : __ThrowError(`El campo 'starting_date' debe ser tipo 'string' con la fecha en formato ISO`)
+        __Required(req.body.starting_date, `starting_date`, `string`, null, true)
 
-        req.body.ending_date ? null : __ThrowError(`El campo 'ending_date' es obligatorio`)
-        typeof req.body.ending_date === 'string' ? null : __ThrowError(`El campo 'ending_date' debe ser tipo 'string' con la fecha en formato ISO`)
+        __Required(req.body.ending_date, `ending_date`, `string`, null, true)
 
-        req.body.author_register ? null : __ThrowError(`El campo 'author_register' es obligatorio`)
-        typeof req.body.author_register === 'string' ? null : __ThrowError(`El campo 'author_register' debe ser tipo 'string'`)
+        __Required(req.body.author_register, `author_register`, `string`, null)
 
-        req.body.publishing_date ? null : __ThrowError(`El campo 'publishing_date' es obligatorio`)
-        typeof req.body.publishing_date === 'string' ? null : __ThrowError(`El campo 'publishing_date' debe ser tipo 'string' con la fecha en formato ISO`)
+        __Required(req.body.publishing_date, `publishing_date`, `string`, null, true)
 
-        req.body.place ? null : __ThrowError(`El campo 'place' es obligatorio`)
-        typeof req.body.place === 'string' ? null : __ThrowError(`El campo 'place' debe ser tipo 'string'`)
+        __Required(req.body.place, `place`, `string`, null)
 
-        req.body.belonging_place ? null : __ThrowError(`El campo 'belonging_place' es obligatorio`)
-        typeof req.body.belonging_place === 'string' ? null : __ThrowError(`El campo 'belonging_place' debe ser tipo 'string'`)
+        __Required(req.body.belonging_place, `belonging_place`, `string`, null)
 
-        req.body.belonging_area ? null : __ThrowError(`El campo 'belonging_area' es obligatorio`)
-        typeof req.body.belonging_area === 'string' ? null : __ThrowError(`El campo 'belonging_area' debe ser tipo 'string'`)
+        __Required(req.body.belonging_area, `belonging_area`, `string`, null)
 
-        !req.body.is_template ? null
-            : typeof req.body.is_template === 'boolean' ? null
-                : __ThrowError(`El campo 'is_template' debe ser tipo 'boolean'`)
+        __Optional(req.body.is_template, `is_template`, `boolean`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -134,14 +108,16 @@ export const createEvent = async (req: Request, res: Response) => {
             time = event.ending_date
             time.setHours(time.getHours() + 1)
             endEvent(event.event_identifier, time.toISOString())
-            return res.status(201).json({
+        }
+
+        return event
+            ? res.status(201).json({
                 message: "Evento creado",
                 event: event
             })
-        }
-        return res.status(500).json({
-            message: "No se pudo crear el evento"
-        })
+            : res.status(500).json({
+                message: "No se pudo crear el evento"
+            })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
@@ -160,45 +136,25 @@ export const updateEvent = async (req: Request, res: Response) => {
 
         req.body.belonging_place ? __ThrowError("El campo 'belonging_place' no se puede modificar") : null
 
-        req.body.modifier_register ? null : __ThrowError(`El campo 'modifier_register' es obligatorio`)
-        typeof req.body.modifier_register === 'string' ? null : __ThrowError(`El campo 'modifier_register' debe ser tipo 'string'`)
+        __Required(req.body.modifier_register, `modifier_register`, `string`, null)
 
-        !req.body.is_template ? null
-            : typeof req.body.is_template === 'boolean' ? null
-                : __ThrowError(`El campo 'is_template' debe ser tipo 'boolean'`)
+        __Optional(req.body.is_template, `is_template`, `boolean`, null)
 
+        __Optional(req.body.name, `name`, `string`, null)
 
-        !req.body.name ? null
-            : typeof req.body.name === 'string' ? null
-                : __ThrowError(`El campo 'name' debe ser tipo 'string'`)
+        __Optional(req.body.description, `description`, `string`, null)
 
-        !req.body.description ? null
-            : typeof req.body.description === 'string' ? null
-                : __ThrowError(`El campo 'description' debe ser tipo 'string'`)
+        __Optional(req.body.offered_hours, `offered_hours`, `number`, null)
 
-        !req.body.offered_hours ? null
-            : typeof req.body.offered_hours === 'number' ? null
-                : __ThrowError(`El campo 'offered_hours' debe ser tipo 'number'`)
+        __Optional(req.body.vacancy, `vacancy`, `number`, null)
 
-        !req.body.vacancy ? null
-            : typeof req.body.vacancy === 'number' ? null
-                : __ThrowError(`El campo 'vacancy' debe ser tipo 'number'`)
+        __Optional(req.body.place, `place`, `string`, null)
 
-        !req.body.place ? null
-            : typeof req.body.place === 'string' ? null
-                : __ThrowError(`El campo 'place' debe ser tipo 'string'`)
+        __Optional(req.body.publishing_date, `publishing_date`, `string`, null, true)
 
-        !req.body.publishing_date ? null
-            : typeof req.body.publishing_date === 'string' ? null
-                : __ThrowError(`El campo 'publishing_date' debe ser tipo 'string' con la fecha en formato ISO`)
+        __Optional(req.body.starting_date, `starting_date`, `string`, null, true)
 
-        !req.body.starting_date ? null
-            : typeof req.body.starting_date === 'string' ? null
-                : __ThrowError(`El campo 'starting_date' debe ser tipo 'string' con la fecha en formato ISO`)
-
-        !req.body.ending_date ? null
-            : typeof req.body.ending_date === 'string' ? null
-                : __ThrowError(`El campo 'ending_date' debe ser tipo 'string' con la fecha en formato ISO`)
+        __Optional(req.body.ending_date, `ending_date`, `string`, null, true)
     } catch (error) {
         return res.status(400).json({
             error

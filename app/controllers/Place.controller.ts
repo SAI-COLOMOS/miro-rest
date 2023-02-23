@@ -1,24 +1,12 @@
 import { Request, Response } from "express"
 import Place from "../models/Place"
-import { __ThrowError } from "../middleware/ValidationControl"
+import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getPlaces = async (req: Request, res: Response) => {
     try {
-        !req.body.items ? null
-            : typeof req.body.items === "number" ? null
-                : __ThrowError("El campo 'items' debe ser tipo 'number'")
+        __Query(req.query.items, `items`, `number`)
 
-        !req.body.page ? null
-            : typeof req.body.page === 'number' ? null
-                : __ThrowError(`El campo 'page' debe ser tipo 'number'`)
-
-        !req.body.search ? null
-            : typeof req.body.search === 'string' ? null
-                : __ThrowError(`El campo 'search' debe ser tipo 'string'`)
-
-        !req.body.filter ? null
-            : typeof req.body.filter === 'object' ? null
-                : __ThrowError(`El campo 'filter' debe ser tipo 'object'`)
+        __Query(req.query.page, `page`, `number`)
     } catch (error) {
         return res.status(400).json({
             error
@@ -26,15 +14,15 @@ export const getPlaces = async (req: Request, res: Response) => {
     }
 
     try {
-        const items: number = req.body.items > 0 ? req.body.items : 10
-        const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filter ?
-            req.body.search ?
+        const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+        const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
+        const filter: object = req.query.filter ?
+            req.query.search ?
                 {
-                    ...req.body.filter,
-                    $or: [{ "place_name": { $regex: '.*' + req.body.search + '.*' } }]
+                    ...JSON.parse(String(req.query.filter)),
+                    $or: [{ "place_name": { $regex: '.*' + req.query.search + '.*' } }]
                 }
-                : req.body.filter
+                : JSON.parse(String(req.query.filter))
             : null
 
         const places = await Place.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
@@ -44,7 +32,7 @@ export const getPlaces = async (req: Request, res: Response) => {
                 message: 'Listo',
                 places: places
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: 'Sin resultados'
             })
     } catch (error) {
@@ -77,8 +65,21 @@ export const getPlace = async (req: Request, res: Response) => {
 
 export const postPlace = async (req: Request, res: Response) => {
     try {
-        req.body.place_name ? null : __ThrowError(`El campo 'place_name' es obligatorio`)
-        typeof req.body.place_name === 'string' ? null : __ThrowError(`El campo 'place_name' debe ser tipo 'string'`)
+        __Required(req.body.place_name, `place_name`, `string`, null)
+
+        __Required(req.body.municipality, `municipality`, `string`, null)
+
+        __Required(req.body.street, `street`, `string`, null)
+
+        __Required(req.body.postal_code, `postal_code`, `string`, null)
+
+        __Required(req.body.number, `number`, `string`, null)
+
+        __Required(req.body.colony, `colony`, `string`, null)
+
+        __Required(req.body.phone, `phone`, `string`, null)
+
+        __Optional(req.body.reference, `reference`, `string`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -106,9 +107,21 @@ export const postPlace = async (req: Request, res: Response) => {
 
 export const updatePlace = async (req: Request, res: Response) => {
     try {
-        !req.body.place_name ? null
-            : typeof req.body.place_name === 'string' ? null
-                : __ThrowError(`El campo 'place_name' debe ser tipo 'string'`)
+        __Optional(req.body.place_name, `place_name`, `string`, null)
+
+        __Optional(req.body.municipality, `municipality`, `string`, null)
+
+        __Optional(req.body.street, `street`, `string`, null)
+
+        __Optional(req.body.postal_code, `postal_code`, `string`, null)
+
+        __Optional(req.body.number, `number`, `string`, null)
+
+        __Optional(req.body.colony, `colony`, `string`, null)
+
+        __Optional(req.body.phone, `phone`, `string`, null)
+
+        __Optional(req.body.reference, `reference`, `string`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -124,119 +137,6 @@ export const updatePlace = async (req: Request, res: Response) => {
             })
             : res.status(404).json({
                 message: `No se encontró el lugar ${req.params.id}`
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: "Ocurrió un error en el servidor",
-            error: error?.toString()
-        })
-    }
-}
-
-export const updateArea = async (req: Request, res: Response) => {
-    let update: object = {}
-    try {
-        !req.body.area_name ? null
-            : typeof req.body.area_name === 'string' ? null
-                : __ThrowError(`El campo 'area_name' debe ser tipo 'string'`)
-        req.body.area_name ? update = { "place_areas.$.area_name": req.body.area_name } : null
-    } catch (error) {
-        return res.status(400).json({
-            error
-        })
-    }
-
-    try {
-        const result = await Place.updateOne({ "place_identifier": req.params.id, "place_areas.area_identifier": req.params.id2 }, { $set: update })
-
-        return result.modifiedCount > 0
-            ? res.status(200).json({
-                message: "El nombre del área fué modificado",
-            })
-            : res.status(404).json({
-                message: `No se encontró el lugar ${req.params.id} o el área ${req.params.id2}`
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: "Ocurrió un error en el servidor",
-            error: error?.toString()
-        })
-    }
-}
-
-export const addArea = async (req: Request, res: Response) => {
-    try {
-        req.body.area_name ? null : __ThrowError(`El campo 'area_name' es obligatorio`)
-        typeof req.body.area_name === 'string' ? null : __ThrowError(`El campo 'area_name' debe ser tipo 'string'`)
-    } catch (error) {
-        return res.status(400).json({
-            error
-        })
-    }
-
-    try {
-        const place = await Place.findOne({ "place_identifier": req.params.id })
-
-        if (place) {
-            let serie = "01"
-            const arr = place.place_areas.toObject()
-
-            if (arr.length > 0) {
-                const last_identifier = arr[arr.length - 1]
-                const next_identifier = Number(last_identifier.area_identifier) + 1
-                if (next_identifier < 10) {
-                    serie = "0" + next_identifier
-                } else {
-                    serie = next_identifier.toString()
-                }
-            }
-
-            const body: object = {
-                "area_identifier": serie,
-                "area_name": req.body.area_name
-            }
-
-            const result = await Place.updateOne({ "place_identifier": req.params.id }, { $push: { "place_areas": body } })
-
-            return result.modifiedCount > 0
-                ? res.status(201).json({
-                    message: `Se añadió el area`,
-                })
-                : res.status(404).json({
-                    message: `No se encontró el parque ${req.params.id}`
-                })
-        }
-
-        return res.status(404).json({
-            message: `No se encontró el parque ${req.params.id}`
-        })
-    } catch (error) {
-        return res.status(500).json({
-            message: "Ocurrió un error en el servidor",
-            error: error?.toString()
-        })
-    }
-}
-
-export const removeArea = async (req: Request, res: Response) => {
-    try {
-        req.body.area_identifier ? null : __ThrowError(`El campo 'area_identifier' es obligatorio`)
-        typeof req.body.area_identifier === 'string' ? null : __ThrowError(`El campo 'area_identifier' debe ser tipo 'string'`)
-    } catch (error) {
-        return res.status(400).json({
-            error
-        })
-    }
-
-    try {
-        const result = await Place.updateOne({ "place_identifier": req.params.id }, { $pull: { "place_areas": { "area_identifier": req.body.area_identifier } } })
-
-        return result.modifiedCount > 0
-            ? res.status(200).json({
-                message: "Se eliminó el área"
-            })
-            : res.status(404).json({
-                message: "No se encontró el área"
             })
     } catch (error) {
         return res.status(500).json({

@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import Agenda from "../models/Agenda"
-import { __CheckEnum, __ThrowError } from "../middleware/ValidationControl"
+import { __CheckEnum, __ThrowError, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getAttendees = async (req: Request, res: Response) => {
     try {
@@ -11,7 +11,7 @@ export const getAttendees = async (req: Request, res: Response) => {
                 message: `Listo`,
                 attendees: event.attendance.attendee_list
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `No se encontró el evento ${req.params.id}`
             })
     } catch (error) {
@@ -24,12 +24,9 @@ export const getAttendees = async (req: Request, res: Response) => {
 
 export const AddAttendee = async (req: Request, res: Response) => {
     try {
-        req.body.attendee_register ? null : __ThrowError(`El campo 'attendee_register' es obligatorio`)
-        typeof req.body.attendee_register === 'string' ? null : __ThrowError(`El campo 'attendee_register' debe ser tipo 'string'`)
+        __Required(req.body.attendee_register, `attendee_register`, `string`, null)
 
-        req.body.status ? null : __ThrowError(`El campo 'status' es obligatorio`)
-        typeof req.body.status === 'string' ? null : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
-        __CheckEnum(["inscrito", "desinscrito", "asistió", "retardo", "no asistió"], req.body.status, "status")
+        __Required(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"])
     } catch (error) {
         return res.status(400).json({
             error
@@ -75,17 +72,10 @@ export const updateAttendee = async (req: Request, res: Response) => {
     try {
         req.body.attendee_register ? __ThrowError("El campo 'attendee_register' no se puede actualizar") : null
 
-        !req.body.status ? null
-            : typeof req.body.status === 'string'
-                ? __CheckEnum(["inscrito", "desinscrito", "asistió", "retardo", "no asistió"], req.body.status, "status")
-                : __ThrowError(`El campo 'status' debe ser tipo 'string'`)
-
+        __Optional(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"])
         req.body.status ? update = { "attendance.attendee_list.$.status": req.body.status } : null
 
-        !req.body.check_in ? null
-            : typeof req.body.check_in === 'string' ? null
-                : __ThrowError(`El campo 'check_in' debe ser tipo 'string' con la fecha en formato ISO`)
-
+        __Optional(req.body.check_in, `check_in`, `string`, null)
         req.body.check_in ? update = { ...update, "attendance.attendee_list.$.check_in": req.body.check_in } : null
     } catch (error) {
         return res.status(400).json({

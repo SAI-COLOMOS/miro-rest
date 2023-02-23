@@ -15,7 +15,6 @@ export interface CardInterface extends Document {
 const ActivitySchema = new Schema({
     activity_name: {
         type: String,
-        lowercase: true,
         required: [true, "El nombre de la actividad es necesario"]
     },
     hours: {
