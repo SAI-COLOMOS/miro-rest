@@ -17,11 +17,11 @@ function createToken(user: UserInterface, time: String) {
 
 export const LoginGet = async (req: Request, res: Response) => {
     try {
-        __Required(req.body.credential, "credential", "string")
+        __Required(req.body.credential, "credential", "string", null)
 
-        __Required(req.body.password, "password", "string")
+        __Required(req.body.password, "password", "string", null)
 
-        __Optional(req.body.keepAlive, "keepAlive", "boolean")
+        __Optional(req.body.keepAlive, "keepAlive", "boolean", null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -56,7 +56,7 @@ export const LoginGet = async (req: Request, res: Response) => {
 
 export const sendRecoveryToken = async (req: Request, res: Response) => {
     try {
-        __Required(req.body.credential, `credential`, `string`)
+        __Required(req.body.credential, `credential`, `string`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -106,7 +106,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
     }
 
     try {
-        __Required(req.body.password, `password`, `string`);
+        __Required(req.body.password, `password`, `string`, null);
 
         (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password)
             ? null

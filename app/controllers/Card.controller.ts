@@ -1,25 +1,13 @@
 import { Request, Response } from "express";
 import Card from "../models/Card";
 import User from "../models/User";
-import { __ThrowError } from "../middleware/ValidationControl"
+import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getCards = async (req: Request, res: Response) => {
     try {
-        !req.body.items ? null
-            : typeof req.body.items === 'number' ? null
-                : __ThrowError(`El campo 'items' debe ser tipo 'number'`)
+        __Query(req.query.items, `items`, `number`)
 
-        !req.body.page ? null
-            : typeof req.body.page === 'number' ? null
-                : __ThrowError(`El campo 'page' debe ser tipo 'number'`)
-
-        !req.body.search ? null
-            : typeof req.body.search === 'string' ? null
-                : __ThrowError(`El campo 'search' debe ser tipo 'string'`)
-
-        !req.body.filter ? null
-            : typeof req.body.filter === 'object' ? null
-                : __ThrowError(`El campo 'filter' debe ser tipo 'object'`)
+        __Query(req.query.page, `page`, `number`)
     } catch (error) {
         return res.status(400).json({
             error
@@ -27,24 +15,25 @@ export const getCards = async (req: Request, res: Response) => {
     }
 
     try {
-        const items: number = req.body.items > 0 ? req.body.items : 10
-        const page: number = req.body.page > 0 ? req.body.page - 1 : 0
-        const filter: object = req.body.filter ?
-            req.body.search ?
+        const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+        const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
+        const filter: object = req.query.filter ?
+            req.query.search ?
                 {
-                    ...req.body.filter,
+                    ...JSON.parse(String(req.query.filter)),
                     $or: [
-                        { "first_name": { $regex: '.*' + req.body.search + '.*' } },
-                        { "first_last_name": { $regex: '.*' + req.body.search + '.*' } },
-                        { "second_last_name": { $regex: '.*' + req.body.search + '.*' } },
-                        { "register": { $regex: '.*' + req.body.search + '.*' } },
-                        { "phone": { $regex: '.*' + req.body.search + '.*' } }
+                        { "first_name": { $regex: '.*' + req.query.search + '.*' } },
+                        { "first_last_name": { $regex: '.*' + req.query.search + '.*' } },
+                        { "second_last_name": { $regex: '.*' + req.query.search + '.*' } },
+                        { "register": { $regex: '.*' + req.query.search + '.*' } },
+                        { "phone": { $regex: '.*' + req.query.search + '.*' } }
                     ]
                 }
-                : req.body.filter
+                : JSON.parse(String(req.query.filter))
             : null
 
         const users = await User.find(filter).sort({ "createdAt": "desc" })
+
         if (users.length > 0) {
             const cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
             if (cards.length > 0) {
@@ -87,14 +76,11 @@ export const getProviderHours = async (req: Request, res: Response) => {
 
 export const AddHoursToCard = async (req: Request, res: Response) => {
     try {
-        req.body.activity_name ? null : __ThrowError(`El campo 'activity_name' es obligatorio`)
-        typeof req.body.activity_name === 'string' ? null : __ThrowError(`El campo 'activity_name' debe ser tipo 'string'`)
+        __Required(req.body.activity_name, `activity_name`, `string`, null)
 
-        req.body.hours ? null : __ThrowError(`El campo 'hours' es obligatorio`)
-        typeof req.body.hours === 'number' ? null : __ThrowError(`El campo 'hours' debe ser tipo 'number'`)
+        __Required(req.body.hours, `hours`, `number`, null)
 
-        req.body.responsible_register ? null : __ThrowError(`El campo 'responsible_register' es obligatorio`)
-        typeof req.body.responsible_register === 'string' ? null : __ThrowError(`El campo 'responsible_register' debe ser tipo 'string'`)
+        __Required(req.body.responsible_register, `responsible_register`, `string`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -120,15 +106,6 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
 }
 
 export const RemoveHoursFromCard = async (req: Request, res: Response) => {
-    try {
-        req.body._id ? null : __ThrowError(`El campo '_id' es obligatorio`)
-        typeof req.body._id === 'string' ? null : __ThrowError(`El campo '_id' debe ser tipo 'string'`)
-    } catch (error) {
-        return res.status(400).json({
-            error
-        })
-    }
-
     try {
         const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.body._id } } })
 

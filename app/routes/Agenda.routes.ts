@@ -8,7 +8,7 @@ const route = Router()
 const path = "/agenda"
 
 // Obtener todos los eventos
-route.post(`${path}/get`, Passport.authenticate('jwt', { session: false }), getAgenda)
+route.get(`${path}/get`, Passport.authenticate('jwt', { session: false }), getAgenda)
 
 // Obtener un solo evento
 route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getEvent)

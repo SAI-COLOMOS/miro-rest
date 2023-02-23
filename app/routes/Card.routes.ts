@@ -10,7 +10,7 @@ const path = "/cards"
 route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getProviderHours)
 
 // Obtener todos los tarjetones de todos los prestadores
-route.post(`${path}/get`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getCards)
+route.get(`${path}/get`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getCards)
 
 // Añadir horas al tarjetón de un prestador
 route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, AddHoursToCard)

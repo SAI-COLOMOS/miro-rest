@@ -1,6 +1,7 @@
 import { Router } from "express"
 import Passport from "passport"
-import { addArea, getPlace, getPlaces, updatePlace, postPlace, removeArea, updateArea } from "../controllers/Place.controller"
+import { getPlace, getPlaces, updatePlace, postPlace } from "../controllers/Place.controller"
+import { updateArea, addArea, removeArea } from "../controllers/Area.controller"
 import { isAdministrador, isAdministradorOrEncargado } from "../middleware/RoleControl"
 
 const route = Router()
