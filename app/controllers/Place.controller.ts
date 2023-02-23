@@ -52,7 +52,7 @@ export const getPlace = async (req: Request, res: Response) => {
                 message: "Listo",
                 place
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `No se encontró el parque ${req.params.id}`
             })
     } catch (error) {
@@ -135,7 +135,7 @@ export const updatePlace = async (req: Request, res: Response) => {
             ? res.status(200).json({
                 message: "Se actualizó la información del lugar"
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `No se encontró el lugar ${req.params.id}`
             })
     } catch (error) {
