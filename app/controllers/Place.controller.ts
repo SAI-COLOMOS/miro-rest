@@ -27,13 +27,9 @@ export const getPlaces = async (req: Request, res: Response) => {
 
         const places = await Place.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-        return places.length > 0
-            ? res.status(200).json({
+        return res.status(200).json({
                 message: 'Listo',
                 places: places
-            })
-            : res.status(400).json({
-                message: 'Sin resultados'
             })
     } catch (error) {
         return res.status(500).json({
