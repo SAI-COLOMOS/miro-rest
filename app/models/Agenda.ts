@@ -77,6 +77,10 @@ const AgendaSchema = new Schema({
         type: Number,
         required: [true, "La oferta de horas es obligatoria"]
     },
+    penalty_hours: {
+        type: Number,
+        requires: [true, "Las horas de penalización son obligatorias"]
+    },
     vacancy: {
         type: Number,
         required: [true, "La cantidad de vacantes es obligatoria"]
@@ -121,23 +125,10 @@ const AgendaSchema = new Schema({
     timestamps: true
 })
 
-AgendaSchema.pre<AgendaInterface>("save", async function (next) {
-    if (this.isNew) {
-        const pool = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm0123456789"
-        let randomString = ""
-        let flag = true
-        while (flag) {
-            randomString = ""
-            for (let i = 0; i < 20; i++) {
-                randomString += pool.charAt(Math.floor(Math.random() * pool.length))
-            }
-            const event = await Agenda.findOne({ "event_identifier": randomString })
-            event ? null : flag = false
-        }
-        this.event_identifier = randomString
-    }
-
-    next()
+AgendaSchema.post<AgendaInterface>("save", async function () {
+    const id: String = this._id.toString()
+    this.event_identifier = id.substring(id.length - 20, id.length)
+    this.save()
 })
 
 const Agenda = model<AgendaInterface>("Agenda", AgendaSchema)

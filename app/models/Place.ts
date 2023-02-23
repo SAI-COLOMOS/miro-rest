@@ -14,11 +14,11 @@ export interface PlaceInterface extends Document {
 const AreaSchema = new Schema({
     area_identifier: {
         type: String,
-        index: true
+        index: true,
     },
     area_name: {
         type: String,
-        required: true,
+        required: [true, "El nombre del área es necesario"],
         index: true
     },
     phone: {
@@ -33,7 +33,7 @@ const PlaceSchema = new Schema({
     place_identifier: {
         type: String,
         unique: true,
-        index: true
+        index: true,
     },
     place_name: {
         type: String,

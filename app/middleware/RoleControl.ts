@@ -4,7 +4,7 @@ import User from "../models/User"
 export const isAdministrador = (req: Request, res: Response, next: NextFunction) => {
     const user = new User(req.user)
 
-    if (user.role == "administrador") {
+    if (user.role == "Administrador") {
         return next()
     }
 
@@ -16,7 +16,7 @@ export const isAdministrador = (req: Request, res: Response, next: NextFunction)
 export const isEncargado = (req: Request, res: Response, next: NextFunction) => {
     const user = new User(req.user)
 
-    if (user.role == "encargado") {
+    if (user.role == "Encargado") {
         return next()
     }
 
@@ -28,7 +28,7 @@ export const isEncargado = (req: Request, res: Response, next: NextFunction) => 
 export const isAdministradorOrEncargado = (req: Request, res: Response, next: NextFunction) => {
     const user = new User(req.user)
 
-    if (user.role == "encargado" || user.role == "administrador") {
+    if (user.role == "Encargado" || user.role == "Administrador") {
         return next()
     }
 
@@ -40,7 +40,7 @@ export const isAdministradorOrEncargado = (req: Request, res: Response, next: Ne
 export const isPrestador = (req: Request, res: Response, next: NextFunction) => {
     const user = new User(req.user)
 
-    if (user.role == "prestador") {
+    if (user.role == "Prestador") {
         return next()
     }
 
