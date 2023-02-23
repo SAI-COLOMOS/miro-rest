@@ -19,6 +19,6 @@ route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAd
 
 route.patch(`${path}/:id/:id2`, Passport.authenticate('jwt', { session: false }), isAdministrador, updateArea)
 
-route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, removeArea)
+route.delete(`${path}/:id/:id2`, Passport.authenticate('jwt', { session: false }), isAdministrador, removeArea)
 
 export default route
