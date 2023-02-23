@@ -34,14 +34,10 @@ export const UsersGet = async (req: Request, res: Response) => {
 
         const users = await User.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-        return users.length > 0
-            ? res.status(200).json({
-                message: "Listo",
-                users: users
-            })
-            : res.status(204).json({
-                message: `Sin resultados`
-            })
+        return res.status(200).json({
+            message: "Listo",
+            users: users
+        })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
@@ -59,7 +55,7 @@ export const UserGet = async (req: Request, res: Response) => {
                 message: "Listo",
                 user: user
             })
-            : res.status(204).json({
+            : res.status(400).json({
                 message: `Usuario ${req.params.id} no encontrado`
             })
     } catch (error) {
@@ -224,6 +220,46 @@ export const UserPatch = async (req: Request, res: Response) => {
             })
             : res.status(404).json({
                 message: `Usuario ${req.params.id} no encontrado`
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: "Ocurrió un error en el servidor",
+            error: error?.toString()
+        })
+    }
+}
+
+export const updatePassword = async (req: Request, res: Response) => {
+    try {
+        __Required(req.body.password, `password`, `string`, null);
+
+        (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password)
+            ? null
+            : __ThrowError("La contraseña no cumple con la estructura deseada")
+    } catch (error) {
+        return res.status(400).json({
+            error
+        })
+    }
+
+    try {
+        const user = await User.findOne({ "register": req.params.id }).sort({ "register": "desc" })
+
+        if (user && !(await user.validatePassword(req.body.password))) {
+            user.password = req.body.password
+            user.save()
+
+            return res.status(200).json({
+                message: "Se actualizó la contraseña del usuario"
+            })
+        }
+
+        return user
+            ? res.status(400).json({
+                message: "La nueva contraseña no puede ser igual a la actual"
+            })
+            : res.status(400).json({
+                message: `No se encontró el usuario ${req.params.id}`
             })
     } catch (error) {
         return res.status(500).json({

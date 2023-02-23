@@ -28,9 +28,9 @@ export const getPlaces = async (req: Request, res: Response) => {
         const places = await Place.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
         return res.status(200).json({
-                message: 'Listo',
-                places: places
-            })
+            message: 'Listo',
+            places: places
+        })
     } catch (error) {
         return res.status(500).json({
             message: `Ocurrió un error en el servidor`,

@@ -31,14 +31,10 @@ export const getAgenda = async (req: Request, res: Response) => {
 
         const result = await Agenda.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-        return result.length > 0
-            ? res.status(200).json({
-                message: "Listo",
-                events: result
-            })
-            : res.status(204).json({
-                message: "Sin resultados"
-            })
+        return res.status(200).json({
+            message: "Listo",
+            events: result
+        })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
@@ -56,7 +52,7 @@ export const getEvent = async (req: Request, res: Response) => {
                 message: "Listo",
                 event: event
             })
-            : res.status(204).json({
+            : res.status(400).json({
                 message: `No se encontró el evento ${req.params.id}`
             })
     } catch (error) {

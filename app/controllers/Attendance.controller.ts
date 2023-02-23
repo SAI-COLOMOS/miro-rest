@@ -11,7 +11,7 @@ export const getAttendees = async (req: Request, res: Response) => {
                 message: `Listo`,
                 attendees: event.attendance.attendee_list
             })
-            : res.status(204).json({
+            : res.status(400).json({
                 message: `No se encontró el evento ${req.params.id}`
             })
     } catch (error) {

@@ -2,6 +2,80 @@ import { Request, Response } from "express"
 import Place from "../models/Place"
 import { __Required, __Optional, __Query } from "../middleware/ValidationControl"
 
+export const getAreas = async (req: Request, res: Response) => {
+    try {
+        __Query(req.query.items, `items`, `number`)
+
+        __Query(req.query.page, `page`, `number`)
+    } catch (error) {
+        return res.status(400).json({
+            error
+        })
+    }
+
+    try {
+        const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+        const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
+        const filter: object = req.query.filter ?
+            req.query.search ?
+                {
+                    ...JSON.parse(String(req.query.filter)),
+                    $or: [{ "place_name": { $regex: '.*' + req.query.search + '.*' } }]
+                }
+                : JSON.parse(String(req.query.filter))
+            : null
+
+        const places: any = await Place.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+
+        let areas: Array<any> = []
+
+        if (places.length > 0) {
+            for (let place of places) {
+                place.place_areas.length > 0 ? areas = [...areas, ...place.place_areas] : null
+            }
+        }
+
+        return res.status(200).json({
+            message: 'Listo',
+            areas
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
+            error: error?.toString()
+        })
+    }
+}
+
+export const getArea = async (req: Request, res: Response) => {
+    try {
+        const place: any = await Place.findOne({ "place_identifier": req.params.id })
+
+        let area
+        if (place) {
+            for (let area_iterated of place.place_areas) {
+                if (area_iterated.area_identifier === req.params.id2) {
+                    area = area_iterated
+                }
+            }
+        }
+
+        return area
+            ? res.status(200).json({
+                message: "Listo",
+                area: area
+            })
+            : res.status(400).json({
+                message: `No se encontró el lugar ${req.params.id} o el área ${req.params.id2}`
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
+            error: error?.toString()
+        })
+    }
+}
+
 export const addArea = async (req: Request, res: Response) => {
     try {
         __Required(req.body.area_name, `area_name`, `string`, null)

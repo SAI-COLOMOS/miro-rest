@@ -33,19 +33,14 @@ export const getCards = async (req: Request, res: Response) => {
             : null
 
         const users = await User.find(filter).sort({ "createdAt": "desc" })
-
+        let cards
         if (users.length > 0) {
-            const cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
-
-            if (cards.length > 0) {
-                return res.status(200).json({
-                    message: "Listo",
-                    cards: cards
-                })
-            }
+            cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
         }
-        return res.status(204).json({
-            message: "Sin resultados"
+
+        return res.status(200).json({
+            message: "Listo",
+            cards
         })
     } catch (error) {
         return res.status(500).json({
@@ -64,7 +59,7 @@ export const getProviderHours = async (req: Request, res: Response) => {
                 message: "Tarjetón de usuario encontrado",
                 card: card.activities
             })
-            : res.status(204).json({
+            : res.status(400).json({
                 message: `El tarjetón del usuario ${req.params.id} no se encontró`
             })
     } catch (error) {
