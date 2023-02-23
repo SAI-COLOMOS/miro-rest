@@ -14,9 +14,9 @@ route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdmini
 
 route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, updatePlace)
 
-route.patch(`${path}/:id/:id2`, Passport.authenticate('jwt', { session: false }), isAdministrador, updateArea)
-
 route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, addArea)
+
+route.patch(`${path}/:id/:id2`, Passport.authenticate('jwt', { session: false }), isAdministrador, updateArea)
 
 route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, removeArea)
 
