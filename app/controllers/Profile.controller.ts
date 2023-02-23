@@ -10,7 +10,7 @@ export const ProfileGet = async (req: Request, res: Response) => {
                 message: "Listo",
                 user
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `Usuario ${req.params.id} no encontrado`
             })
     } catch (error) {

@@ -150,15 +150,13 @@ async function newRegisterForAdministratorOrManager(inputFirst_name: string, inp
 
 UserSchema.pre<UserInterface>("save", async function (next) {
     if (this.isNew) {
-        if (this.role === "prestador") {
+        if (this.role === "Prestador") {
             const register = await newRegisterForProvider(this.place, this.assigned_area)
 
             this.register = register
             this.password = register
 
-            await new Card({ "provider_register": register }).save()
-
-        } else if (this.role === "administrador" || this.role === "encargado") {
+        } else if (this.role === "Administrador" || this.role === "Encargado") {
             const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assigned_area)
 
             this.register = register

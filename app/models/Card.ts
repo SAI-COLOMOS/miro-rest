@@ -38,6 +38,14 @@ const CardSchema = new Schema({
         index: true,
         required: [true, "El registro del prestador es necesario"]
     },
+    total_hours: {
+        type: Number,
+        required: [true, "La cantidad de horas totales es obligatoria"]
+    },
+    achieved_hours: {
+        type: Number,
+        default: 0
+    },
     activities: [ActivitySchema]
 }, {
     versionKey: false,

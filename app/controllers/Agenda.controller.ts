@@ -36,7 +36,7 @@ export const getAgenda = async (req: Request, res: Response) => {
                 message: "Listo",
                 events: result
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: "Sin resultados"
             })
     } catch (error) {
@@ -56,7 +56,7 @@ export const getEvent = async (req: Request, res: Response) => {
                 message: "Listo",
                 event: event
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `No se encontró el evento ${req.params.id}`
             })
     } catch (error) {
@@ -76,6 +76,8 @@ export const createEvent = async (req: Request, res: Response) => {
         __Required(req.body.offered_hours, `offered_hours`, `number`, null)
 
         __Required(req.body.vacancy, `vacancy`, `number`, null)
+
+        __Required(req.body.penalty_hours, `penalty_hours`, `number`, null)
 
         __Required(req.body.starting_date, `starting_date`, `string`, null, true)
 
@@ -102,9 +104,12 @@ export const createEvent = async (req: Request, res: Response) => {
         const event = await new Agenda(req.body).save()
 
         if (event) {
+            // Añadimos un event emitter para mandar un correo durante la fecha de publicación 
             let time = event.publishing_date
             time.setHours(time.getHours() - 1)
             scheduleEmailNotifications(event.event_identifier, time.toISOString(), event.name)
+
+            // Añadimos un event emitter para concluir el evento si es que no se concluyó
             time = event.ending_date
             time.setHours(time.getHours() + 1)
             endEvent(event.event_identifier, time.toISOString())
@@ -146,6 +151,8 @@ export const updateEvent = async (req: Request, res: Response) => {
 
         __Optional(req.body.offered_hours, `offered_hours`, `number`, null)
 
+        __Optional(req.body.penalty_hours, `penalty_hours`, `number`, null)
+
         __Optional(req.body.vacancy, `vacancy`, `number`, null)
 
         __Optional(req.body.place, `place`, `string`, null)
@@ -161,41 +168,9 @@ export const updateEvent = async (req: Request, res: Response) => {
         })
     }
 
-    const is_publishing_date: boolean = req.body.publishing_date ? true : false
-    const is_ending_date: boolean = req.body.ending_date ? true : false
-    const event_status: boolean = req.body.attendance.status ? true : false
-
     try {
-        if (event_status) {
-            const event: any = await Agenda.findOne({ "event_identifier": req.params.id })
-            if (event) {
-                event.attendance.status = req.body.attendance.status
-                event.save()
-                delete req.body.attendance
-            }
-
-            if (event && event.attendance.status === "concluido") {
-                for (let attendee of event.attendance.attendee_list) {
-                    const result = await Card.updateOne({ "provider_register": attendee.attendee_register },
-                        {
-                            $push: {
-                                "activities": {
-                                    "activity_name": event.name,
-                                    "hours": event.offered_hours,
-                                    "responsible_register": req.body.modifier_register
-                                }
-                            }
-                        }
-                    )
-                }
-            }
-
-            if (Object.keys(req.body).length === 0) {
-                return res.status(200).json({
-                    message: `Se actualizó la información del evento ${req.params.id}`
-                })
-            }
-        }
+        const is_publishing_date: boolean = req.body.publishing_date ? true : false
+        const is_ending_date: boolean = req.body.ending_date ? true : false
 
         const result = await Agenda.updateOne({ "event_identifier": req.params.id }, req.body)
 
@@ -221,12 +196,63 @@ export const updateEvent = async (req: Request, res: Response) => {
                 message: `Se actualizó la información del evento ${req.params.id}`
             })
         }
+
         return res.status(404).json({
             message: `No se encontró el evento ${req.params.id}`
         })
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
+            error: error?.toString()
+        })
+    }
+}
+
+export const updateEventStatus = async (req: Request, res: Response) => {
+    try {
+        __Required(req.body.status, `status`, `string`, ["Disponible", "Concluido"])
+    } catch (error) {
+        return res.status(400).json({
+            error
+        })
+    }
+
+    try {
+        const event: any = await Agenda.findOne({ "event_identifier": req.params.id })
+
+        if (event) {
+            event.attendance.status = req.body.status
+            event.save()
+        }
+
+        if (event && event.attendance.status === "Concluido") {
+            for (const attendee of event.attendance.attendee_list) {
+                if (attendee.status === "Asistió" || attendee.status === "Retardo") {
+                    await Card.updateOne({ "provider_register": attendee.attendee_register }, {
+                        $push: {
+                            "activities": {
+                                "activity_name": event.name,
+                                "hours": attendee.status === "Asistió"
+                                    ? event.offered_hours
+                                    : event.offered_hours - event.penalty_hours,
+                                "responsible_register": req.body.modifier_register
+                            }
+                        }
+                    })
+                }
+            }
+        }
+
+        return event
+            ? res.status(200).json({
+                message: `Se actualizó la información del evento ${req.params.id}`
+            })
+            : res.status(404).json({
+                message: `No se encontró el evento ${req.params.id}`
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
             error: error?.toString()
         })
     }
@@ -256,10 +282,11 @@ export const deleteEvent = async (req: Request, res: Response) => {
     }
 }
 
-const scheduleEmailNotifications = async (event: string, time: string, name: string) => {
-    schedule.scheduleJob(event, time,
+const scheduleEmailNotifications = async (event_identifier: string, time: string, event_name: string) => {
+
+    schedule.scheduleJob(event_identifier, time,
         async function (name: string, event: string) {
-            const users = await User.find({ "status": "activo", "role": "prestador" })
+            const users = await User.find({ "status": "Activo", "role": "Prestador" })
             const from = `"SAI" ${Enviroment.Mailer.email}`
             const subject = "Recuperación de contraseña"
             const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
@@ -268,17 +295,36 @@ const scheduleEmailNotifications = async (event: string, time: string, name: str
             }
 
             schedule.cancelJob(event)
-        }.bind(null, name, event))
+        }.bind(null, event_name, event_identifier))
 }
 
-const endEvent = async (event: string, time: string) => {
-    schedule.scheduleJob(`end_${event}`, time,
-        async function (event: string) {
-            const result = await Agenda.findOne({ "event_identifier": event })
-            if (result?.attendance.status === "disponible") {
-                result.attendance.status = "concluido por sistema"
+const endEvent = async (event_identifier: string, time: string) => {
+    schedule.scheduleJob(`end_${event_identifier}`, time,
+        async function (event_identifier: string) {
+            const result = await Agenda.findOne({ "event_identifier": event_identifier })
+
+            if (result?.attendance.status === "Disponible") {
+                result.attendance.status = "Concluido por sistema"
                 result.save()
+
+                const event: any = await Agenda.findOne({ "event_identifier": event_identifier })
+
+                for (const attendee of event.attendance.attendee_list) {
+                    if (attendee.status === "Asistió" || attendee.status === "Retardo") {
+                        await Card.updateOne({ "provider_register": attendee.attendee_register }, {
+                            $push: {
+                                "activities": {
+                                    "activity_name": event.name,
+                                    "hours": attendee.status === "Asistió"
+                                        ? event.offered_hours
+                                        : event.offered_hours - event.penalty_hours,
+                                    "responsible_register": event.author_register
+                                }
+                            }
+                        })
+                    }
+                }
             }
-            schedule.cancelJob(`end_${event}`)
-        }.bind(null, event))
+            schedule.cancelJob(`end_${event_identifier}`)
+        }.bind(null, event_identifier))
 }
