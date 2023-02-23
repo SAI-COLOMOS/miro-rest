@@ -145,3 +145,22 @@ export const updatePlace = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const deletePlace = async (req: Request, res: Response) => {
+    try {
+        const result = await Place.deleteOne({ "place_identifier": req.params.id })
+
+        return result.deletedCount !== 0
+            ? res.status(200).json({
+                message: "El lugar fué eliminado"
+            })
+            : res.status(404).json({
+                message: `No se encontró el lugar ${req.params.id}`
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
+            error: error?.toString()
+        })
+    }
+}

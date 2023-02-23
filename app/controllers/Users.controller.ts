@@ -8,7 +8,6 @@ export const UsersGet = async (req: Request, res: Response) => {
         __Query(req.query.items, `items`, `number`)
 
         __Query(req.query.page, `page`, `number`)
-
     } catch (error) {
         return res.status(400).json({
             error: error?.toString()
@@ -40,7 +39,7 @@ export const UsersGet = async (req: Request, res: Response) => {
                 message: "Listo",
                 users: users
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `Sin resultados`
             })
     } catch (error) {
@@ -60,7 +59,7 @@ export const UserGet = async (req: Request, res: Response) => {
                 message: "Listo",
                 user: user
             })
-            : res.status(404).json({
+            : res.status(204).json({
                 message: `Usuario ${req.params.id} no encontrado`
             })
     } catch (error) {
@@ -72,7 +71,7 @@ export const UserGet = async (req: Request, res: Response) => {
 }
 
 export const UserPost = async (req: Request, res: Response) => {
-
+    let total_hours: number = 0
     try {
         __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
 
@@ -111,6 +110,12 @@ export const UserPost = async (req: Request, res: Response) => {
             req.body.role === 'Prestador'
                 ? ['Servicio social', 'Prácticas profesionales']
                 : ['No aplica'])
+
+        req.body.role === 'Prestador' ? __Required(req.body.total_hours, `total_hours`, `number`, null) : null
+        if (req.body.total_hours) {
+            total_hours = req.body.total_hours
+            delete req.body.total_hours
+        }
     } catch (error) {
         return res.status(400).json({
             error
@@ -119,6 +124,10 @@ export const UserPost = async (req: Request, res: Response) => {
 
     try {
         const user = await new User(req.body).save()
+
+        user?.role === "Prestador"
+            ? await new Card({ "provider_register": user.register, "total_hours": total_hours }).save()
+            : null
 
         return user
             ? res.status(201).json({
@@ -141,6 +150,7 @@ export const UserDelete = async (req: Request, res: Response) => {
         const user = await User.findOne({ 'register': req.params.id })
 
         let deletedCount = 0
+
         if (user?.role === "prestador") {
             const card_result = await Card.deleteOne({ "provider_register": req.params.id })
             const result = await User.deleteOne({ 'register': req.params.id })
