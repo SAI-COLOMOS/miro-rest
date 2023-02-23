@@ -75,7 +75,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 
         if (user) {
             const token = createToken(user, "5m")
-            newRoute = `localhost:3000/auth/recovery?tkn=${token}`
+            newRoute = `localhost:3000/auth/recovery?token=${token}`
             const from = `"SAI" ${Enviroment.Mailer.email}`
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
@@ -98,7 +98,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 export const recoverPassword = async (req: Request, res: Response) => {
     let token
     try {
-        token = JWT.verify(String(req.query.tkn), Enviroment.JWT.secret) as JwtPayload
+        token = JWT.verify(String(req.query.token), Enviroment.JWT.secret) as JwtPayload
     } catch (error) {
         return res.status(400).json({
             message: "El link ha caducado",
