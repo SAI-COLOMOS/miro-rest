@@ -44,12 +44,12 @@ export const addArea = async (req: Request, res: Response) => {
                 ? res.status(201).json({
                     message: `Se añadió el area`,
                 })
-                : res.status(404).json({
+                : res.status(400).json({
                     message: `No se encontró el parque ${req.params.id}`
                 })
         }
 
-        return res.status(404).json({
+        return res.status(400).json({
             message: `No se encontró el parque ${req.params.id}`
         })
     } catch (error) {
@@ -79,9 +79,9 @@ export const updateArea = async (req: Request, res: Response) => {
 
         return result.modifiedCount > 0
             ? res.status(200).json({
-                message: "El nombre del área fué modificado",
+                message: "El área fue modificado",
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `No se encontró el lugar ${req.params.id} o el área ${req.params.id2}`
             })
     } catch (error) {
@@ -100,7 +100,7 @@ export const removeArea = async (req: Request, res: Response) => {
             ? res.status(200).json({
                 message: "Se eliminó el área"
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: "No se encontró el área"
             })
     } catch (error) {
