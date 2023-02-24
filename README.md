@@ -427,7 +427,7 @@ fetch(
 - Endpoint
 
 ```http
-POST /places/:place_identifier
+POST /areas/:place_identifier
 ```
 
 - Parameters
@@ -441,7 +441,7 @@ POST /places/:place_identifier
 
 ```javascript
 fetch(
-    `.../places/${place_identifier}`,
+    `.../areas/${place_identifier}`,
     {
         method: "POST",
         headers: {
@@ -470,7 +470,7 @@ fetch(
 - Endpoint
 
 ```http
-PATCH /places/:place_identifier/:area_identifier
+PATCH /areas/:place_identifier/:area_identifier
 ```
 
 - Parameters
@@ -486,7 +486,7 @@ PATCH /places/:place_identifier/:area_identifier
 
 ```javascript
 fetch(
-    `.../places/${place_identifier}/${area_identifier}`,
+    `.../areas/${place_identifier}/${area_identifier}`,
     {
         method: "PATCH",
         headers: {
@@ -514,14 +514,14 @@ fetch(
 - Endpoint
 
 ```http
-DELETE /places/:place_identifier/:area_identifier
+DELETE /areas/:place_identifier/:area_identifier
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../places/${place_identifier}/${area_identifier}`,
+    `.../areas/${place_identifier}/${area_identifier}`,
     {
         method: "DELETE",
         headers: {
