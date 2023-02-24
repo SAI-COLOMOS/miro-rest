@@ -98,14 +98,13 @@ export const UserPost = async (req: Request, res: Response) => {
 
         __Required(req.body.assigned_area, `assigned_area`, `string`, null)
 
-        __Required(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
+        __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
 
-        __Required(req.body.school, `school`, `string`, null)
+        req.body.role === "Prestador" ? __Required(req.body.school, `school`, `string`, null) : null
 
-        __Required(req.body.provider_type, `provider_type`, `string`,
-            req.body.role === 'Prestador'
-                ? ['Servicio social', 'Prácticas profesionales']
-                : ['No aplica'])
+        req.body.role === "Prestador"
+            ? __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
+            : req.body.provider_type = "No aplica"
 
         req.body.role === 'Prestador' ? __Required(req.body.total_hours, `total_hours`, `number`, null) : null
         if (req.body.total_hours) {
@@ -202,7 +201,7 @@ export const UserPatch = async (req: Request, res: Response) => {
 
         __Optional(req.body.school, `school`, `string`, null)
 
-        __Optional(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
+        __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador'])
 
         __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
     } catch (error) {

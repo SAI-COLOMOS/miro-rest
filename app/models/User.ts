@@ -101,8 +101,7 @@ const UserSchema = new Schema({
         default: 'Activo'
     },
     school: {
-        type: String,
-        required: [true, "La escuela es necesaria"]
+        type: String
     },
     role: {
         type: String,
