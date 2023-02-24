@@ -160,7 +160,7 @@ export const UserDelete = async (req: Request, res: Response) => {
             ? res.status(200).json({
                 message: "Usuario eliminado",
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `Usuario ${req.params.id} no encontrado`
             })
     } catch (error) {
@@ -218,7 +218,7 @@ export const UserPatch = async (req: Request, res: Response) => {
             ? res.status(200).json({
                 message: `Se actualizó la información del usuario ${req.params.id}`
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `Usuario ${req.params.id} no encontrado`
             })
     } catch (error) {
