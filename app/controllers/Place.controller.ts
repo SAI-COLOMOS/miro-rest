@@ -148,9 +148,9 @@ export const deletePlace = async (req: Request, res: Response) => {
 
         return result.deletedCount !== 0
             ? res.status(200).json({
-                message: "El lugar fué eliminado"
+                message: "El lugar fue eliminado"
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `No se encontró el lugar ${req.params.id}`
             })
     } catch (error) {
