@@ -1,6 +1,6 @@
 import { Router } from "express"
 import Passport from "passport"
-import { getPlace, getPlaces, updatePlace, postPlace } from "../controllers/Place.controller"
+import { getPlace, getPlaces, updatePlace, postPlace, deletePlace } from "../controllers/Place.controller"
 import { updateArea, addArea, removeArea, getAreas } from "../controllers/Area.controller"
 import { isAdministrador, isAdministradorOrEncargado } from "../middleware/RoleControl"
 
@@ -19,4 +19,5 @@ route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdmini
 // Actualizar la información de un lugar
 route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, updatePlace)
 
+route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, deletePlace)
 export default route
