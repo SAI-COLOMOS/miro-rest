@@ -23,18 +23,19 @@ Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempr
         - [Get a place](#get-a-place)
         - [Create a place](#create-a-place)
         - [Update a place](#update-a-place)
+        - [Delete a place](#delete-a-place)
     - [Areas](#areas)
-        - [Get areas]()
-        - [Get an area]()
+        - [Get areas](#get-areas)
+        - [Get an area](#get-an-area)
         - [Create an area](#create-an-area)
         - [Update an area](#update-an-area)
         - [Delete an area](#delete-an-area)
     - [Users](#users)
         - [Get users](#get-users)
         - [Get a user](#get-an-user)
-        - [Create a user]()
-        - [Update a user]()
-        - [Delete a user]()
+        - [Create a user](#create-a-user)
+        - [Update a user](#update-a-user)
+        - [Delete a user](#delete-a-user)
 
 ## Uso de la API
 
@@ -418,9 +419,124 @@ fetch(
 }
 ```
 
+#### Delete a place
+
+- Endpoint
+
+```http
+DELETE /places/:place_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../places/${place_identifier}`,
+    {
+        method: "DELETE",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "El lugar fue eliminado"
+}
+```
+
 ### Areas
 
 > ⚠️ Note: this seccion is linked to _[Places seccion](#places)_. Both are part of _Places and Areas_ module.
+
+#### Get areas
+
+- Endpoint
+
+```http
+GET /areas/:place_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../areas/${place_identifier}`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Listo",
+    "areas": [
+        {
+            "area_identifier": "01",
+            "area_name": "Centro de Educación y Cultura Ambiental",
+            "phone": "3313467900",
+            "_id": "63f6d3e91975d0ea79de99df"
+        },{
+            "area_identifier": "02",
+            "area_name": "Servicios generales",
+            "phone": "3313467555",
+            "_id": "63f6d3e91975d0ff66ht12vv"
+        }
+    ]
+}
+```
+
+#### Get an area
+
+- Endpoint
+
+```http
+GET /areas/:place_identifier/:area_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../areas/${place_identifier}/${area_identifier}`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Listo",
+    "area": {
+        "area_identifier": "01",
+        "area_name": "Centro de Educación y Cultura Ambiental",
+        "phone": "3313467900",
+        "_id": "63f6d3e91975d0ea79de99df"
+    }
+}
+```
 
 #### Create an area
 
@@ -749,5 +865,96 @@ fetch(
 ```json
 {
     "message": "Usuario creado"
+}
+```
+
+#### Update a user
+
+- Endpoint
+
+```http
+PATCH /users/:register
+```
+
+- Parameters
+
+| Parameter           | Type     | Required | Allowed values                                              | Description                                           |
+| :------------------ | :------- | :------- | :---------------------------------------------------------- | :---------------------------------------------------- |
+| `first_name`        | `string` | No       | Any                                                         | First name of the user                                |
+| `first_last_name`   | `string` | No       | Any                                                         | First second last name of the user (apellido paterno) |
+| `age`               | `string` | No       | Any                                                         | Age of the user                                       |
+| `email`             | `string` | No       | Any                                                         | Contact email of the user                             |
+| `phone`             | `string` | No       | Any                                                         | Contact phone of the user                             |
+| `emergency_contact` | `string` | No       | Any                                                         | Emergency contact of the user                         |
+| `emergency_phone`   | `string` | No       | Any                                                         | Emergency phone of the user                           |
+| `blood_type`        | `string` | No       | ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']          | Blood type of the user                                |
+| `provider_type`     | `string` | No       | ['Servicio social', 'Prácticas profesionales', 'No aplica'] | Type of user provider                                 |
+| `place`             | `string` | No       | Any                                                         | Place where the user will be                          |
+| `assigned_area`     | `string` | No       | Any                                                         | Area where the user will be assigned                  |
+| `school`            | `string` | No       | Any                                                         | School where the user is from                         |
+| `role`              | `string` | No       | ['Administrador', 'Encargado', 'Prestador']                 | Role of the user                                      |
+| `status`            | `string` | No       | Any                                                         | Status of the user                                    |
+| `total_hours`       | `number` | No       | Any                                                         | Total of hours that the user need to complete         |
+| `second_last_name`  | `string` | No       | Any                                                         | Second last name of the user (apellido materno)       |
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${register}`,
+    {
+        method: "PATCH",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            ...
+        })
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Se actualizó la información del usuario 2023A0101001"
+}
+```
+
+
+#### Delete a user
+
+- Endpoint
+
+```http
+DELETE /users/:register
+```
+
+> ⚠️ Note: by default, users cannot be deleted, this resource is available only if it is necessary to delete the user if an error occurs during its creation
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${register}`,
+    {
+        method: "DELETE",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Usuario eliminado"
 }
 ```
