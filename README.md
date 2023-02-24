@@ -17,15 +17,24 @@ Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempr
         - [Login](#login)
         - [Password reset request](#password-reset-request)
         - [Password reset](#password-reset)
+        - [Change user password]()
     - [Places](#places)
         - [Get places](#get-places)
         - [Get a place](#get-a-place)
         - [Create a place](#create-a-place)
         - [Update a place](#update-a-place)
     - [Areas](#areas)
+        - [Get areas]()
+        - [Get an area]()
         - [Create an area](#create-an-area)
         - [Update an area](#update-an-area)
         - [Delete an area](#delete-an-area)
+    - [Users](#users)
+        - [Get users](#get-users)
+        - [Get a user](#get-an-user)
+        - [Create a user]()
+        - [Update a user]()
+        - [Delete a user]()
 
 ## Uso de la API
 
@@ -43,8 +52,8 @@ POST /auth/login
 
 | Parameter    | Type      | Description                                                                                        |
 | :----------- | :-------- | :------------------------------------------------------------------------------------------------- |
-| `credential` | `string`  | **Required**. May be the user's id, email or phone                                                 |
-| `password`   | `string`  | **Required**. User's password                                                                      |
+| `credential` | `string`  | **Required**. May be the user id, email or phone                                                   |
+| `password`   | `string`  | **Required**. User password                                                                        |
 | `keepAlive`  | `boolean` | If true, will return an 90 days expiration token, else will return an three days expiration token. |
 
 - Request
@@ -85,9 +94,9 @@ POST /auth/recovery
 
 - Parameters
 
-| Parameter    | Type     | Description                                         |
-| :----------- | :------- | :-------------------------------------------------- |
-| `credential` | `string` | **Required**. May be the user's id, email or phone  |
+| Parameter    | Type     | Description                                       |
+| :----------- | :------- | :------------------------------------------------ |
+| `credential` | `string` | **Required**. May be the user id, email or phone  |
 
 - Request
 
@@ -529,5 +538,216 @@ fetch(
 ```json
 {
     "message": "Se eliminó el área"
+}
+```
+
+### Users
+
+#### Get users
+
+- Endpoint
+
+```http
+GET /users
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../users`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Listo",
+    "users": [
+        {
+            "_id": "63f8104c67a6f167aaa189df",
+            "first_name": "Lucía",
+            "first_last_name": "Granados",
+            "second_last_name": "Figueroa",
+            "age": "28",
+            "email": "fatimagf@example.com",
+            "phone": "3365899596",
+            "avatar": "/protected/default.png",
+            "emergency_contact": "Luisa Figueroa Medrano",
+            "emergency_phone": "5145748544",
+            "blood_type": "O-",
+            "provider_type": "No aplica",
+            "place": "Bosque Los Colomos",
+            "assigned_area": "Centro de Educación y Cultura Ambiental",
+            "status": "Activo",
+            "school": "No aplica",
+            "role": "Administrador",
+            "createdAt": "2023-02-24T01:18:04.386Z",
+            "updatedAt": "2023-02-24T01:18:04.386Z",
+            "register": "GRFILU010145",
+            "password": "$2b$10$cdjAQRHCsioXTKK9r4J02eARxl4WZTtmI1IW.AwNmmNJedysF92MC"
+        },
+        {
+            "_id": "63f8092667a6f167aaa189cf",
+            "first_name": "Fernanda",
+            "first_last_name": "Martínez",
+            "second_last_name": "Loza",
+            "age": "19",
+            "email": "fernandaml@example.com",
+            "phone": "3320478599",
+            "avatar": "/protected/default.png",
+            "emergency_contact": "Ámerica Loza Guiterréz",
+            "emergency_phone": "5535697554",
+            "blood_type": "A+",
+            "provider_type": "Prácticas profesionales",
+            "place": "Bosque Los Colomos",
+            "assigned_area": "Centro de Educación y Cultura Ambiental",
+            "status": "Activo",
+            "school": "Centro Universitario de Ciencias Económico Administrativas",
+            "role": "Prestador",
+            "createdAt": "2023-02-24T00:47:34.333Z",
+            "updatedAt": "2023-02-24T00:47:34.333Z",
+            "register": "2023A0101002",
+            "password": "$2b$10$LPk/.xewuMpOmNbNhARRZuheoZs4RaouYt0sosFvRmrCXyU9HKNXK"
+        }
+    ]
+}
+```
+
+#### Get an user
+
+- Endpoint
+
+```http
+GET /users/:register
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${register}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Listo",
+    "user": [
+        {
+            "_id": "63f8092667a6f167aaa189cf",
+            "first_name": "Fernanda",
+            "first_last_name": "Martínez",
+            "second_last_name": "Loza",
+            "age": "19",
+            "email": "fernandaml@example.com",
+            "phone": "3320478599",
+            "avatar": "/protected/default.png",
+            "emergency_contact": "Ámerica Loza Guiterréz",
+            "emergency_phone": "5535697554",
+            "blood_type": "A+",
+            "provider_type": "Prácticas profesionales",
+            "place": "Bosque Los Colomos",
+            "assigned_area": "Centro de Educación y Cultura Ambiental",
+            "status": "Activo",
+            "school": "Centro Universitario de Ciencias Económico Administrativas",
+            "role": "Prestador",
+            "createdAt": "2023-02-24T00:47:34.333Z",
+            "updatedAt": "2023-02-24T00:47:34.333Z",
+            "register": "2023A0101002",
+            "password": "$2b$10$LPk/.xewuMpOmNbNhARRZuheoZs4RaouYt0sosFvRmrCXyU9HKNXK"
+        }
+    ]
+}
+```
+
+#### Create a user
+
+- Endpoint
+
+```http
+POST /users
+```
+
+- Parameters
+
+| Parameter           | Type     | Required | Allowed values                                              | Description                                           |
+| :------------------ | :------- | :------- | :---------------------------------------------------------- | :---------------------------------------------------- |
+| `first_name`        | `string` | Yes      | Any                                                         | First name of the user                                |
+| `first_last_name`   | `string` | Yes      | Any                                                         | First second last name of the user (apellido paterno) |
+| `age`               | `string` | Yes      | Any                                                         | Age of the user                                       |
+| `email`             | `string` | Yes      | Any                                                         | Contact email of the user                             |
+| `phone`             | `string` | Yes      | Any                                                         | Contact phone of the user                             |
+| `emergency_contact` | `string` | Yes      | Any                                                         | Emergency contact of the user                         |
+| `emergency_phone`   | `string` | Yes      | Any                                                         | Emergency phone of the user                           |
+| `blood_type`        | `string` | Yes      | ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']          | Blood type of the user                                |
+| `provider_type`     | `string` | Yes*     | ['Servicio social', 'Prácticas profesionales', 'No aplica'] | Type of user provider                                 |
+| `place`             | `string` | Yes      | Any                                                         | Place where the user will be                          |
+| `assigned_area`     | `string` | Yes      | Any                                                         | Area where the user will be assigned                  |
+| `school`            | `string` | Yes*     | Any                                                         | School where the user is from                         |
+| `role`              | `string` | Yes      | ['Administrador', 'Encargado', 'Prestador']                 | Role of the user                                      |
+| `status`            | `string` | Yes      | Any                                                         | Status of the user                                    |
+| `total_hours`       | `number` | Yes*     | Any                                                         | Total of hours that the user need to complete         |
+| `second_last_name`  | `string` | No       | Any                                                         | Second last name of the user (apellido materno)       |
+
+> ⚠️ Note: some of the parameters are required if the role is _Prestador_.
+
+- Request
+
+```javascript
+fetch(
+    `.../users`,
+    {
+        method: "POST",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            first_name,
+            first_last_name,
+            age,
+            email,
+            phone,
+            emergency_contact,
+            emergency_phone,
+            blood_type,
+            provider_type,
+            place,
+            assigned_area,
+            school,
+            role,
+            status,
+            total_hours
+        })
+    }
+)
+```
+
+- Response
+
+```json
+{
+    "message": "Usuario creado"
 }
 ```
