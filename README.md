@@ -76,7 +76,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -117,7 +117,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -146,7 +146,7 @@ PATCH /auth/recovery?token=:token
 > - Must have at least one special character.
 > - Must be at least eight characters long.
 
-- Request
+- Example response from server
 
 ```javascript
 fetch(
@@ -164,7 +164,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -200,7 +200,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -269,7 +269,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -345,7 +345,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -411,7 +411,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -443,7 +443,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -479,7 +479,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -524,7 +524,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -573,7 +573,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -617,7 +617,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -649,7 +649,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -683,7 +683,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -763,7 +763,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -860,7 +860,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -916,7 +916,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
@@ -951,7 +951,7 @@ fetch(
 )
 ```
 
-- Response
+- Example response from server
 
 ```json
 {
