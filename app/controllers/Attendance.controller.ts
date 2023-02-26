@@ -27,6 +27,10 @@ export const AddAttendee = async (req: Request, res: Response) => {
         __Required(req.body.attendee_register, `attendee_register`, `string`, null)
 
         __Required(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"])
+
+        const event = await Agenda.findOne({ "event_identifier": req.params.id })
+        if (event && event.attendance.attendee_list.length === event.vacancy)
+            __ThrowError("El evento tiene todas las vacantes ocupadas")
     } catch (error) {
         return res.status(400).json({
             error
@@ -34,18 +38,6 @@ export const AddAttendee = async (req: Request, res: Response) => {
     }
 
     try {
-        const event = await Agenda.findOne({ "event_identifier": req.params.id })
-        if (event) {
-            try {
-                event.toObject().attendance.attendee_list.length < event.toObject().vacancy ? null
-                    : __ThrowError("El evento tiene todas las vacantes ocupadas")
-            } catch (error) {
-                return res.status(400).json({
-                    error
-                })
-            }
-        }
-
         const result = await Agenda.updateOne({ "event_identifier": req.params.id }, {
             $push: {
                 "attendance.attendee_list": req.body
@@ -56,7 +48,7 @@ export const AddAttendee = async (req: Request, res: Response) => {
             ? res.status(201).json({
                 message: `Se añadió el usuario a la lista`
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `No se encontró el evento ${req.params.id}`
             })
     } catch (error) {
@@ -70,13 +62,16 @@ export const AddAttendee = async (req: Request, res: Response) => {
 export const updateAttendee = async (req: Request, res: Response) => {
     let update: object = {}
     try {
-        req.body.attendee_register ? __ThrowError("El campo 'attendee_register' no se puede actualizar") : null
+        if (req.body.attendee_register)
+            __ThrowError("El campo 'attendee_register' no se puede actualizar")
 
         __Optional(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"])
-        req.body.status ? update = { "attendance.attendee_list.$.status": req.body.status } : null
+        if (req.body.status)
+            update = { "attendance.attendee_list.$.status": req.body.status }
 
-        __Optional(req.body.check_in, `check_in`, `string`, null)
-        req.body.check_in ? update = { ...update, "attendance.attendee_list.$.check_in": req.body.check_in } : null
+        __Optional(req.body.check_in, `check_in`, `string`, null, true)
+        if (req.body.check_in)
+            update = { ...update, "attendance.attendee_list.$.check_in": req.body.check_in }
     } catch (error) {
         return res.status(400).json({
             error
@@ -90,7 +85,7 @@ export const updateAttendee = async (req: Request, res: Response) => {
             ? res.status(200).json({
                 message: `Se modificó el estado del usuario`
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `No se encontró el evento ${req.params.id} o el usuario ${req.body.attendee_register}`
             })
     } catch (error) {

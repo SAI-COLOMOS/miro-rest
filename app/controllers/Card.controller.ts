@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Card from "../models/Card";
+import Card, { HoursInterface } from "../models/Card";
 import User from "../models/User";
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
@@ -76,9 +76,9 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
 
         __Required(req.body.hours, `hours`, `number`, null)
 
-        __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
-
         __Required(req.body.responsible_register, `responsible_register`, `string`, null)
+
+        __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
     } catch (error) {
         return res.status(400).json({
             error
@@ -88,13 +88,14 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
     try {
         const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
-        result.modifiedCount > 0 ? CountHours(req.params.id, res) : null
+        if (result.modifiedCount > 0)
+            CountHours(req.params.id, res)
 
         return result.modifiedCount > 0
             ? res.status(201).json({
                 message: "Se añadieron las horas al prestador"
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `El usuario ${req.params.id} no se encontró`
             })
     } catch (error) {
@@ -106,18 +107,22 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
 }
 
 export const UpdateHoursFromCard = async (req: Request, res: Response) => {
-    let update = {}
+    let update: object = {}
     try {
-        req.body.provider_register ? __ThrowError("El campo 'provider_register' no se puede actualizar") : null
+        if (req.body.provider_register)
+            __ThrowError("El campo 'provider_register' no se puede actualizar")
 
         __Optional(req.body.activity_name, `activity_name`, `string`, null)
-        req.body.activity_name ? update = { "activities.$.activity_name": req.body.activity_name } : null
+        if (req.body.activity_name)
+            update = { "activities.$.activity_name": req.body.activity_name }
 
         __Optional(req.body.hours, `hours`, `number`, null)
-        req.body.hours ? update = { ...update, "activities.$.hours": req.body.hours } : null
+        if (req.body.hours)
+            update = { ...update, "activities.$.hours": req.body.hours }
 
         __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
-        req.body.assignation_date ? update = { ...update, "activities.$.assignation_date": req.body.assignation_date } : null
+        if (req.body.assignation_date)
+            update = { ...update, "activities.$.assignation_date": req.body.assignation_date }
     } catch (error) {
         return res.status(400).json({
             error
@@ -125,16 +130,16 @@ export const UpdateHoursFromCard = async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.params.id2 },
-            { $set: update })
+        const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.params.id2 }, { $set: update })
 
-        result.modifiedCount > 0 && req.body.hours ? CountHours(req.params.id, res) : null
+        if (result.modifiedCount > 0 && req.body.hours)
+            CountHours(req.params.id, res)
 
         return result.modifiedCount > 0
             ? res.status(200).json({
                 message: "La información de la actividad se actualizó",
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `No se encontró el tarjetón del usuario ${req.params.id} o la actividad ${req.params.id2}`,
             })
     } catch (error) {
@@ -149,7 +154,8 @@ export const RemoveHoursFromCard = async (req: Request, res: Response) => {
     try {
         const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.params.id2 } } })
 
-        result.modifiedCount > 0 ? CountHours(req.params.id, res) : null
+        if (result.modifiedCount > 0)
+            CountHours(req.params.id, res)
 
         return result.modifiedCount > 0
             ? res.status(200).json({
@@ -168,17 +174,16 @@ export const RemoveHoursFromCard = async (req: Request, res: Response) => {
 
 const CountHours = async (id: string, res: Response) => {
     try {
-        const card: any = await Card.findOne({ "provider_register": id })
+        const card = await Card.findOne({ "provider_register": id })
 
         let count: number = 0
-        if (card.activities.length > 0) {
-            for (const activity of card.activities) {
+        if (card && card.activities.length > 0) {
+            for (const activity of card.activities)
                 count = count + activity.hours
-            }
-        }
 
-        card.achieved_hours = count
-        card.save()
+            card.achieved_hours = count
+            card.save()
+        }
     } catch (error) {
         return res.status(500).json({
             message: `Ocurrió un error en el servidor`,

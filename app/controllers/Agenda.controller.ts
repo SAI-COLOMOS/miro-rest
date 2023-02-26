@@ -98,10 +98,11 @@ export const createEvent = async (req: Request, res: Response) => {
 
     try {
         const event = await new Agenda(req.body).save()
+        let time: Date
 
         if (event) {
             // Añadimos un event emitter para mandar un correo durante la fecha de publicación 
-            let time = event.publishing_date
+            time = event.publishing_date
             time.setHours(time.getHours() - 1)
             scheduleEmailNotifications(event.event_identifier, time.toISOString(), event.name)
 
@@ -129,13 +130,17 @@ export const createEvent = async (req: Request, res: Response) => {
 
 export const updateEvent = async (req: Request, res: Response) => {
     try {
-        req.body.event_identifier ? __ThrowError("El campo 'event_identifier' no se puede modificar") : null
+        if (req.body.event_identifier)
+            __ThrowError("El campo 'event_identifier' no se puede modificar")
 
-        req.body.author_register ? __ThrowError("El campo 'author_register' no se puede modificar") : null
+        if (req.body.author_register)
+            __ThrowError("El campo 'author_register' no se puede modificar")
 
-        req.body.belonging_area ? __ThrowError("El campo 'belonging_area' no se puede modificar") : null
+        if (req.body.belonging_area)
+            __ThrowError("El campo 'belonging_area' no se puede modificar")
 
-        req.body.belonging_place ? __ThrowError("El campo 'belonging_place' no se puede modificar") : null
+        if (req.body.belonging_place)
+            __ThrowError("El campo 'belonging_place' no se puede modificar")
 
         __Required(req.body.modifier_register, `modifier_register`, `string`, null)
 
@@ -165,23 +170,23 @@ export const updateEvent = async (req: Request, res: Response) => {
     }
 
     try {
-        const is_publishing_date: boolean = req.body.publishing_date ? true : false
-        const is_ending_date: boolean = req.body.ending_date ? true : false
-
         const result = await Agenda.updateOne({ "event_identifier": req.params.id }, req.body)
 
         if (result.modifiedCount > 0) {
-            const event = is_ending_date || is_publishing_date ? await Agenda.findOne({ "event_identifier": req.params.id }) : null
+            const event = req.body.ending_date || req.body.publishing_date
+                ? await Agenda.findOne({ "event_identifier": req.params.id })
+                : null
+
             let time: Date
 
-            if (event && is_publishing_date) {
+            if (event && req.body.publishing_date) {
                 time = event.publishing_date
                 time.setHours(time.getHours() - 1)
                 schedule.cancelJob(event.event_identifier)
                 scheduleEmailNotifications(event.event_identifier, time.toISOString(), event.name)
             }
 
-            if (event && is_ending_date) {
+            if (event && req.body.ending_date) {
                 time = event.ending_date
                 time.setHours(time.getHours() + 1)
                 schedule.cancelJob(`end_${event.event_identifier}`)
@@ -193,7 +198,7 @@ export const updateEvent = async (req: Request, res: Response) => {
             })
         }
 
-        return res.status(404).json({
+        return res.status(400).json({
             message: `No se encontró el evento ${req.params.id}`
         })
     } catch (error) {
@@ -207,6 +212,8 @@ export const updateEvent = async (req: Request, res: Response) => {
 export const updateEventStatus = async (req: Request, res: Response) => {
     try {
         __Required(req.body.status, `status`, `string`, ["Disponible", "Concluido"])
+
+        __Required(req.body.modifier_register, `modifier_register`, `string`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -214,7 +221,7 @@ export const updateEventStatus = async (req: Request, res: Response) => {
     }
 
     try {
-        const event: any = await Agenda.findOne({ "event_identifier": req.params.id })
+        const event = await Agenda.findOne({ "event_identifier": req.params.id })
 
         if (event) {
             event.attendance.status = req.body.status
@@ -241,9 +248,9 @@ export const updateEventStatus = async (req: Request, res: Response) => {
 
         return event
             ? res.status(200).json({
-                message: `Se actualizó la información del evento ${req.params.id}`
+                message: `Se actualizó el status del evento ${req.params.id}`
             })
-            : res.status(404).json({
+            : res.status(400).json({
                 message: `No se encontró el evento ${req.params.id}`
             })
     } catch (error) {
@@ -267,7 +274,7 @@ export const deleteEvent = async (req: Request, res: Response) => {
             })
         }
 
-        return res.status(404).json({
+        return res.status(400).json({
             message: `No se encontró el evento ${req.params.id}`
         })
     } catch (error) {
@@ -286,15 +293,17 @@ const scheduleEmailNotifications = async (event_identifier: string, time: string
             const from = `"SAI" ${Enviroment.Mailer.email}`
             const subject = "Recuperación de contraseña"
             const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
-            for (let user of users) {
+            for (const user of users) {
                 await sendEmail(from, user.email, subject, body)
             }
 
             schedule.cancelJob(event)
-        }.bind(null, event_name, event_identifier))
+        }.bind(null, event_name, event_identifier)
+    )
 }
 
 const endEvent = async (event_identifier: string, time: string) => {
+
     schedule.scheduleJob(`end_${event_identifier}`, time,
         async function (event_identifier: string) {
             const result = await Agenda.findOne({ "event_identifier": event_identifier })
@@ -322,5 +331,6 @@ const endEvent = async (event_identifier: string, time: string) => {
                 }
             }
             schedule.cancelJob(`end_${event_identifier}`)
-        }.bind(null, event_identifier))
+        }.bind(null, event_identifier)
+    )
 }

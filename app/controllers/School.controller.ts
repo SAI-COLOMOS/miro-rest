@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
-import Place from "../models/Place"
-import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
+import { __Query, __Optional, __Required } from "../middleware/ValidationControl"
+import School from "../models/School"
 
-export const getPlaces = async (req: Request, res: Response) => {
+export const getSchools = async (req: Request, res: Response) => {
     try {
         __Query(req.query.items, `items`, `number`)
 
@@ -20,16 +20,16 @@ export const getPlaces = async (req: Request, res: Response) => {
             req.query.search ?
                 {
                     ...JSON.parse(String(req.query.filter)),
-                    $or: [{ "place_name": { $regex: '.*' + req.query.search + '.*' } }]
+                    $or: [{ "school_name": { $regex: '.*' + req.query.search + '.*' } }]
                 }
                 : JSON.parse(String(req.query.filter))
             : null
 
-        const places = await Place.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+        const schools = await School.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
         return res.status(200).json({
             message: 'Listo',
-            places: places
+            schools
         })
     } catch (error) {
         return res.status(500).json({
@@ -39,14 +39,14 @@ export const getPlaces = async (req: Request, res: Response) => {
     }
 }
 
-export const getPlace = async (req: Request, res: Response) => {
+export const getSchool = async (req: Request, res: Response) => {
     try {
-        const place = await Place.findOne({ "place_identifier": req.params.id })
+        const school = await School.findOne({ "school_identifier": req.params.id })
 
-        return place
+        return school
             ? res.status(200).json({
                 message: "Listo",
-                place
+                school
             })
             : res.status(400).json({
                 message: `No se encontró el parque ${req.params.id}`
@@ -59,9 +59,9 @@ export const getPlace = async (req: Request, res: Response) => {
     }
 }
 
-export const postPlace = async (req: Request, res: Response) => {
+export const postSchool = async (req: Request, res: Response) => {
     try {
-        __Required(req.body.place_name, `place_name`, `string`, null)
+        __Required(req.body.school_name, `school_name`, `string`, null)
 
         __Required(req.body.municipality, `municipality`, `string`, null)
 
@@ -83,27 +83,27 @@ export const postPlace = async (req: Request, res: Response) => {
     }
 
     try {
-        const place = await new Place(req.body).save()
+        const school = await new School(req.body).save()
 
-        return place
+        return school
             ? res.status(201).json({
-                message: `Parque añadido`,
-                place
+                message: `Escuela añadida`,
+                school
             })
             : res.status(500).json({
-                message: `No se pudo crear el parque`
+                message: `No se pudo crear la escuela`
             })
     } catch (error) {
         return res.status(500).json({
-            message: "Ocurrió un error en el servidor",
+            message: `Ocurrió un error en el servidor`,
             error: error?.toString()
         })
     }
 }
 
-export const updatePlace = async (req: Request, res: Response) => {
+export const updateSchool = async (req: Request, res: Response) => {
     try {
-        __Optional(req.body.place_name, `place_name`, `string`, null)
+        __Optional(req.body.school_name, `school_name`, `string`, null)
 
         __Optional(req.body.municipality, `municipality`, `string`, null)
 
@@ -125,33 +125,33 @@ export const updatePlace = async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await Place.updateOne({ "place_identifier": req.params.id }, req.body)
+        const result = await School.updateOne({ "school_identifier": req.params.id }, req.body)
 
         return result.modifiedCount > 0
             ? res.status(200).json({
-                message: "Se actualizó la información del lugar"
+                message: "Se actualizó la información de la escuela"
             })
             : res.status(400).json({
-                message: `No se encontró el lugar ${req.params.id}`
+                message: `No se encontró la escuela ${req.params.id}`
             })
     } catch (error) {
         return res.status(500).json({
-            message: "Ocurrió un error en el servidor",
+            message: `Ocurrió un error en el servidor`,
             error: error?.toString()
         })
     }
 }
 
-export const deletePlace = async (req: Request, res: Response) => {
+export const deleteSchool = async (req: Request, res: Response) => {
     try {
-        const result = await Place.deleteOne({ "place_identifier": req.params.id })
+        const result = await School.deleteOne({ "school_identifier": req.params.id })
 
         return result.deletedCount !== 0
             ? res.status(200).json({
-                message: "El lugar fue eliminado"
+                message: "La escuela fue eliminada"
             })
             : res.status(400).json({
-                message: `No se encontró el lugar ${req.params.id}`
+                message: `No se encontró la escuela ${req.params.id}`
             })
     } catch (error) {
         return res.status(500).json({
