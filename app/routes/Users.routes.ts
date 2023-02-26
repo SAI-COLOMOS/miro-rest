@@ -22,6 +22,6 @@ route.delete(`/${path}/:id`, Passport.authenticate('jwt', { session: false }), i
 route.patch(`/${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserPatch)
 
 // Actualizar la contraseña únicamente
-route.patch(`${path}/password/:id`, Passport.authenticate('jwt', { session: false }), updatePassword)
+route.patch(`/${path}/password/:id`, Passport.authenticate('jwt', { session: false }), updatePassword)
 
 export default route

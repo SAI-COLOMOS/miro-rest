@@ -1,7 +1,6 @@
 import { model, Schema, Document } from "mongoose"
 import Bycrypt from "bcrypt"
-import Place from "./Place";
-import Card from "./Card";
+import Place, { AreaInterface } from "./Place";
 
 export interface UserInterface extends Document {
     register: string
@@ -115,10 +114,16 @@ const UserSchema = new Schema({
 
 async function newRegisterForProvider(inputPlace: string, inputAssigned_area: string): Promise<string> {
     const [year, month] = new Date().toISOString().split('-')
+
     const seasson = Number(month) <= 6 ? 'A' : 'B'
-    const place: any = await Place.findOne({ "place_name": inputPlace })
-    const area = place.place_areas.filter((item: any) => item.area_name === inputAssigned_area ? true : null)
-    const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register').where({ 'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' } })
+
+    const place = await Place.findOne({ "place_name": inputPlace })
+
+    const area = place!.place_areas.filter((item: AreaInterface) => item.area_name === inputAssigned_area ? true : null)
+
+    const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register')
+        .where({ 'register': { $regex: `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}` + '.*' } })
+
     let serie = "001"
 
     if (lastRegister) {
@@ -133,18 +138,25 @@ async function newRegisterForProvider(inputPlace: string, inputAssigned_area: st
         }
     }
 
-    return `${year}${seasson}${place.place_identifier}${area[0].area_identifier}${serie}`
+    return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}${serie}`
 }
 
 async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssigned_area: string): Promise<string> {
-    const first_name = inputFirst_name.substring(0, 2).toUpperCase();
-    const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase();
-    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0, 2).toUpperCase() : "XX"
-    const place: any = await Place.findOne({ "place_name": inputPlace })
-    const area = place.place_areas.filter((item: any) => item.area_name === inputAssigned_area ? true : null)
+    const first_name = inputFirst_name.substring(0, 2).toUpperCase()
+
+    const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase()
+
+    const second_last_name = inputSecond_last_name
+        ? inputSecond_last_name.substring(0, 2).toUpperCase()
+        : "XX"
+
+    const place = await Place.findOne({ "place_name": inputPlace })
+
+    const area = place!.place_areas.filter((item: AreaInterface) => item.area_name === inputAssigned_area ? true : null)
+
     const random: string = `${Math.floor(Math.random() * 9).toString()}${Math.floor(Math.random() * 9).toString()}`
 
-    return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
+    return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier}${area[0].area_identifier}${random}`
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
@@ -154,7 +166,6 @@ UserSchema.pre<UserInterface>("save", async function (next) {
 
             this.register = register
             this.password = register
-
         } else if (this.role === "Administrador" || this.role === "Encargado") {
             const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assigned_area)
 

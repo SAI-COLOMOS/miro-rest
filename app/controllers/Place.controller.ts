@@ -69,7 +69,7 @@ export const postPlace = async (req: Request, res: Response) => {
 
         __Required(req.body.postal_code, `postal_code`, `string`, null)
 
-        __Required(req.body.number, `number`, `string`, null)
+        __Required(req.body.exterior_number, `exterior_number`, `string`, null)
 
         __Required(req.body.colony, `colony`, `string`, null)
 
@@ -88,7 +88,7 @@ export const postPlace = async (req: Request, res: Response) => {
         return place
             ? res.status(201).json({
                 message: `Parque añadido`,
-                place: place
+                place
             })
             : res.status(500).json({
                 message: `No se pudo crear el parque`
@@ -111,7 +111,7 @@ export const updatePlace = async (req: Request, res: Response) => {
 
         __Optional(req.body.postal_code, `postal_code`, `string`, null)
 
-        __Optional(req.body.number, `number`, `string`, null)
+        __Optional(req.body.exterior_number, `exterior_number`, `string`, null)
 
         __Optional(req.body.colony, `colony`, `string`, null)
 

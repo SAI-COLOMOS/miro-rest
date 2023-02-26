@@ -106,11 +106,10 @@ export const recoverPassword = async (req: Request, res: Response) => {
     }
 
     try {
-        __Required(req.body.password, `password`, `string`, null);
+        __Required(req.body.password, `password`, `string`, null)
 
-        (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password)
-            ? null
-            : __ThrowError("La contraseña no cumple con la estructura deseada")
+        if (!(/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password))
+            __ThrowError("La contraseña no cumple con la estructura deseada")
     } catch (error) {
         return res.status(400).json({
             error

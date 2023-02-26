@@ -72,9 +72,8 @@ export const UserPost = async (req: Request, res: Response) => {
         __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
 
         const user: any = req.user
-        user.role === "Encargado" && req.body.role !== "Prestador"
-            ? __ThrowError(`El usuario de tipo 'encargado' no puede crear un usuario de tipo ${req.body.role}`)
-            : null
+        if (user.role === "Encargado" && req.body.role !== "Prestador")
+            __ThrowError(`El usuario de tipo 'Encargado' no puede crear un usuario de tipo '${req.body.role}'`)
 
         __Required(req.body.first_name, `first_name`, `string`, null)
 
@@ -100,17 +99,20 @@ export const UserPost = async (req: Request, res: Response) => {
 
         __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
 
-        req.body.role === "Prestador" ? __Required(req.body.school, `school`, `string`, null) : null
+        if (req.body.role === "Prestador")
+            __Required(req.body.school, `school`, `string`, null)
 
         req.body.role === "Prestador"
             ? __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
             : req.body.provider_type = "No aplica"
 
-        req.body.role === 'Prestador' ? __Required(req.body.total_hours, `total_hours`, `number`, null) : null
-        if (req.body.total_hours) {
+        if (req.body.role === 'Prestador')
+            __Required(req.body.total_hours, `total_hours`, `number`, null)
+
+        if (req.body.total_hours && req.body.role === 'Prestador')
             total_hours = req.body.total_hours
-            delete req.body.total_hours
-        }
+
+        delete req.body.total_hours
     } catch (error) {
         return res.status(400).json({
             error
@@ -120,9 +122,8 @@ export const UserPost = async (req: Request, res: Response) => {
     try {
         const user = await new User(req.body).save()
 
-        user?.role === "Prestador"
-            ? await new Card({ "provider_register": user.register, "total_hours": total_hours }).save()
-            : null
+        if (user && user.role === "Prestador")
+            await new Card({ "provider_register": user.register, "total_hours": total_hours }).save()
 
         return user
             ? res.status(201).json({
@@ -141,14 +142,17 @@ export const UserPost = async (req: Request, res: Response) => {
 
 export const UserDelete = async (req: Request, res: Response) => {
     try {
-
         const user = await User.findOne({ 'register': req.params.id })
 
-        let deletedCount = 0
+        let deletedCount: number = 0
 
-        if (user?.role === "prestador") {
+        if (user && user.role === "Prestador") {
+            await Promise.all([
+
+            ])
             const card_result = await Card.deleteOne({ "provider_register": req.params.id })
             const result = await User.deleteOne({ 'register': req.params.id })
+
             deletedCount = card_result.deletedCount + result.deletedCount
         } else {
             const result = await User.deleteOne({ 'register': req.params.id })
@@ -172,8 +176,11 @@ export const UserDelete = async (req: Request, res: Response) => {
 
 export const UserPatch = async (req: Request, res: Response) => {
     try {
-        req.body.password ? __ThrowError("El campo 'password' no se puede actualizar") : null
-        req.body.register ? __ThrowError("El campo 'register' no se puede actualizar") : null
+        if (req.body.password)
+            __ThrowError("El campo 'password' no se puede actualizar")
+
+        if (req.body.register)
+            __ThrowError("El campo 'register' no se puede actualizar")
 
         __Optional(req.body.first_name, `first_name`, `string`, null)
 
@@ -201,9 +208,12 @@ export const UserPatch = async (req: Request, res: Response) => {
 
         __Optional(req.body.school, `school`, `string`, null)
 
-        __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador'])
-
         __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
+
+        const user: any = req.user
+        user.role === "Encargado"
+            ? __ThrowError("El usuario de tipo 'Encargado' no puede modificar roles")
+            : __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador'])
     } catch (error) {
         return res.status(400).json({
             error
@@ -230,11 +240,10 @@ export const UserPatch = async (req: Request, res: Response) => {
 
 export const updatePassword = async (req: Request, res: Response) => {
     try {
-        __Required(req.body.password, `password`, `string`, null);
+        __Required(req.body.password, `password`, `string`, null)
 
-        (/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password)
-            ? null
-            : __ThrowError("La contraseña no cumple con la estructura deseada")
+        if (!(/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password))
+            __ThrowError("La contraseña no cumple con la estructura deseada")
     } catch (error) {
         return res.status(400).json({
             error
@@ -242,7 +251,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     }
 
     try {
-        const user = await User.findOne({ "register": req.params.id }).sort({ "register": "desc" })
+        const user = await User.findOne({ "register": req.params.id })
 
         if (user && !(await user.validatePassword(req.body.password))) {
             user.password = req.body.password

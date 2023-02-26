@@ -2,13 +2,21 @@ import { model, Schema, Document } from "mongoose"
 
 export interface AreaInterface extends Document {
     area_identifier: string
-    area_name: string
+    area_name: string,
+    phone: string
 }
 
 export interface PlaceInterface extends Document {
     place_identifier: string
-    place_name: string
-    place_areas: AreaInterface
+    place_name: string,
+    municipality: string,
+    street: string,
+    postal_code: string,
+    exterior_number: string,
+    colony: string,
+    phone: string,
+    reference: string,
+    place_areas: AreaInterface[]
 }
 
 const AreaSchema = new Schema({
@@ -26,6 +34,7 @@ const AreaSchema = new Schema({
         required: [true, "El número de contacto es necesario"]
     }
 }, {
+    timestamps: true,
     versionKey: false
 })
 
@@ -53,7 +62,7 @@ const PlaceSchema = new Schema({
         type: String,
         required: [true, "El código postal es necesario"]
     },
-    number: {
+    exterior_number: {
         type: String,
         required: [true, "El número de dirección es necesario"]
     },

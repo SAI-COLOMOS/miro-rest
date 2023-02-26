@@ -7,7 +7,7 @@ export interface AttendeeListInterface extends Document {
 }
 
 export interface AttendanceInterface extends Document {
-    attendee_list: AttendeeListInterface,
+    attendee_list: AttendeeListInterface[],
     status: string
 }
 
@@ -24,7 +24,10 @@ export interface AgendaInterface extends Document {
     publishing_date: Date,
     place: string,
     belonging_area: string,
-    belonging_place: string
+    belonging_place: string,
+    modifier_register: string,
+    is_template: boolean,
+    penalty_hours: number
 }
 
 const AttendeeListSchema = new Schema({

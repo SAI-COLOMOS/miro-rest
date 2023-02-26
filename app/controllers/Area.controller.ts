@@ -92,16 +92,16 @@ export const addArea = async (req: Request, res: Response) => {
 
         if (place) {
             let serie = "01"
-            const arr = place.place_areas.toObject()
+            const areas = place.place_areas
 
-            if (arr.length > 0) {
-                const last_identifier = arr[arr.length - 1]
-                const next_identifier = Number(last_identifier.area_identifier) + 1
-                if (next_identifier < 10) {
-                    serie = "0" + next_identifier
-                } else {
-                    serie = next_identifier.toString()
-                }
+            if (areas.length > 0) {
+                const last_identifier = areas[areas.length - 1].area_identifier
+
+                const next_identifier = Number(last_identifier) + 1
+
+                next_identifier < 10
+                    ? serie = "0" + next_identifier
+                    : serie = next_identifier.toString()
             }
 
             const result = await Place.updateOne({ "place_identifier": req.params.id }, {

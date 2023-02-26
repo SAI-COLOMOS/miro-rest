@@ -2,14 +2,15 @@ import { model, Schema, Document } from "mongoose"
 
 export interface HoursInterface extends Document {
     activity_name: string,
-    hours: Number,
+    hours: number,
     assignation_date: Date,
     responsible_register: string
 }
 
 export interface CardInterface extends Document {
     provider_register: string,
-    activities: HoursInterface
+    achieved_hours: number,
+    activities: HoursInterface[]
 }
 
 const ActivitySchema = new Schema({
@@ -29,6 +30,9 @@ const ActivitySchema = new Schema({
         type: String,
         required: [true, "El registro del encargado es necesario"]
     }
+}, {
+    versionKey: false,
+    timestamps: true
 })
 
 const CardSchema = new Schema({
