@@ -74,8 +74,8 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         }
 
         if (user) {
-            const token = createToken(user, "5m")
-            newRoute = `localhost:3000/auth/recovery?token=${token}`
+            const token = createToken(user, "5d")
+            newRoute = `exp://192.168.100.36:19000/--/recovery?token=${token}`
             const from = `"SAI" ${Enviroment.Mailer.email}`
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
