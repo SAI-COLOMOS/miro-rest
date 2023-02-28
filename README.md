@@ -1,16 +1,7 @@
-# Manual de uso de la API REST
 
 ![Logotoipo de Sistema Administrativo de la Información](/app/public/logo.png)
 
-## Indice
-
-- [Acerca del proyecto](#acerca-del-proyecto)
-- [Autenticación](#autenticación)
-  - [Inicio de sesión](#inicio-de-sesión)
-  - [Solicitud de recuperación de contraseña](#solicitud-de-recuperación-de-contraseña)
-  - [Restablecimiento de la contraseña](#restablecimiento-de-la-contraseña)
-
-## Acerca del proyecto
+# Manual de uso de MIRO-REST
 
 Este trabajo es parte de nuestro proyecto de titulación, el cual consiste en una plataforma que conformada por una API (este repositorio) y una [aplicación móvil](https://www.github.com/SAI-AMBU/sai-app). Con el fin de modernizar y automatizar las diferentes áreas dentro de la Agencia Metropolitana de Bosques Urbanos del Área Metropolitana de Guadalajara.
 
@@ -18,296 +9,936 @@ A continuación, se documenta el cómo realizar las peticiones a nuestra API RES
 
 Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempre se incluirán todas las funcionalidades en este documento. Sin embargo, esto no exime a los desarrolladores a que, una vez terminado el desarrollo de una funcionalidad nueva, tenga que documentarla en este archivo, con el fin de que los desarrolladres que necesiten hacer uso de ella puedan tener y entender el funcionamiento de la misma.
 
-> - ❗ Es necesario que el desarrollador sea lo más explícito y claro posible al documentar su nueva funcionalidad, así evitaremos malos entendidos y no habrá necesidad de molestarle para preguntar sobre cómo es que tenemos que hacer para utilizar su función.
-> - ❗ Es importante cuidar la gramática y ortografía al momento de documentar, no por que no podamos programar con acentos y en inglés, signifique que tengamos que docuemntar sin respetar las reglas de nuestro idioma.
 
-## Autenticación
+## Index
 
-### Inicio de sesión
+- [**API usage**](#uso-de-la-api)
+    - [Authentication](#authentication)
+        - [Login](#login)
+        - [Password reset request](#password-reset-request)
+        - [Password reset](#password-reset)
+        - [Change user password]()
+    - [Places](#places)
+        - [Get places](#get-places)
+        - [Get a place](#get-a-place)
+        - [Create a place](#create-a-place)
+        - [Update a place](#update-a-place)
+        - [Delete a place](#delete-a-place)
+    - [Areas](#areas)
+        - [Get areas](#get-areas)
+        - [Get an area](#get-an-area)
+        - [Create an area](#create-an-area)
+        - [Update an area](#update-an-area)
+        - [Delete an area](#delete-an-area)
+    - [Users](#users)
+        - [Get users](#get-users)
+        - [Get a user](#get-an-user)
+        - [Create a user](#create-a-user)
+        - [Update a user](#update-a-user)
+        - [Delete a user](#delete-a-user)
 
-----------
+## Uso de la API
 
-> GET /auth/login
+### Authentication
 
-Funciona para autenticar un usuario.
+#### Login
 
-**Petición**
-```dart
-var request = await http.get(Uri.http('/auth/login'), body: {
-    'credential': '2023A0103001',
-    'password': '@A1B2C3D4'
-});
+- Endpoint
+
+```http
+POST /auth/login
 ```
-Capos obligatorios
-- `credential`: Campo de tipo `string`, en él se transporta la credencial del usuario, el cual puede ser: correo, número telefónico o registro.
-- `password`: Campo de tipo `string`, en el se transporta la contraseña del usuario.
 
-Campos opcionales
-- `keepAlive`: Campo de tipo `booleano`, cuando es `true` el servidor responde con un token con vencimiento de 90 días, caso contrario, la vigencia del token es de tres días.
+- Parameters
 
-**Respuesta**
+| Parameter    | Type      | Required | Allowed values | Description                                                                                       |
+| :----------- | :-------- | :------- | :------------- | :------------------------------------------------------------------------------------------------ |
+| `credential` | `string`  | Yes      | Any            | May be the user id, email or phone                                                                |
+| `password`   | `string`  | Yes      | Any            | User password                                                                                     |
+| `keepAlive`  | `boolean` | No       | Any            | If true, will return an 90 days expiration token, else will return an three days expiration token |
+
+- Request
+
+```javascript
+fetch(
+    `.../auth/login`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            credential,
+            password
+        })
+    }
+)
+```
+
+- Example response from server
+
 ```json
 {
     "message": "Sesión iniciada",
-    "user": {
-        "_id": "63e3f0b06f1f5983422e3dbc",
-        "register": "2023A0201001",
-        "first_name": "Cynthia Gabriela",
-        "first_last_name": "Ibarra",
-        "second_last_name": "Ponce",
-        "age": "19",
-        "email": "cgip",
-        "phone": "3332569494",
-        "password": "Contraseña encriptada",
-        "avatar": "/protected/default.png",
-        "emergency_contact": "Martha Ponce Triscareño",
-        "emergency_phone": "3313467985",
-        "blood_type": "RH O+",
-        "provider_type": "Servicio social",
-        "place": "Parque Metropolitano",
-        "assignment_area": "Servicios generales",
-        "status": "Activo",
-        "school": "Centro de Enseñanza Técnica Industrial plantel Colomos",
-        "role": "Prestador",
-        "createdAt": "2023-02-08T18:57:52.184Z",
-        "updatedAt": "2023-02-08T18:57:52.184Z"
-    },
-    "token": "token"
+    "token": "XXXX.XXXXXXXXXX.XXXXXX"
 }
 ```
 
-### Solicitud de recuperación de contraseña
+#### Password reset request
 
-----------
+- Endpoint
 
-> GET /auth/recovery
-
-Solicita un token especial para recuperar la cuenta del usuario en caso de que este haya olvidado su contraseña
-
-**Petición**
-```dart
-var request = await http.get(Uri.http('/auth/recovery'), body: {
-    'credential': '2023A0103001'
-});
+```http
+POST /auth/recovery
 ```
-Capos obligatorios
-- `credential`: Campo de tipo `string`, en él se transporta la credencial del usuario, el cual puede ser: correo, número telefónico o registro.
 
-**Respuesta**
+- Parameters
+
+| Parameter    | Type     | Required | Allowed values | Description                        |
+| :----------- | :------- | :------- | :------------- | :--------------------------------- |
+| `credential` | `string` | Yes      | Any            | May be the user id, email or phone |
+
+- Request
+
+```javascript
+fetch(
+    `.../auth/recovey`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            credential
+        })
+    }
+)
+```
+
+- Example response from server
+
 ```json
 {
     "message": "Si se encontró el usuario; Se mandó un correo de recuperación"
 }
 ```
 
-### Restablecimiento de la contraseña
+#### Password reset
 
-----------
+- Endpoint
 
-> PATCH /auth/recover?tkn={TOKEN}
-
-Realiza el proceso de actualización de contraseña
-
-**Petición**
-```dart
-var request = await http.patch(Uri.http('/auth/recovery?tkn={TOKEN}'), body: {
-    'password': '@A1B2C3D4'
-});
+```http
+PATCH /auth/recovery?token=:token
 ```
-Capos obligatorios
-- `password`: Campo de tipo `string`, en el se transporta la nueva contraseña del usuario, la cual debe de cumplir con los siguientes requisitos:
-  - Debe tener una longitud mínima de 8 carácteres.
-  - Debe tener al menos una letra mayúscula.
-  - Debe tener al menos un carácter especial.
-  - Debe tener al menos un número.
 
-**Respuesta**
+- Parameters
+
+| Parameter  | Type     | Required | Allowed values | Description                    |
+| :--------- | :------- | :------- | :------------- | :----------------------------- |
+| `password` | `string` | Yes      | Any            | New password generated by user |
+
+> ⚠️ Note: the new password must abide the following requirements:
+> - Must have at least one number.
+> - Must have at least one uppercase letter.
+> - Must have at least one lowercase letter.
+> - Must have at least one special character.
+> - Must be at least eight characters long.
+
+- Example response from server
+
+```javascript
+fetch(
+    `.../auth/recovey`,
+    {
+        method: "PATCH",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            password
+        })
+    }
+)
+```
+
+- Example response from server
+
 ```json
 {
     "message": "Se actualizó la contraseña del usuario"
 }
 ```
 
-## Módulo de horas
+### Places
 
-### Obtener los tarjetones de todos los prestadores
+> ⚠️ Note: this seccion is linked to _[Areas seccion](#areas)_. Both are part of _Places and Areas_ module.
 
-----------
+#### Get places
 
->GET /cards
+- Endpoint
 
-Realiza un fetch de los tarjetones existentes de acuerdo a los parámetros otorgados.
-
-**Petición**
-
-```dart
-var request = await http.get(Uri.http('/auth/recovery'), body: {
-   "items": 10,
-   "page": 2,
-   "status": "Activo"
-});
-
+```http
+GET /places
 ```
 
-Todos los campos son opcionales.
+- Request
 
-- El campo `items` debe contener la cantidad de tarjetones que se quieren recuperar.
-- El campo `page` debe contener la página a la cual se quiere acceder.
-- El campo `status` debe contener solo una de las siguientes strings:
-  - Activo
-  - Inactivo
-  - Suspendido
-  - Finalizado
+```javascript
+fetch(
+    `.../places`,
+    {
+        method: "GET",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
 
-**Respuesta**
+- Example response from server
 
 ```json
 {
     "message": "Listo",
-    "cards": [
+    "places": [
         {
-            "_id": "63e07ed86e42b67d4f554af5",
-            "provider_register": "2023A0103001",
-            "activities": [],
-            "createdAt": "2023-02-06T04:15:20.774Z",
-            "updatedAt": "2023-02-06T04:32:30.644Z"
+            "_id": "63f6d6e232ab8b79cd6c56bb",
+            "place_name": "Parque Agua Azul",
+            "municipality": "Guadalajara",
+            "street": "Calzada Independencia Sur",
+            "postal_code": "44100",
+            "number": "973",
+            "colony": "Centro",
+            "phone": "3335241526",
+            "place_areas": [],
+            "createdAt": "2023-02-23T03:00:50.483Z",
+            "updatedAt": "2023-02-23T03:00:50.483Z",
+            "place_identifier": "02"
+        },
+        {
+            "_id": "63f6cf38c6e5aca5b3f5f2b6",
+            "place_name": "Bosque Los Colomos",
+            "municipality": "Guadalajara",
+            "street": "Calle El Chaco",
+            "postal_code": "44630",
+            "number": "3200",
+            "colony": "Providencia",
+            "phone": "3336413804",
+            "place_areas": [
+                {
+                    "area_identifier": "01",
+                    "area_name": "Centro de Educación y Cultura Ambiental",
+                    "phone": "3313467900",
+                    "_id": "63f6d3e91975d0ea79de99df"
+                }
+            ],
+            "createdAt": "2023-02-23T02:28:08.370Z",
+            "updatedAt": "2023-02-23T02:55:51.753Z",
+            "place_identifier": "01"
         }
     ]
 }
 ```
 
-### Obtener el tarjetón de un solo prestador
+#### Get a place
 
-------
+- Endpoint
 
->GET /cards/:id
+```http
+GET /places/:place_identifier
+```
 
-El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
+- Request
 
-**Respuesta**
+```javascript
+fetch(
+    `.../places/${place_identifier}`,
+    {
+        method: "GET",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
 
 ```json
 {
-    "message": "Tarjetón de usuario encontrado",
-    "card": [
+    "message": "Listo",
+    "place": {
+        "_id": "63f6cf38c6e5aca5b3f5f2b6",
+        "place_name": "Bosque Los Colomos",
+        "municipality": "Guadalajara",
+        "street": "Calle El Chaco",
+        "postal_code": "44630",
+        "number": "3200",
+        "colony": "Providencia",
+        "phone": "3336413804",
+        "place_areas": [
+            {
+                "area_identifier": "01",
+                "area_name": "Centro de Educación y Cultura Ambiental",
+                "phone": "3313467900",
+                "_id": "63f6d3e91975d0ea79de99df"
+            }
+        ],
+        "createdAt": "2023-02-23T02:28:08.370Z",
+        "updatedAt": "2023-02-23T02:55:51.753Z",
+        "place_identifier": "01"
+    }
+}
+```
+
+#### Create a place
+
+- Endpoint
+
+```http
+POST /places
+```
+
+- Parameters
+
+| Parameter      | Type     | Required | Allowed values | Description               |
+| :------------- | :------- | :------- | :------------- | :------------------------ |
+| `place_name`   | `string` | Yes      | Any            | Name of the new place     |
+| `street`       | `string` | Yes      | Any            | Address street name       |
+| `number`       | `string` | Yes      | Any            | Address number            |
+| `colony`       | `string` | Yes      | Any            | Address colony name       |
+| `municipality` | `string` | Yes      | Any            | Address municipality name |
+| `postal_code`  | `string` | Yes      | Any            | Address postal code       |
+| `phone`        | `string` | Yes      | Any            | Contat phone number       |
+| `reference`    | `string` | No       | Any            | Address references        |
+
+- Request
+
+```javascript
+fetch(
+    `.../places/`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            place_name,
+            street,
+            number,
+            colony,
+            municipality,
+            postal_code,
+            phone,
+            reference
+        })
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Parque añadido",
+}
+```
+
+#### Update a place
+
+- Endpoint
+
+```http
+PATCH /places/:place_identifier
+```
+
+- Parameters
+
+| Parameter      | Type     | Required | Allowed values | Description               |
+| :------------- | :------- | :------- | :------------- | :------------------------ |
+| `place_name`   | `string` | No       | Any            | Name of the new place     |
+| `street`       | `string` | No       | Any            | Address street name       |
+| `number`       | `string` | No       | Any            | Address number            |
+| `colony`       | `string` | No       | Any            | Address colony name       |
+| `municipality` | `string` | No       | Any            | Address municipality name |
+| `postal_code`  | `string` | No       | Any            | Address postal code       |
+| `phone`        | `string` | No       | Any            | Contat phone number       |
+| `reference`    | `string` | No       | Any            | Address references        |
+
+> ⚠️ Note: only send the parameters that are going to be updated
+
+- Request
+
+```javascript
+fetch(
+    `.../places/${place_identifier}`,
+    {
+        method: "PATCH",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            ...
+        })
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Se actualizó la información del lugar"
+}
+```
+
+#### Delete a place
+
+- Endpoint
+
+```http
+DELETE /places/:place_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../places/${place_identifier}`,
+    {
+        method: "DELETE",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "El lugar fue eliminado"
+}
+```
+
+### Areas
+
+> ⚠️ Note: this seccion is linked to _[Places seccion](#places)_. Both are part of _Places and Areas_ module.
+
+#### Get areas
+
+- Endpoint
+
+```http
+GET /areas/:place_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../areas/${place_identifier}`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "areas": [
         {
-            "activity_name": "primer actividad",
-            "hours": 12,
-            "assignation_date": "2023-02-13T16:08:01.230Z",
-            "responsible_register": "15",
-            "_id": "63ea61689316834bac264f81"
+            "area_identifier": "01",
+            "area_name": "Centro de Educación y Cultura Ambiental",
+            "phone": "3313467900",
+            "_id": "63f6d3e91975d0ea79de99df"
+        },{
+            "area_identifier": "02",
+            "area_name": "Servicios generales",
+            "phone": "3313467555",
+            "_id": "63f6d3e91975d0ff66ht12vv"
         }
     ]
 }
 ```
 
-### Añadir un objeto de horas al tarjetón de un prestador
+#### Get an area
 
----
+- Endpoint
 
->POST /cards/:id
-
-El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
-Dicha petición debe tener la siguiente estructura:
-
-```
-{
-    activity_name: String,
-    hours: Number,
-    responsible_register: String
-}
+```http
+GET /areas/:place_identifier/:area_identifier
 ```
 
-- El campo `activity_name` debe contener el nombre de la actividad o evento.
-- El campo `hours` debe contener la cantidad de horas que van a ser añadidas (Puede ser un número negativo).
-- El campo `responsible_register` debe contener el registro del encargado que está asignando éstas horas.
-
-#### Respuesta
-
-```
-{
-    message: String
-}
-```
-
-### Eliminar un objeto de horas al tarjetón de un prestador
-
-La petición debe ser enviada con el método `DELETE` hacia la siguiente ruta:
->localhost:3000/cards/:id
-
-El parámetro de `id` en la ruta hace referencia al registro del prestador en cuestión.
-Dicha petición debe tener la siguiente estructura:
-
-```
-{
-    _id: String
-}
-```
-
-- El campo `_id` debe contener el ObjetId del objeto de horas que se va a eliminar.
-
-#### Respuesta
-
-```
-{
-    message: String
-}
-```
-
-## Miselaneo
-
-A continuación se anexan documentación que tal vez sea necesaria.
-
-### Cómo realizar peticiones
-
-#### Desde JavaScript
-
-Para realizar peticiones desde JavaScript a nuestra API recomendamos hacer uso de la función ```fecth``` y emplear _promesas_. A continuación, se muestra un ejemplo general de como realizarla.
+- Request
 
 ```javascript
-const request = async _ => {
-    await fetch(
-        url,
-        {
-            method: ['GET', 'POST', 'PATCH', 'DELETE'],
-            headers: {
-                'Content-Type': 'application/json'
-            }
-            body: JSON.stringtify({
-                // Aquí van los datos que serán envíados en la petición
-            })
+fetch(
+    `.../areas/${place_identifier}/${area_identifier}`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
         }
-    ).then(
-        response => response.ok ? response.json() : null
-    ).then(
-        data => {
-            // Aquí va el código que utilizará la información obtenida
-        }
-    ).catch(
-        error => console.log(error)
-    )
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "area": {
+        "area_identifier": "01",
+        "area_name": "Centro de Educación y Cultura Ambiental",
+        "phone": "3313467900",
+        "_id": "63f6d3e91975d0ea79de99df"
+    }
 }
 ```
 
-#### Desde Dart
+#### Create an area
 
-Realizar peticiones desde Dart es un tanto más complicado, para ello es necesario realizar las siguientes acciones (lo siguiente que veremos está documentado en [la página de Flutter](https://docs.flutter.dev/cookbook/networking/fetch-data)):
+- Endpoint
 
-- Primero, es necesario añadir el paquete `http`, para ello, abrimos el archivo `pubspec.yaml` y agregamos las siguientes líneas. 
-
-```yaml
-dependencies:
-  http: <latest_version>
+```http
+POST /areas/:place_identifier
 ```
 
-- Después, en nuestro archivo `.dart`, importamos la dependencia.
+- Parameters
 
-```dart
-import 'package:http/http.dart' as http;
+| Parameter   | Type     | Required | Allowed values | Description                      |
+| :---------- | :------- | :------- | :------------- | :------------------------------- |
+| `area_name` | `string` | Yes      | Allowed values | Name of the new area             |
+| `phone`     | `string` | Yes      | Allowed values | Contact phone number of the area |
+
+- Request
+
+```javascript
+fetch(
+    `.../areas/${place_identifier}`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            area_name,
+            phone
+        })
+    }
+)
 ```
 
-> Es necesario añadir en nuestro `AndroidManifest.xml` el permiso de acceso a internet, esto lo logramos con la siguiente línea
+- Example response from server
 
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
+```json
+{
+    "message": "Se añadió el area"
+}
+```
+
+#### Update an area
+
+- Endpoint
+
+```http
+PATCH /areas/:place_identifier/:area_identifier
+```
+
+- Parameters
+
+| Parameter   | Type     | Required | Allowed values | Description                      |
+| :---------- | :------- | :------- | :------------- | :------------------------------- |
+| `area_name` | `string` | Yes      | Any            | Name of the new area             |
+| `phone`     | `string` | Yes      | Any            | Contact phone number of the area |
+
+> ⚠️ Note: only send the parameters that are going to be updated
+
+- Request
+
+```javascript
+fetch(
+    `.../areas/${place_identifier}/${area_identifier}`,
+    {
+        method: "PATCH",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            ...
+        })
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "El área fue modificado"
+}
+```
+
+#### Delete an area
+
+- Endpoint
+
+```http
+DELETE /areas/:place_identifier/:area_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../areas/${place_identifier}/${area_identifier}`,
+    {
+        method: "DELETE",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Se eliminó el área"
+}
+```
+
+### Users
+
+#### Get users
+
+- Endpoint
+
+```http
+GET /users
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../users`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "users": [
+        {
+            "_id": "63f8104c67a6f167aaa189df",
+            "first_name": "Lucía",
+            "first_last_name": "Granados",
+            "second_last_name": "Figueroa",
+            "age": "28",
+            "email": "fatimagf@example.com",
+            "phone": "3365899596",
+            "avatar": "/protected/default.png",
+            "emergency_contact": "Luisa Figueroa Medrano",
+            "emergency_phone": "5145748544",
+            "blood_type": "O-",
+            "provider_type": "No aplica",
+            "place": "Bosque Los Colomos",
+            "assigned_area": "Centro de Educación y Cultura Ambiental",
+            "status": "Activo",
+            "school": "No aplica",
+            "role": "Administrador",
+            "createdAt": "2023-02-24T01:18:04.386Z",
+            "updatedAt": "2023-02-24T01:18:04.386Z",
+            "register": "GRFILU010145",
+            "password": "$2b$10$cdjAQRHCsioXTKK9r4J02eARxl4WZTtmI1IW.AwNmmNJedysF92MC"
+        },
+        {
+            "_id": "63f8092667a6f167aaa189cf",
+            "first_name": "Fernanda",
+            "first_last_name": "Martínez",
+            "second_last_name": "Loza",
+            "age": "19",
+            "email": "fernandaml@example.com",
+            "phone": "3320478599",
+            "avatar": "/protected/default.png",
+            "emergency_contact": "Ámerica Loza Guiterréz",
+            "emergency_phone": "5535697554",
+            "blood_type": "A+",
+            "provider_type": "Prácticas profesionales",
+            "place": "Bosque Los Colomos",
+            "assigned_area": "Centro de Educación y Cultura Ambiental",
+            "status": "Activo",
+            "school": "Centro Universitario de Ciencias Económico Administrativas",
+            "role": "Prestador",
+            "createdAt": "2023-02-24T00:47:34.333Z",
+            "updatedAt": "2023-02-24T00:47:34.333Z",
+            "register": "2023A0101002",
+            "password": "$2b$10$LPk/.xewuMpOmNbNhARRZuheoZs4RaouYt0sosFvRmrCXyU9HKNXK"
+        }
+    ]
+}
+```
+
+#### Get an user
+
+- Endpoint
+
+```http
+GET /users/:register
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${register}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "user": [
+        {
+            "_id": "63f8092667a6f167aaa189cf",
+            "first_name": "Fernanda",
+            "first_last_name": "Martínez",
+            "second_last_name": "Loza",
+            "age": "19",
+            "email": "fernandaml@example.com",
+            "phone": "3320478599",
+            "avatar": "/protected/default.png",
+            "emergency_contact": "Ámerica Loza Guiterréz",
+            "emergency_phone": "5535697554",
+            "blood_type": "A+",
+            "provider_type": "Prácticas profesionales",
+            "place": "Bosque Los Colomos",
+            "assigned_area": "Centro de Educación y Cultura Ambiental",
+            "status": "Activo",
+            "school": "Centro Universitario de Ciencias Económico Administrativas",
+            "role": "Prestador",
+            "createdAt": "2023-02-24T00:47:34.333Z",
+            "updatedAt": "2023-02-24T00:47:34.333Z",
+            "register": "2023A0101002",
+            "password": "$2b$10$LPk/.xewuMpOmNbNhARRZuheoZs4RaouYt0sosFvRmrCXyU9HKNXK"
+        }
+    ]
+}
+```
+
+#### Create a user
+
+- Endpoint
+
+```http
+POST /users
+```
+
+- Parameters
+
+| Parameter           | Type     | Required | Allowed values                                              | Description                                           |
+| :------------------ | :------- | :------- | :---------------------------------------------------------- | :---------------------------------------------------- |
+| `first_name`        | `string` | Yes      | Any                                                         | First name of the user                                |
+| `first_last_name`   | `string` | Yes      | Any                                                         | First second last name of the user (apellido paterno) |
+| `age`               | `string` | Yes      | Any                                                         | Age of the user                                       |
+| `email`             | `string` | Yes      | Any                                                         | Contact email of the user                             |
+| `phone`             | `string` | Yes      | Any                                                         | Contact phone of the user                             |
+| `emergency_contact` | `string` | Yes      | Any                                                         | Emergency contact of the user                         |
+| `emergency_phone`   | `string` | Yes      | Any                                                         | Emergency phone of the user                           |
+| `blood_type`        | `string` | Yes      | ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']          | Blood type of the user                                |
+| `provider_type`     | `string` | Yes*     | ['Servicio social', 'Prácticas profesionales', 'No aplica'] | Type of user provider                                 |
+| `place`             | `string` | Yes      | Any                                                         | Place where the user will be                          |
+| `assigned_area`     | `string` | Yes      | Any                                                         | Area where the user will be assigned                  |
+| `school`            | `string` | Yes*     | Any                                                         | School where the user is from                         |
+| `role`              | `string` | Yes      | ['Administrador', 'Encargado', 'Prestador']                 | Role of the user                                      |
+| `status`            | `string` | Yes      | Any                                                         | Status of the user                                    |
+| `total_hours`       | `number` | Yes*     | Any                                                         | Total of hours that the user need to complete         |
+| `second_last_name`  | `string` | No       | Any                                                         | Second last name of the user (apellido materno)       |
+
+> ⚠️ Note: some of the parameters are required if the role is _Prestador_.
+
+- Request
+
+```javascript
+fetch(
+    `.../users`,
+    {
+        method: "POST",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            first_name,
+            first_last_name,
+            age,
+            email,
+            phone,
+            emergency_contact,
+            emergency_phone,
+            blood_type,
+            provider_type,
+            place,
+            assigned_area,
+            school,
+            role,
+            status,
+            total_hours
+        })
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Usuario creado"
+}
+```
+
+#### Update a user
+
+- Endpoint
+
+```http
+PATCH /users/:register
+```
+
+- Parameters
+
+| Parameter           | Type     | Required | Allowed values                                              | Description                                           |
+| :------------------ | :------- | :------- | :---------------------------------------------------------- | :---------------------------------------------------- |
+| `first_name`        | `string` | No       | Any                                                         | First name of the user                                |
+| `first_last_name`   | `string` | No       | Any                                                         | First second last name of the user (apellido paterno) |
+| `age`               | `string` | No       | Any                                                         | Age of the user                                       |
+| `email`             | `string` | No       | Any                                                         | Contact email of the user                             |
+| `phone`             | `string` | No       | Any                                                         | Contact phone of the user                             |
+| `emergency_contact` | `string` | No       | Any                                                         | Emergency contact of the user                         |
+| `emergency_phone`   | `string` | No       | Any                                                         | Emergency phone of the user                           |
+| `blood_type`        | `string` | No       | ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']          | Blood type of the user                                |
+| `provider_type`     | `string` | No       | ['Servicio social', 'Prácticas profesionales', 'No aplica'] | Type of user provider                                 |
+| `place`             | `string` | No       | Any                                                         | Place where the user will be                          |
+| `assigned_area`     | `string` | No       | Any                                                         | Area where the user will be assigned                  |
+| `school`            | `string` | No       | Any                                                         | School where the user is from                         |
+| `role`              | `string` | No       | ['Administrador', 'Encargado', 'Prestador']                 | Role of the user                                      |
+| `status`            | `string` | No       | Any                                                         | Status of the user                                    |
+| `total_hours`       | `number` | No       | Any                                                         | Total of hours that the user need to complete         |
+| `second_last_name`  | `string` | No       | Any                                                         | Second last name of the user (apellido materno)       |
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${register}`,
+    {
+        method: "PATCH",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            ...
+        })
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Se actualizó la información del usuario 2023A0101001"
+}
+```
+
+
+#### Delete a user
+
+- Endpoint
+
+```http
+DELETE /users/:register
+```
+
+> ⚠️ Note: by default, users cannot be deleted, this resource is available only if it is necessary to delete the user if an error occurs during its creation
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${register}`,
+    {
+        method: "DELETE",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Usuario eliminado"
+}
 ```

@@ -15,67 +15,80 @@
 	// 	],
 	// 	"description": "Log output to console"
 	// }
-	"Crear vista": {
-		"scope": "javascript,typescript",
-		"prefix": "create::view",
-		"body": [
-			"/* Importaciones */",
-			"const express = require('express')",
-			"",
-			"/* Varaibles */",
-			"const router = express.Router()",
-			"",
-			"/* Rutas */",
-			"router.get('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"router.post('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"router.put('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"router.delete('$1', (req, res, next) => {",
-			"\t// Aquí va lo que quieras que haga",
-			"})",
-			"",
-			"/* Exportaciones */",
-			"module.exports = router",
-		],
-		"description": "Retorna un bloque de código para la declaración de una vista simple."
-	},
-	"Crear respuesta": {
+	// "Crear vista": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "create::view",
+	// 	"body": [
+	// 		"/* Importaciones */",
+	// 		"const express = require('express')",
+	// 		"",
+	// 		"/* Varaibles */",
+	// 		"const router = express.Router()",
+	// 		"",
+	// 		"/* Rutas */",
+	// 		"router.get('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"router.post('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"router.put('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"router.delete('$1', (req, res, next) => {",
+	// 		"\t// Aquí va lo que quieras que haga",
+	// 		"})",
+	// 		"",
+	// 		"/* Exportaciones */",
+	// 		"module.exports = router",
+	// 	],
+	// 	"description": "Retorna un bloque de código para la declaración de una vista simple."
+	// },
+	"Crear respuesta para validaciones": {
 		"scope": "javascript, typescript",
-		"prefix": "create::response",
+		"prefix": "valresponse",
 		"body": [
-			"return res.status($1).json({",
-			"\tmessage: `$2`",
+			"return res.status(400).json({",
+			"\terror",
+			"})"
+		],
+		"description": "Retorna una plantilla de respuesta"
+	},
+	"Crear respuesta para error de servidor": {
+		"scope": "javascript, typescript",
+		"prefix": "badresponse",
+		"body": [
+			"return res.status(500).json({",
+			"\tmessage: `Ocurrió un error en el servidor`,",
+			"\terror: error?.toString()",
 			"})"
 		],
 		"description": "Retorna una plantilla de respuesta"
 	},
 	"Crear validación de un campo obligatorio": {
 		"scope": "javascript, typescript",
-		"prefix": "create::requiredValidation",
+		"prefix": "rv",
 		"body": [
-			"req.body.$1 ?",
-			"\ttypeof req.body.$1 === '$2' ? null",
-			"\t\t: __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
-			"\t: __ThrowError(`El campo '$1' es obligatorio`)"
+			"__Required(req.body.$1, `$1`, `$2`, $3)"
 		],
 		"description": "Retorna una plantilla de respuesta obligatoria"
 	},
 	"Crear validación de un campo opcional": {
 		"scope": "javascript, typescript",
-		"prefix": "create::optionalValidation",
+		"prefix": "ov",
 		"body": [
-			"req.body.$1 ?",
-			"\ttypeof req.body.$1 === '$2' ? null",
-			"\t\t: __ThrowError(`El campo '$1' debe ser tipo '$2'`)",
-			"\t: null"
+			"__Optional(req.body.$1, `$1`, `$2`, $3)"
+		],
+		"description": "Retorna una plantilla de respuesta opcional"
+	},
+	"Crear validación de un campo query": {
+		"scope": "javascript, typescript",
+		"prefix": "qv",
+		"body": [
+			"__Query(req.query.$1, `$1`, `$2`)"
 		],
 		"description": "Retorna una plantilla de respuesta opcional"
 	},

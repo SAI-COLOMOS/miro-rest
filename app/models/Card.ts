@@ -1,21 +1,21 @@
 import { model, Schema, Document } from "mongoose"
 
 export interface HoursInterface extends Document {
-    activity_name: String,
-    hours: Number,
+    activity_name: string,
+    hours: number,
     assignation_date: Date,
-    responsible_register: String
+    responsible_register: string
 }
 
 export interface CardInterface extends Document {
-    provider_register: String,
-    activities: HoursInterface
+    provider_register: string,
+    achieved_hours: number,
+    activities: HoursInterface[]
 }
 
 const ActivitySchema = new Schema({
     activity_name: {
         type: String,
-        lowercase: true,
         required: [true, "El nombre de la actividad es necesario"]
     },
     hours: {
@@ -30,6 +30,9 @@ const ActivitySchema = new Schema({
         type: String,
         required: [true, "El registro del encargado es necesario"]
     }
+}, {
+    versionKey: false,
+    timestamps: true
 })
 
 const CardSchema = new Schema({
@@ -38,6 +41,14 @@ const CardSchema = new Schema({
         unique: true,
         index: true,
         required: [true, "El registro del prestador es necesario"]
+    },
+    total_hours: {
+        type: Number,
+        required: [true, "La cantidad de horas totales es obligatoria"]
+    },
+    achieved_hours: {
+        type: Number,
+        default: 0
     },
     activities: [ActivitySchema]
 }, {

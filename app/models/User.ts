@@ -1,7 +1,6 @@
 import { model, Schema, Document } from "mongoose"
 import Bycrypt from "bcrypt"
-import Place from "./Place";
-import Card from "./Card";
+import Place, { AreaInterface } from "./Place";
 
 export interface UserInterface extends Document {
     register: string
@@ -17,7 +16,7 @@ export interface UserInterface extends Document {
     blood_type: string
     provider_type: string
     place: string
-    assignment_area: string
+    assigned_area: string
     status: string
     school: string
     role: string
@@ -32,19 +31,16 @@ const UserSchema = new Schema({
     },
     first_name: {
         type: String,
-        lowercase: true,
         required: [true, "El nombre es necesario"],
         trim: true
     },
     first_last_name: {
         type: String,
-        lowercase: true,
         required: [true, "Un apellido es necesario"],
         trim: true
     },
     second_last_name: {
         type: String,
-        lowercase: true,
         trim: true
     },
     age: {
@@ -67,8 +63,7 @@ const UserSchema = new Schema({
         type: String,
     },
     avatar: {
-        type: String,
-        default: '/protected/default.png'
+        type: String
     },
     emergency_contact: {
         type: String,
@@ -83,7 +78,7 @@ const UserSchema = new Schema({
     blood_type: {
         type: String,
         required: [true, "El tipo de sangre es necesario"],
-        uppercase: true
+        enum: ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-']
     },
     provider_type: {
         type: String,
@@ -92,12 +87,10 @@ const UserSchema = new Schema({
     },
     place: {
         type: String,
-        lowercase: true,
         required: [true, "El lugar es necesario"]
     },
-    assignment_area: {
+    assigned_area: {
         type: String,
-        lowercase: true,
         required: [true, "El área de asignación es necesaria"]
     },
     status: {
@@ -106,9 +99,7 @@ const UserSchema = new Schema({
         default: 'Activo'
     },
     school: {
-        type: String,
-        lowercase: true,
-        required: [true, "La escuela es necesaria"]
+        type: String
     },
     role: {
         type: String,
@@ -120,13 +111,18 @@ const UserSchema = new Schema({
     timestamps: true
 })
 
-async function newRegisterForProvider(inputPlace: string, inputAssignment_area: string): Promise<string> {
+async function newRegisterForProvider(inputPlace: string, inputAssigned_area: string): Promise<string> {
     const [year, month] = new Date().toISOString().split('-')
+
     const seasson = Number(month) <= 6 ? 'A' : 'B'
-    const place: any = await Place.findOne({ "place_name": inputPlace })
-    const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
-    console.log(area)
-    const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register').where({ 'register': { $regex: `${year}${seasson}${place.place_identifier}${area[0].area_identifier}` + '.*' } })
+
+    const place = await Place.findOne({ "place_name": inputPlace })
+
+    const area = place!.place_areas.filter((item: AreaInterface) => item.area_name === inputAssigned_area ? true : null)
+
+    const lastRegister = await User.findOne().sort({ "register": "desc" }).select('register')
+        .where({ 'register': { $regex: `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}` + '.*' } })
+
     let serie = "001"
 
     if (lastRegister) {
@@ -141,32 +137,36 @@ async function newRegisterForProvider(inputPlace: string, inputAssignment_area: 
         }
     }
 
-    return `${year}${seasson}${place.place_identifier}${area[0].area_identifier}${serie}`
+    return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}${serie}`
 }
 
-async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssignment_area: string): Promise<string> {
-    const first_name = inputFirst_name.substring(0, 2).toUpperCase();
-    const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase();
-    const second_last_name = inputSecond_last_name ? inputSecond_last_name.substring(0, 2).toUpperCase() : "XX"
-    const place: any = await Place.findOne({ "place_name": inputPlace })
-    const area = place.place_areas.filter((item: any) => item.area_name === inputAssignment_area ? true : null)
+async function newRegisterForAdministratorOrManager(inputFirst_name: string, inputFirst_last_name: string, inputSecond_last_name: string, inputPlace: string, inputAssigned_area: string): Promise<string> {
+    const first_name = inputFirst_name.substring(0, 2).toUpperCase()
+
+    const first_last_name = inputFirst_last_name.substring(0, 2).toUpperCase()
+
+    const second_last_name = inputSecond_last_name
+        ? inputSecond_last_name.substring(0, 2).toUpperCase()
+        : "XX"
+
+    const place = await Place.findOne({ "place_name": inputPlace })
+
+    const area = place!.place_areas.filter((item: AreaInterface) => item.area_name === inputAssigned_area ? true : null)
+
     const random: string = `${Math.floor(Math.random() * 9).toString()}${Math.floor(Math.random() * 9).toString()}`
 
-    return `${first_last_name}${second_last_name}${first_name}${place.place_identifier}${area[0].area_identifier}${random}`
+    return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier}${area[0].area_identifier}${random}`
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
     if (this.isNew) {
         if (this.role === "Prestador") {
-            const register = await newRegisterForProvider(this.place, this.assignment_area)
+            const register = await newRegisterForProvider(this.place, this.assigned_area)
 
             this.register = register
             this.password = register
-
-            await new Card({ "provider_register": register }).save()
-
         } else if (this.role === "Administrador" || this.role === "Encargado") {
-            const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assignment_area)
+            const register = await newRegisterForAdministratorOrManager(this.first_name, this.first_last_name, this.second_last_name, this.place, this.assigned_area)
 
             this.register = register
             this.password = register

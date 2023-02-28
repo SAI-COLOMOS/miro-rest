@@ -16,9 +16,13 @@ import Profile from "./routes/Profile.routes";
 import Card from './routes/Card.routes';
 import Agenda from './routes/Agenda.routes'
 import Place from './routes/Place.routes'
+import Area from './routes/Area.routes'
+import Attendance from './routes/Attendance.routes'
+import School from './routes/School.routes';
 
 /* Variables */
 const app = express()
+export const global_path = __dirname
 //const __filename = fileURLToPath(import.meta.url)
 //const __dirname = path.dirname(__filename)
 
@@ -45,5 +49,8 @@ app.use(Profile)
 app.use(Card)
 app.use(Agenda)
 app.use(Place)
+app.use(Area)
+app.use(Attendance)
+app.use(School)
 
 export default app

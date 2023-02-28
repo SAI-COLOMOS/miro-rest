@@ -83,8 +83,7 @@ export const link = (link: String) => {
                 <h2 style="text-align: center;">Por favor, haga click en el siguiente link si es que solicitó
                     recuperación de
                     contraseña</h2>
-                <a href=${link}><button
-                        style="color: #e3f2fd;background-color: #7b1fa2; border-radius: 5px;border-width: 0px;padding: 15px;-webkit-text-stroke: 0.5px;"><strong>Reestablecer</strong></button></a>
+                <a href="${link}">Reestablecer aquí</a>
             </div>
         </div>
 
