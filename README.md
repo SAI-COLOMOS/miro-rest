@@ -350,22 +350,6 @@ fetch(
 ```json
 {
     "message": "Parque añadido",
-    "place": [
-        {
-            "place_name": "Bosque Los Colomos",
-            "municipality": "Guadalajara",
-            "street": "Calle El Chaco",
-            "postal_code": "44630",
-            "number": "3200",
-            "colony": "Providencia",
-            "phone": "3336413804",
-            "_id": "63f6cf38c6e5aca5b3f5f2b6",
-            "place_areas": [],
-            "createdAt": "2023-02-23T02:28:08.370Z",
-            "updatedAt": "2023-02-23T02:28:08.370Z",
-            "place_identifier": "01"
-        }
-    ]
 }
 ```
 

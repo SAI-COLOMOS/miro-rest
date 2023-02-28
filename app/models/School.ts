@@ -2,13 +2,13 @@ import { model, Schema, Document } from "mongoose"
 
 export interface SchoolInterface extends Document {
     school_identifier: string
-    school_name: string,
-    municipality: string,
-    street: string,
-    postal_code: string,
-    exterior_number: string,
-    colony: string,
-    phone: string,
+    school_name: string
+    municipality: string
+    street: string
+    postal_code: string
+    exterior_number: string
+    colony: string
+    phone: string
     reference: string
 }
 

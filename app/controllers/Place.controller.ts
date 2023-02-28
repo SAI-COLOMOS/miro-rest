@@ -88,7 +88,6 @@ export const postPlace = async (req: Request, res: Response) => {
         return place
             ? res.status(201).json({
                 message: `Parque añadido`,
-                place
             })
             : res.status(500).json({
                 message: `No se pudo crear el parque`
