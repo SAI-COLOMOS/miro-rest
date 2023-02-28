@@ -1,7 +1,9 @@
 import { Request, Response } from "express"
+import fs from 'fs/promises'
+import { global_path } from "../server"
 import User from "../models/User"
-import { __ThrowError, __Optional, __Required, __Query } from "../middleware/ValidationControl"
 import Card from "../models/Card"
+import { __ThrowError, __Optional, __Required, __Query } from "../middleware/ValidationControl"
 
 export const UsersGet = async (req: Request, res: Response) => {
     try {
@@ -272,6 +274,35 @@ export const updatePassword = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
+            error: error?.toString()
+        })
+    }
+}
+
+export const updateAvatar = async (req: Request, res: Response) => {
+    try {
+        if (!req.file)
+            return res.status(400).json({
+                message: "No subió una imágen o la imágen que subió es inválida"
+            })
+
+        const file = await fs.readFile(`${global_path}/temp/${req.file!.filename}`)
+        const base64 = file.toString('base64')
+
+        const result = await User.updateOne({ "register": req.params.id }, { "avatar": base64 })
+
+        await fs.unlink(`${global_path}/temp/${req.file!.filename}`)
+
+        return result.modifiedCount > 0
+            ? res.status(200).json({
+                message: "Foto de perfil actualizada"
+            })
+            : res.status(400).json({
+                message: `No se encontró el usuario ${req.params.id}`
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
             error: error?.toString()
         })
     }

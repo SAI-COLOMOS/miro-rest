@@ -22,6 +22,7 @@ import School from './routes/School.routes';
 
 /* Variables */
 const app = express()
+export const global_path = __dirname
 //const __filename = fileURLToPath(import.meta.url)
 //const __dirname = path.dirname(__filename)
 

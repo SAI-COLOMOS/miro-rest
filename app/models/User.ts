@@ -63,8 +63,7 @@ const UserSchema = new Schema({
         type: String,
     },
     avatar: {
-        type: String,
-        default: '/protected/default.png'
+        type: String
     },
     emergency_contact: {
         type: String,
