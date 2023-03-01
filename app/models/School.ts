@@ -22,7 +22,6 @@ const SchoolSchema = new Schema({
         type: String,
         required: [true, "El nombre del lugar en necesario"],
         unique: true,
-        index: true
     },
     municipality: {
         type: String,
