@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { UsersGet, UserGet, UserPost, UserDelete, UserPatch, updatePassword, updateAvatar } from "../controllers/Users.controller"
+import { UsersGet, UserGet, UserPost, UserDelete, UserPatch, updatePassword, updateAvatar, restorePassword } from "../controllers/Users.controller"
 import { isAdministradorOrEncargado } from "../middleware/RoleControl"
 import { fileMiddleware, resize } from "../middleware/fileControl"
 import Passport from "passport"
@@ -21,6 +21,9 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 
 // Actualizar mi usuario
 route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UserPatch)
+
+// Restaurar la contraseña de un solo usuario
+route.patch(`${path}/:id/restore_password`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, restorePassword)
 
 // Actualizar la contraseña únicamente
 route.patch(`${path}/:id/password`, Passport.authenticate('jwt', { session: false }), updatePassword)

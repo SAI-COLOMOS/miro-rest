@@ -1,8 +1,10 @@
 import { Request, Response } from "express"
-import fs from 'fs/promises'
-import { global_path } from "../server"
 import User from "../models/User"
 import Card from "../models/Card"
+import Enviroment from "../config/Enviroment"
+import { mensaje, sendEmail } from "../config/Mailer"
+import fs from 'fs/promises'
+import { global_path } from "../server"
 import { __ThrowError, __Optional, __Required, __Query } from "../middleware/ValidationControl"
 
 export const UsersGet = async (req: Request, res: Response) => {
@@ -138,6 +140,14 @@ export const UserPost = async (req: Request, res: Response) => {
     try {
         const user = await new User(req.body).save()
 
+        if (user) {
+            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const to = String(user.email)
+            const subject = "Bienvenido!"
+            const body = mensaje(`Bienvenido al ${user.assigned_area} de ${user.place}`)
+            await sendEmail(from, to, subject, body)
+        }
+
         if (user && user.role === "Prestador")
             await new Card({ "provider_register": user.register, "total_hours": total_hours }).save()
 
@@ -251,6 +261,31 @@ export const UserPatch = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
+            error: error?.toString()
+        })
+    }
+}
+
+export const restorePassword = async (req: Request, res: Response) => {
+    try {
+        const user = await User.findOne({ "register": req.params.id })
+
+        if (user) {
+            user.password = user.register
+            user.save()
+        }
+
+        return user
+            ? res.status(200).json({
+                message: `Se restauró la contraseña del usuario ${req.params.id}`
+            })
+            : res.status(400).json({
+                message: `No se encontró el usuario ${req.params.id}`
+            })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
             error: error?.toString()
         })
     }
