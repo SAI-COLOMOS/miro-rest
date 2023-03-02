@@ -8,14 +8,14 @@ export interface AreaInterface extends Document {
 
 export interface PlaceInterface extends Document {
     place_identifier: string
-    place_name: string,
-    municipality: string,
-    street: string,
-    postal_code: string,
-    exterior_number: string,
-    colony: string,
-    phone: string,
-    reference: string,
+    place_name: string
+    municipality: string
+    street: string
+    postal_code: string
+    exterior_number: string
+    colony: string
+    phone: string
+    reference: string
     place_areas: AreaInterface[]
 }
 

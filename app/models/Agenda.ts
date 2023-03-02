@@ -1,13 +1,13 @@
 import { model, Schema, Document } from "mongoose";
 
 export interface AttendeeListInterface extends Document {
-    attendee_register: string,
-    status: string,
+    attendee_register: string
+    status: string
     check_in: Date
 }
 
 export interface AttendanceInterface extends Document {
-    attendee_list: AttendeeListInterface[],
+    attendee_list: AttendeeListInterface[]
     status: string
 }
 
