@@ -45,14 +45,13 @@ export const getCards = async (req: Request, res: Response) => {
             }
 
         const users = await User.find(filter_request).sort({ "createdAt": "desc" })
-        let cards
-        if (users.length > 0) {
+        let cards = null
+        if (users.length > 0)
             cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
-        }
 
         return res.status(200).json({
             message: "Listo",
-            cards
+            cards: cards ? cards : []
         })
     } catch (error) {
         return res.status(500).json({

@@ -1,7 +1,7 @@
 import { Router } from "express"
 import Passport from "passport"
 import { getPlace, getPlaces, updatePlace, postPlace, deletePlace } from "../controllers/Place.controller"
-import { getArea, getAreas, updateArea, removeArea, addArea } from "../controllers/Area.controller"
+import { getArea, getAreasFromOnePlace, getAreas, updateArea, removeArea, addArea } from "../controllers/Area.controller"
 import { isAdministrador, isAdministradorOrEncargado } from "../middleware/RoleControl"
 
 const route = Router()
@@ -27,7 +27,10 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 //----------------------------------- Areas ---------------------------------------------
 
 // Obtener todas las áreas
-route.get(`${path}/areas`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getAreas)
+route.get(`${path}/areas/all`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getAreas)
+
+// Obtener todas las áreas de un solo lugar
+route.get(`${path}/:id/areas`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getAreasFromOnePlace)
 
 // Obtener un área en específico
 route.get(`${path}/:id/areas/:id2`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getArea)

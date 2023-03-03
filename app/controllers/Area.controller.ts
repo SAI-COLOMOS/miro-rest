@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Place from "../models/Place"
+import Place, { AreaInterface, PlaceInterface } from "../models/Place"
 import { __Required, __Optional, __Query } from "../middleware/ValidationControl"
 
 export const getAreas = async (req: Request, res: Response) => {
@@ -16,24 +16,29 @@ export const getAreas = async (req: Request, res: Response) => {
     try {
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-        const filter: object = req.query.filter ?
-            req.query.search ?
-                {
-                    ...JSON.parse(String(req.query.filter)),
-                    $or: [{ "place_name": { $regex: '.*' + req.query.search + '.*' } }]
-                }
-                : JSON.parse(String(req.query.filter))
-            : null
+        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        const places: any = await Place.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+        if (filter_request)
+            Object.keys(filter_request).forEach((key: string) => {
+                if (key === "municipality")
+                    filter_request.municipality = { $regex: filter_request.municipality, $options: "i" }
 
-        let areas: Array<any> = []
+                if (key === "colony")
+                    filter_request.colony = { $regex: filter_request.colony, $options: "i" }
+            })
 
-        if (places.length > 0) {
-            for (let place of places) {
-                place.place_areas.length > 0 ? areas = [...areas, ...place.place_areas] : null
+        if (req.query.search)
+            filter_request = {
+                ...filter_request,
+                $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }]
             }
-        }
+
+        const places = await Place.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+
+        let areas: Array<AreaInterface> = []
+
+        if (places.length > 0)
+            places.forEach((place: PlaceInterface) => areas.push(...place.place_areas))
 
         return res.status(200).json({
             message: 'Listo',
@@ -47,18 +52,35 @@ export const getAreas = async (req: Request, res: Response) => {
     }
 }
 
+export const getAreasFromOnePlace = async (req: Request, res: Response) => {
+    try {
+        const place = await Place.findOne({ "place_identifier": req.params.id })
+
+        return place
+            ? res.status(200).json({
+                message: "Listo",
+                areas: place.place_areas
+            })
+            : res.status(400).json({
+                message: `No se encontró el parque ${req.params.id}`
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
+            error: error?.toString()
+        })
+    }
+}
+
 export const getArea = async (req: Request, res: Response) => {
     try {
-        const place: any = await Place.findOne({ "place_identifier": req.params.id })
+        const place = await Place.findOne({ "place_identifier": req.params.id })
 
         let area
-        if (place) {
-            for (let area_iterated of place.place_areas) {
-                if (area_iterated.area_identifier === req.params.id2) {
-                    area = area_iterated
-                }
-            }
-        }
+        if (place)
+            place.place_areas.forEach((area_iterated: AreaInterface) => {
+                if (area_iterated.area_identifier === req.params.id2) area = area_iterated
+            })
 
         return area
             ? res.status(200).json({
@@ -114,12 +136,9 @@ export const addArea = async (req: Request, res: Response) => {
                 }
             })
 
-            return result.modifiedCount > 0
-                ? res.status(201).json({
+            if (result.modifiedCount > 0)
+                return res.status(201).json({
                     message: `Se añadió el area`,
-                })
-                : res.status(400).json({
-                    message: `No se encontró el parque ${req.params.id}`
                 })
         }
 
@@ -138,10 +157,12 @@ export const updateArea = async (req: Request, res: Response) => {
     let update: object = {}
     try {
         __Optional(req.body.area_name, `area_name`, `string`, null)
-        req.body.area_name ? update = { "place_areas.$.area_name": req.body.area_name } : null
+        if (req.body.area_name)
+            update = { "place_areas.$.area_name": req.body.area_name }
 
         __Optional(req.body.phone, `phone`, `string`, null)
-        req.body.phone ? update = { "place_areas.$.phone": req.body.phone } : null
+        if (req.body.phone)
+            update = { "place_areas.$.phone": req.body.phone }
     } catch (error) {
         return res.status(400).json({
             error

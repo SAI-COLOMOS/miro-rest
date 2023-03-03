@@ -87,7 +87,7 @@ export const UserPost = async (req: Request, res: Response) => {
     try {
         __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
 
-        const user: any = req.user
+        const user = new User(req.user)
         if (user.role === "Encargado" && req.body.role !== "Prestador")
             __ThrowError(`El usuario de tipo 'Encargado' no puede crear un usuario de tipo '${req.body.role}'`)
 
@@ -238,7 +238,7 @@ export const UserPatch = async (req: Request, res: Response) => {
 
         __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
 
-        const user: any = req.user
+        const user = new User(req.user)
         user.role === "Encargado"
             ? __ThrowError("El usuario de tipo 'Encargado' no puede modificar roles")
             : __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador'])
