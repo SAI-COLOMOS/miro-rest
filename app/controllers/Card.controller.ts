@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Card, { HoursInterface } from "../models/Card";
+import Card from "../models/Card";
 import User from "../models/User";
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
@@ -17,22 +17,34 @@ export const getCards = async (req: Request, res: Response) => {
     try {
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-        const filter: object = req.query.filter ?
-            req.query.search ?
-                {
-                    ...JSON.parse(String(req.query.filter)),
-                    $or: [
-                        { "first_name": { $regex: '.*' + req.query.search + '.*' } },
-                        { "first_last_name": { $regex: '.*' + req.query.search + '.*' } },
-                        { "second_last_name": { $regex: '.*' + req.query.search + '.*' } },
-                        { "register": { $regex: '.*' + req.query.search + '.*' } },
-                        { "phone": { $regex: '.*' + req.query.search + '.*' } }
-                    ]
-                }
-                : JSON.parse(String(req.query.filter))
-            : null
+        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        const users = await User.find(filter).sort({ "createdAt": "desc" })
+        if (filter_request)
+            Object.keys(filter_request).forEach((key: string) => {
+                if (key === "year") {
+                    filter_request.register = { $regex: '^' + filter_request[key] }
+                    delete filter_request.year
+                }
+
+                if (key === "period") {
+                    filter_request.register = { $regex: "^.{4}[" + filter_request[key] + "]" }
+                    delete filter_request.period
+                }
+            })
+
+        if (req.query.search)
+            filter_request = {
+                ...filter_request,
+                $or: [
+                    { "first_name": { $regex: req.query.search, $options: "i" } },
+                    { "first_last_name": { $regex: req.query.search, $options: "i" } },
+                    { "second_last_name": { $regex: req.query.search, $options: "i" } },
+                    { "register": { $regex: req.query.search, $options: "i" } },
+                    { "phone": { $regex: req.query.search } }
+                ]
+            }
+
+        const users = await User.find(filter_request).sort({ "createdAt": "desc" })
         let cards
         if (users.length > 0) {
             cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)

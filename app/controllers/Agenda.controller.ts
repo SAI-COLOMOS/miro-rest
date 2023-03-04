@@ -20,16 +20,15 @@ export const getAgenda = async (req: Request, res: Response) => {
     try {
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-        const filter: object = req.query.filter ?
-            req.query.search ?
-                {
-                    ...JSON.parse(String(req.query.filter)),
-                    $or: [{ "name": { $regex: '.*' + req.body.search + '.*' } }]
-                }
-                : JSON.parse(String(req.query.filter))
-            : null
+        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        const result = await Agenda.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+        if (req.query.search)
+            filter_request = {
+                ...filter_request,
+                $or: [{ "name": { $regex: req.body.search, $options: "i" } }]
+            }
+
+        const result = await Agenda.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
         return res.status(200).json({
             message: "Listo",

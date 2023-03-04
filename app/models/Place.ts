@@ -26,8 +26,7 @@ const AreaSchema = new Schema({
     },
     area_name: {
         type: String,
-        required: [true, "El nombre del área es necesario"],
-        index: true
+        required: [true, "El nombre del área es necesario"]
     },
     phone: {
         type: String,
@@ -47,8 +46,7 @@ const PlaceSchema = new Schema({
     place_name: {
         type: String,
         required: [true, "El nombre del lugar en necesario"],
-        unique: true,
-        index: true
+        unique: true
     },
     municipality: {
         type: String,

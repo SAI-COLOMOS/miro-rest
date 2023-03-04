@@ -19,22 +19,34 @@ export const UsersGet = async (req: Request, res: Response) => {
     try {
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-        const filter: object = req.query.filter ?
-            req.query.search ?
-                {
-                    ...JSON.parse(String(req.query.filter)),
-                    $or: [
-                        { "first_name": { $regex: '.*' + req.query.search + '.*' } },
-                        { "first_last_name": { $regex: '.*' + req.query.search + '.*' } },
-                        { "second_last_name": { $regex: '.*' + req.query.search + '.*' } },
-                        { "register": { $regex: '.*' + req.query.search + '.*' } },
-                        { "phone": { $regex: '.*' + req.query.search + '.*' } }
-                    ]
-                }
-                : JSON.parse(String(req.query.filter))
-            : null
+        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        const users = await User.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+        if (filter_request)
+            Object.keys(filter_request).forEach((key: string) => {
+                if (key === "year") {
+                    filter_request.register = { $regex: '^' + filter_request[key] }
+                    delete filter_request.year
+                }
+
+                if (key === "period") {
+                    filter_request.register = { $regex: "^.{4}[" + filter_request[key] + "]" }
+                    delete filter_request.period
+                }
+            })
+
+        if (req.query.search)
+            filter_request = {
+                ...filter_request,
+                $or: [
+                    { "first_name": { $regex: req.query.search, $options: "i" } },
+                    { "first_last_name": { $regex: req.query.search, $options: "i" } },
+                    { "second_last_name": { $regex: req.query.search, $options: "i" } },
+                    { "register": { $regex: req.query.search, $options: "i" } },
+                    { "phone": { $regex: req.query.search } }
+                ]
+            }
+
+        const users = await User.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
         return res.status(200).json({
             message: "Listo",
@@ -100,6 +112,8 @@ export const UserPost = async (req: Request, res: Response) => {
         __Required(req.body.assigned_area, `assigned_area`, `string`, null)
 
         __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
+
+        __Optional(req.body.avatar, `avatar`, `string`, null)
 
         if (req.body.role === "Prestador")
             __Required(req.body.school, `school`, `string`, null)
@@ -209,6 +223,8 @@ export const UserPatch = async (req: Request, res: Response) => {
         __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
 
         __Optional(req.body.school, `school`, `string`, null)
+
+        __Optional(req.body.avatar, `avatar`, `string`, null)
 
         __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
 
