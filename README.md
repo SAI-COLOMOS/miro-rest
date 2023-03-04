@@ -186,9 +186,33 @@ GET /places
 
 - Request
 
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+
+| Parameters   | Type     | Required | Allowed values | Description                                |
+|--------------|----------|----------|----------------|--------------------------------------------|
+| municipality | `string` | No       | Any            | Municipality in which the place is located |
+| colony       | `string` | No       | Any            | Colony in which the place is located       |
+| postal_code  | `string` | No       | Any            | Postal or zip code of the place's location |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of places to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `place_name`, `place_identifier`, `street`, `exterior_number` and `phone`.
+
 ```javascript
 fetch(
-    `.../places`,
+    `.../places?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
     {
         method: "GET",
         headers: {
@@ -439,7 +463,7 @@ fetch(
 
 > ⚠️ Note: this seccion is linked to _[Places seccion](#places)_. Both are part of _Places and Areas_ module.
 
-#### Get all areas from all places
+#### Get all areas from several places
 
 - Endpoint
 
@@ -449,11 +473,37 @@ GET /places/areas/all
 
 - Request
 
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+> ⚠️ Note: The filters and searches where are for the places
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+
+| Parameters   | Type     | Required | Allowed values | Description                                |
+|--------------|----------|----------|----------------|--------------------------------------------|
+| municipality | `string` | No       | Any            | Municipality in which the place is located |
+| colony       | `string` | No       | Any            | Colony in which the place is located       |
+| postal_code  | `string` | No       | Any            | Postal or zip code of the place's location |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of places to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `place_name`, `place_identifier`, `street`, `exterior_number` and `phone`.
+
 ```javascript
 fetch(
-    `.../places/areas/all`,
+    `.../places/areas/all?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
     {
-        method: "POST",
+        method: "GET",
         headers: {
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`,
@@ -498,7 +548,7 @@ GET /places/:place_identifier/areas
 fetch(
     `.../places/${place_identifier}/areas`,
     {
-        method: "POST",
+        method: "GET",
         headers: {
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`,
@@ -543,7 +593,7 @@ GET /places/:place_identifier/areas/:area_identifier
 fetch(
     `.../places/${place_identifier}/areas/${area_identifier}`,
     {
-        method: "POST",
+        method: "GET",
         headers: {
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`,
@@ -703,7 +753,7 @@ Since this is a `GET` request all the parameter should be passed through the end
 __Filter__
 
 The `filter` parameter has to be an object with the following structure:
-> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place` and `assigned_area` will be overwritten by the values found in the user's data and will only be able to retrieve users with the `Prestador` role. 
+> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place` and `assigned_area` will be overwritten by the values found in the user's data and only will be able to retrieve users with the `Prestador` role. 
 
 | Parameters    | Type     | Required | Allowed values                                              | Description                             |
 |---------------|----------|----------|-------------------------------------------------------------|-----------------------------------------|
