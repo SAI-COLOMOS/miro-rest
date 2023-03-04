@@ -439,19 +439,64 @@ fetch(
 
 > ⚠️ Note: this seccion is linked to _[Places seccion](#places)_. Both are part of _Places and Areas_ module.
 
-#### Get areas
+#### Get all areas from all places
 
 - Endpoint
 
 ```http
-GET /areas/:place_identifier
+GET /places/areas/all
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}`,
+    `.../places/areas/all`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "areas": [
+        {
+            "area_identifier": "01",
+            "area_name": "Centro de Educación y Cultura Ambiental",
+            "phone": "3313467900",
+            "_id": "63f6d3e91975d0ea79de99df"
+        },{
+            "area_identifier": "02",
+            "area_name": "Servicios generales",
+            "phone": "3313467555",
+            "_id": "63f6d3e91975d0ff66ht12vv"
+        }
+    ]
+}
+```
+
+#### Get areas from a place
+
+- Endpoint
+
+```http
+GET /places/:place_identifier/areas
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../places/${place_identifier}/areas`,
     {
         method: "POST",
         headers: {
@@ -489,14 +534,14 @@ fetch(
 - Endpoint
 
 ```http
-GET /areas/:place_identifier/:area_identifier
+GET /places/:place_identifier/areas/:area_identifier
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}/${area_identifier}`,
+    `.../places/${place_identifier}/areas/${area_identifier}`,
     {
         method: "POST",
         headers: {
@@ -527,7 +572,7 @@ fetch(
 - Endpoint
 
 ```http
-POST /areas/:place_identifier
+POST /places/:place_identifier
 ```
 
 - Parameters
@@ -541,7 +586,7 @@ POST /areas/:place_identifier
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}`,
+    `.../places/${place_identifier}`,
     {
         method: "POST",
         headers: {
@@ -570,7 +615,7 @@ fetch(
 - Endpoint
 
 ```http
-PATCH /areas/:place_identifier/:area_identifier
+PATCH /places/:place_identifier/areas/:area_identifier
 ```
 
 - Parameters
@@ -586,7 +631,7 @@ PATCH /areas/:place_identifier/:area_identifier
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}/${area_identifier}`,
+    `.../places/${place_identifier}/areas/${area_identifier}`,
     {
         method: "PATCH",
         headers: {
@@ -614,14 +659,14 @@ fetch(
 - Endpoint
 
 ```http
-DELETE /areas/:place_identifier/:area_identifier
+DELETE /places/:place_identifier/areas/:area_identifier
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}/${area_identifier}`,
+    `.../places/${place_identifier}/areas/${area_identifier}`,
     {
         method: "DELETE",
         headers: {
@@ -652,10 +697,35 @@ GET /users
 ```
 
 - Request
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+The `filter` parameter has to be an object with the following structure:
+> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place` and `assigned_area` will be overwritten by the values found in the user's data and will only be able to retrieve users with the `Prestador` role. 
+
+| Parameters    | Type     | Required | Allowed values                                              | Description                             |
+|---------------|----------|----------|-------------------------------------------------------------|-----------------------------------------|
+| place         | `string` | No       | Any                                                         | Place where the user was assigned       |
+| assigned_area | `string` | No       | Any                                                         | Area where the user was assigned        |
+| role          | `string` | No       | ['Administrador', 'Encargado', 'Prestador']                 | Role given to the user                  |
+| period        | `string` | No       | ['A', 'B']                                                  | Period on which the user was registered |
+| year          | `string` | No       | Any                                                         | Year on which the user was registered   |
+| school        | `string` | No       | Any                                                         | School that the user attends            |
+| status        | `string` | No       | ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']          | Current user status                     |
+| provider_type | `string` |          | ['Servicio social', 'Practicas profesionales', 'No aplica'] | Type of user provider                   |
+
+__Items__
+The `items` parameter has be a number with the value of the intented number of users to retrieve.
+
+__Page__
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `name`, `register`, `email` and `phone`.
 
 ```javascript
 fetch(
-    `.../users`,
+    `.../users?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
     {
         method: "GET",
         headers: {
