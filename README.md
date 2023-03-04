@@ -701,6 +701,7 @@ GET /users
 Since this is a `GET` request all the parameter should be passed through the endpoint.
 
 __Filter__
+
 The `filter` parameter has to be an object with the following structure:
 > ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place` and `assigned_area` will be overwritten by the values found in the user's data and will only be able to retrieve users with the `Prestador` role. 
 
@@ -716,12 +717,15 @@ The `filter` parameter has to be an object with the following structure:
 | provider_type | `string` |          | ['Servicio social', 'Practicas profesionales', 'No aplica'] | Type of user provider                   |
 
 __Items__
+
 The `items` parameter has be a number with the value of the intented number of users to retrieve.
 
 __Page__
+
 The `page` parameter has to be a number with the value of the pagination one wants to access.
 
 __Search__
+
 The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `name`, `register`, `email` and `phone`.
 
 ```javascript
