@@ -697,6 +697,7 @@ GET /users
 ```
 
 - Request
+
 Since this is a `GET` request all the parameter should be passed through the endpoint.
 
 __Filter__
