@@ -19,6 +19,7 @@ export const UsersGet = async (req: Request, res: Response) => {
     }
 
     try {
+        const user = new User(req.user)
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
         let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
@@ -47,6 +48,12 @@ export const UsersGet = async (req: Request, res: Response) => {
                     { "phone": { $regex: req.query.search } }
                 ]
             }
+
+        if (user.role === "Encargado") {
+            filter_request.place = user.place
+            filter_request.assigned_area = user.assigned_area
+            filter_request.role = "Prestador"
+        }
 
         const users = await User.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
