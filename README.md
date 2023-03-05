@@ -1215,7 +1215,7 @@ fetch(
 - Endpoint
 
 ```http
-POST card/:register
+POST /card/:register
 ```
 
 - Parameters
@@ -1256,7 +1256,7 @@ fetch(
 - Endpoint
 
 ```http
-PATCH card/:register/activity/:activity_identifier
+PATCH /card/:register/activity/:activity_identifier
 ```
 
 - Parameters
@@ -1297,7 +1297,7 @@ fetch(
 - Endpoint
 
 ```http
-DELETE card/:register/activity/:activity_identifier
+DELETE /card/:register/activity/:activity_identifier
 ```
 
 - Request
