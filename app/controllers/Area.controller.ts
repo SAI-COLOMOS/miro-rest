@@ -154,15 +154,10 @@ export const addArea = async (req: Request, res: Response) => {
 }
 
 export const updateArea = async (req: Request, res: Response) => {
-    let update: object = {}
     try {
         __Optional(req.body.area_name, `area_name`, `string`, null)
-        if (req.body.area_name)
-            update = { "place_areas.$.area_name": req.body.area_name }
 
         __Optional(req.body.phone, `phone`, `string`, null)
-        if (req.body.phone)
-            update = { "place_areas.$.phone": req.body.phone }
     } catch (error) {
         return res.status(400).json({
             error
@@ -170,7 +165,13 @@ export const updateArea = async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await Place.updateOne({ "place_identifier": req.params.id, "place_areas.area_identifier": req.params.id2 }, { $set: update })
+        const result = await Place.updateOne({ "place_identifier": req.params.id, "place_areas.area_identifier": req.params.id2 },
+            {
+                $set: {
+                    "place_areas.$.area_name": req.body.area_name,
+                    "place_areas.$.phone": req.body.phone
+                }
+            })
 
         return result.modifiedCount > 0
             ? res.status(200).json({
@@ -189,7 +190,8 @@ export const updateArea = async (req: Request, res: Response) => {
 
 export const removeArea = async (req: Request, res: Response) => {
     try {
-        const result = await Place.updateOne({ "place_identifier": req.params.id }, { $pull: { "place_areas": { "area_identifier": req.params.id2 } } })
+        const result = await Place.updateOne({ "place_identifier": req.params.id },
+            { $pull: { "place_areas": { "area_identifier": req.params.id2 } } })
 
         return result.modifiedCount > 0
             ? res.status(200).json({

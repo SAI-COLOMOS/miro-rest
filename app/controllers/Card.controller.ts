@@ -148,7 +148,14 @@ export const UpdateHoursFromCard = async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.params.id2 }, { $set: update })
+        const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.params.id2 },
+            {
+                $set: {
+                    "activities.$.activity_name": req.body.activity_name,
+                    "activities.$.assignation_date": req.body.assignation_date,
+                    "activities.$.hours": req.body.hours
+                }
+            })
 
         if (result.modifiedCount > 0 && req.body.hours)
             CountHours(req.params.id, res)
