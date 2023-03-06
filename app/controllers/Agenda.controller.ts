@@ -141,6 +141,9 @@ export const updateEvent = async (req: Request, res: Response) => {
         if (req.body.belonging_place)
             __ThrowError("El campo 'belonging_place' no se puede modificar")
 
+        if (req.body.attendance)
+            __ThrowError("El campo 'attendance' no se puede modificar desde éste endpoint")
+
         __Required(req.body.modifier_register, `modifier_register`, `string`, null)
 
         __Optional(req.body.is_template, `is_template`, `boolean`, null)
