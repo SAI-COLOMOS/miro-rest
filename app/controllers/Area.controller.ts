@@ -162,7 +162,7 @@ export const updateArea = async (req: Request, res: Response) => {
 
         __Optional(req.body.phone, `phone`, `string`, null)
         if (req.body.phone)
-            update = { "place_areas.$.phone": req.body.phone }
+            update = {...update, "place_areas.$.phone": req.body.phone }
     } catch (error) {
         return res.status(400).json({
             error
@@ -171,7 +171,7 @@ export const updateArea = async (req: Request, res: Response) => {
 
     try {
         const result = await Place.updateOne({ "place_identifier": req.params.id, "place_areas.area_identifier": req.params.id2 }, { $set: update })
-
+        console.log(update)
         return result.modifiedCount > 0
             ? res.status(200).json({
                 message: "El área fue modificado",
