@@ -24,18 +24,18 @@ export const UsersGet = async (req: Request, res: Response) => {
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
         let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        if (filter_request.year && filter_request.period) {
+        if (filter_request && filter_request.year && filter_request.period) {
             filter_request.register = { $regex: `^.*(?=.*${filter_request.year})(?=.{4}[${filter_request.period}]).*$` }
             delete filter_request.year
             delete filter_request.period
         }
 
-        if (filter_request.year) {
+        if (filter_request && filter_request.year) {
             filter_request.register = { $regex: '^' + filter_request.year }
             delete filter_request.year
         }
 
-        if (filter_request.period) {
+        if (filter_request && filter_request.period) {
             filter_request.register = { $regex: "^.{4}[" + filter_request.period + "]" }
             delete filter_request.period
         }
