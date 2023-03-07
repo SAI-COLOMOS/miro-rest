@@ -31,13 +31,14 @@ export const getSchools = async (req: Request, res: Response) => {
             filter_request = {
                 ...filter_request,
                 $or: [
-                    { "place_name": { $regex: req.query.search, $options: "i" } },
+                    { "school_name": { $regex: req.query.search, $options: "i" } },
                     { "street": { $regex: req.query.search, $options: "i" } },
                     { "school_identifier": { $regex: req.query.search } },
                     { "exterior_number": { $regex: req.query.search } },
                     { "phone": { $regex: req.query.search } }
                 ]
             }
+
 
         const schools = await School.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
@@ -102,7 +103,6 @@ export const postSchool = async (req: Request, res: Response) => {
         return school
             ? res.status(201).json({
                 message: `Escuela añadida`,
-                school
             })
             : res.status(500).json({
                 message: `No se pudo crear la escuela`
