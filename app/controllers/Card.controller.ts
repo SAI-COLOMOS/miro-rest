@@ -15,6 +15,7 @@ export const getCards = async (req: Request, res: Response) => {
     }
 
     try {
+        const user = new User(req.user)
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
         let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
@@ -44,15 +45,20 @@ export const getCards = async (req: Request, res: Response) => {
                 ]
             }
 
-        const users = await User.find(filter_request).sort({ "createdAt": "desc" })
-        let cards
-        if (users.length > 0) {
-            cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
+        if (user.role === "Encargado") {
+            filter_request.place = user.place
+            filter_request.assigned_area = user.assigned_area
+            filter_request.role = "Prestador"
         }
+
+        const users = await User.find(filter_request).sort({ "createdAt": "desc" })
+        let cards = null
+        if (users.length > 0)
+            cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
 
         return res.status(200).json({
             message: "Listo",
-            cards
+            cards: cards ? cards : []
         })
     } catch (error) {
         return res.status(500).json({
@@ -69,7 +75,7 @@ export const getProviderHours = async (req: Request, res: Response) => {
         return card
             ? res.status(200).json({
                 message: "Tarjetón de usuario encontrado",
-                card: card.activities
+                activities: card.activities
             })
             : res.status(400).json({
                 message: `El tarjetón del usuario ${req.params.id} no se encontró`
@@ -142,14 +148,21 @@ export const UpdateHoursFromCard = async (req: Request, res: Response) => {
     }
 
     try {
-        const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.params.id2 }, { $set: update })
+        const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.params.id2 },
+            {
+                $set: {
+                    "activities.$.activity_name": req.body.activity_name,
+                    "activities.$.assignation_date": req.body.assignation_date,
+                    "activities.$.hours": req.body.hours
+                }
+            })
 
         if (result.modifiedCount > 0 && req.body.hours)
             CountHours(req.params.id, res)
 
         return result.modifiedCount > 0
             ? res.status(200).json({
-                message: "La información de la actividad se actualizó",
+                message: "La información de la actividad se actualizó"
             })
             : res.status(400).json({
                 message: `No se encontró el tarjetón del usuario ${req.params.id} o la actividad ${req.params.id2}`,

@@ -16,8 +16,6 @@ import Profile from "./routes/Profile.routes";
 import Card from './routes/Card.routes';
 import Agenda from './routes/Agenda.routes'
 import Place from './routes/Place.routes'
-import Area from './routes/Area.routes'
-import Attendance from './routes/Attendance.routes'
 import School from './routes/School.routes';
 
 /* Variables */
@@ -49,8 +47,6 @@ app.use(Profile)
 app.use(Card)
 app.use(Agenda)
 app.use(Place)
-app.use(Area)
-app.use(Attendance)
 app.use(School)
 
 export default app

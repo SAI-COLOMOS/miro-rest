@@ -2,12 +2,12 @@ import { Router } from "express"
 import { sendRecoveryToken, recoverPassword, LoginGet } from "../controllers/Auth.controller"
 
 const route = Router()
-const prefix = "/auth"
+const path = "/auth"
 
-route.post(`${prefix}/login`, LoginGet)
+route.post(`${path}/login`, LoginGet)
 
-route.post(`${prefix}/recovery`, sendRecoveryToken)
+route.post(`${path}/recovery`, sendRecoveryToken)
 
-route.patch(`${prefix}/recovery`, recoverPassword)
+route.patch(`${path}/recovery`, recoverPassword)
 
 export default route;

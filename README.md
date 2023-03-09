@@ -36,6 +36,12 @@ Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempr
         - [Create a user](#create-a-user)
         - [Update a user](#update-a-user)
         - [Delete a user](#delete-a-user)
+    - [Cards](#cards)
+        - [Get cards](#get-cards)
+        - [Get provider hours](#get-provider-hours)
+        - [Add an activity to a card](#add-an-activity-to-a-card)
+        - [Update an activity from a card](#update-an-activity-from-a-card)
+        - [Delete an activity from a card](#delete-an-activity-from-a-card)
 
 ## Uso de la API
 
@@ -186,9 +192,33 @@ GET /places
 
 - Request
 
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+
+| Parameters   | Type     | Required | Allowed values | Description                                |
+|--------------|----------|----------|----------------|--------------------------------------------|
+| municipality | `string` | No       | Any            | Municipality in which the place is located |
+| colony       | `string` | No       | Any            | Colony in which the place is located       |
+| postal_code  | `string` | No       | Any            | Postal or zip code of the place's location |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of places to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `place_name`, `place_identifier`, `street`, `exterior_number` and `phone`.
+
 ```javascript
 fetch(
-    `.../places`,
+    `.../places?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
     {
         method: "GET",
         headers: {
@@ -439,21 +469,92 @@ fetch(
 
 > ⚠️ Note: this seccion is linked to _[Places seccion](#places)_. Both are part of _Places and Areas_ module.
 
-#### Get areas
+#### Get all areas from several places
 
 - Endpoint
 
 ```http
-GET /areas/:place_identifier
+GET /places/areas/all
+```
+
+- Request
+
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+> ⚠️ Note: The filters and searches where are for the places
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+
+| Parameters   | Type     | Required | Allowed values | Description                                |
+|--------------|----------|----------|----------------|--------------------------------------------|
+| municipality | `string` | No       | Any            | Municipality in which the place is located |
+| colony       | `string` | No       | Any            | Colony in which the place is located       |
+| postal_code  | `string` | No       | Any            | Postal or zip code of the place's location |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of places to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `place_name`, `place_identifier`, `street`, `exterior_number` and `phone`.
+
+```javascript
+fetch(
+    `.../places/areas/all?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
+    {
+        method: "GET",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "areas": [
+        {
+            "area_identifier": "01",
+            "area_name": "Centro de Educación y Cultura Ambiental",
+            "phone": "3313467900",
+            "_id": "63f6d3e91975d0ea79de99df"
+        },{
+            "area_identifier": "02",
+            "area_name": "Servicios generales",
+            "phone": "3313467555",
+            "_id": "63f6d3e91975d0ff66ht12vv"
+        }
+    ]
+}
+```
+
+#### Get areas from a place
+
+- Endpoint
+
+```http
+GET /places/:place_identifier/areas
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}`,
+    `.../places/${place_identifier}/areas`,
     {
-        method: "POST",
+        method: "GET",
         headers: {
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`,
@@ -489,16 +590,16 @@ fetch(
 - Endpoint
 
 ```http
-GET /areas/:place_identifier/:area_identifier
+GET /places/:place_identifier/areas/:area_identifier
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}/${area_identifier}`,
+    `.../places/${place_identifier}/areas/${area_identifier}`,
     {
-        method: "POST",
+        method: "GET",
         headers: {
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`,
@@ -527,7 +628,7 @@ fetch(
 - Endpoint
 
 ```http
-POST /areas/:place_identifier
+POST /places/:place_identifier
 ```
 
 - Parameters
@@ -541,7 +642,7 @@ POST /areas/:place_identifier
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}`,
+    `.../places/${place_identifier}`,
     {
         method: "POST",
         headers: {
@@ -570,7 +671,7 @@ fetch(
 - Endpoint
 
 ```http
-PATCH /areas/:place_identifier/:area_identifier
+PATCH /places/:place_identifier/areas/:area_identifier
 ```
 
 - Parameters
@@ -586,7 +687,7 @@ PATCH /areas/:place_identifier/:area_identifier
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}/${area_identifier}`,
+    `.../places/${place_identifier}/areas/${area_identifier}`,
     {
         method: "PATCH",
         headers: {
@@ -614,14 +715,14 @@ fetch(
 - Endpoint
 
 ```http
-DELETE /areas/:place_identifier/:area_identifier
+DELETE /places/:place_identifier/areas/:area_identifier
 ```
 
 - Request
 
 ```javascript
 fetch(
-    `.../areas/${place_identifier}/${area_identifier}`,
+    `.../places/${place_identifier}/areas/${area_identifier}`,
     {
         method: "DELETE",
         headers: {
@@ -653,9 +754,39 @@ GET /users
 
 - Request
 
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place` and `assigned_area` will be overwritten by the values found in the user's data and only will be able to retrieve users with the `Prestador` role. 
+
+| Parameters    | Type     | Required | Allowed values                                              | Description                             |
+|---------------|----------|----------|-------------------------------------------------------------|-----------------------------------------|
+| place         | `string` | No       | Any                                                         | Place where the user was assigned       |
+| assigned_area | `string` | No       | Any                                                         | Area where the user was assigned        |
+| role          | `string` | No       | ['Administrador', 'Encargado', 'Prestador']                 | Role given to the user                  |
+| period        | `string` | No       | ['A', 'B']                                                  | Period on which the user was registered |
+| year          | `string` | No       | Any                                                         | Year on which the user was registered   |
+| school        | `string` | No       | Any                                                         | School that the user attends            |
+| status        | `string` | No       | ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']          | Current user status                     |
+| provider_type | `string` |          | ['Servicio social', 'Practicas profesionales', 'No aplica'] | Type of user provider                   |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of users to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `name`, `register`, `email` and `phone`.
+
 ```javascript
 fetch(
-    `.../users`,
+    `.../users?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
     {
         method: "GET",
         headers: {
@@ -940,5 +1071,255 @@ fetch(
 ```json
 {
     "message": "Usuario eliminado"
+}
+```
+
+
+### Cards
+
+The cards are going to be queried by the users. 
+
+#### Get cards
+
+- Endpoint
+
+```http
+GET /cards
+```
+
+- Request
+
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place` and `assigned_area` will be overwritten by the values found in the user's data and only will be able to retrieve users with the `Prestador` role. 
+
+| Parameters    | Type     | Required | Allowed values                                              | Description                             |
+|---------------|----------|----------|-------------------------------------------------------------|-----------------------------------------|
+| place         | `string` | No       | Any                                                         | Place where the user was assigned       |
+| assigned_area | `string` | No       | Any                                                         | Area where the user was assigned        |
+| role          | `string` | No       | ['Administrador', 'Encargado', 'Prestador']                 | Role given to the user                  |
+| period        | `string` | No       | ['A', 'B']                                                  | Period on which the user was registered |
+| year          | `string` | No       | Any                                                         | Year on which the user was registered   |
+| school        | `string` | No       | Any                                                         | School that the user attends            |
+| status        | `string` | No       | ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']          | Current user status                     |
+| provider_type | `string` |          | ['Servicio social', 'Practicas profesionales', 'No aplica'] | Type of user provider                   |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of users to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can search by the `name`, `register`, `email` and `phone`.
+
+```javascript
+fetch(
+    `.../cards?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "cards": [
+        {
+            "_id": "63fed926bc8f7b26b5695c4d",
+            "provider_register": "2022B0101002",
+            "total_hours": 450,
+            "achieved_hours": 0,
+            "activities": [],
+            "createdAt": "2023-03-01T04:48:38.522Z",
+            "updatedAt": "2023-03-01T04:48:38.522Z"
+        },
+        {
+            "achieved_hours": 0,
+            "_id": "63f6e2e553d63e0eecef5a2b",
+            "provider_register": "2023A0101001",
+            "activities": [
+                {
+                    "activity_name": "Campamento",
+                    "hours": 15,
+                    "assignation_date": "2023-02-23T03:54:13.957Z",
+                    "responsible_register": "CRMAJU010104",
+                    "_id": "63f6e3f7a9b1125440490faf"
+                }
+            ],
+            "createdAt": "2023-02-23T03:52:05.005Z",
+            "updatedAt": "2023-02-23T04:01:11.137Z",
+            "total_hours": 450
+        }
+    ]
+}
+```
+
+#### Get provider hours
+
+- Endpoint
+
+```http
+GET /cards/:register
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../cards/${register}`,
+    {
+        method: "GET",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Tarjetón de usuario encontrado",
+    "activities": [
+        {
+            "activity_name": "Cambio de nombre",
+            "hours": 15,
+            "assignation_date": "2023-02-23T03:54:13.957Z",
+            "responsible_register": "123",
+            "_id": "63f6e3f7a9b1125440490faf"
+        }
+    ]
+}
+```
+
+#### Add an activity to a card
+
+- Endpoint
+
+```http
+POST /card/:register
+```
+
+- Parameters
+
+| Parameters           | Type     | Required | Allowed values | Description                          |
+|----------------------|----------|----------|----------------|--------------------------------------|
+| activity_name        | `string` | yes      | Any            | Name of the activity                 |
+| hours                | `number` | yes      | Any            | Quantity of hours earned             |
+| responsible_register | `string` | yes      | Any            | Responsible register of the activity |
+| assignation_date     | `string` | no       | ISO Date       | Date of assignation                  |
+
+- Request
+
+```javascript
+fetch(
+    `.../cards/${register}`,
+    {
+        method: "POST",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Se añadieron las horas al prestador"
+}
+```
+
+#### Update an activity from a card
+
+- Endpoint
+
+```http
+PATCH /card/:register/activity/:activity_identifier
+```
+
+- Parameters
+
+| Parameters           | Type     | Required | Allowed values | Description                          |
+|----------------------|----------|----------|----------------|--------------------------------------|
+| activity_name        | `string` | no       | Any            | Name of the activity                 |
+| hours                | `number` | no       | Any            | Quantity of hours earned             |
+| responsible_register | `string` | no       | Any            | Responsible register of the activity |
+| assignation_date     | `string` | no       | ISO Date       | Date of assignation                  |
+
+- Request
+
+```javascript
+fetch(
+    `.../cards/${register}/activity/${activity_identifier}`,
+    {
+        method: "PATCH",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "La información de la actividad se actualizó"
+}
+```
+
+#### Delete an activity from a card
+
+- Endpoint
+
+```http
+DELETE /card/:register/activity/:activity_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../cards/${register}/activity/${activity_identifier}`,
+    {
+        method: "DELETE",
+        headers: {
+            `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Se eliminaron las horas del prestador"
 }
 ```

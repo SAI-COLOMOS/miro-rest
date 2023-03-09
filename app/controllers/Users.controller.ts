@@ -1,8 +1,10 @@
 import { Request, Response } from "express"
-import fs from 'fs/promises'
-import { global_path } from "../server"
 import User from "../models/User"
 import Card from "../models/Card"
+import Enviroment from "../config/Enviroment"
+import { mensaje, sendEmail } from "../config/Mailer"
+import fs from 'fs/promises'
+import { global_path } from "../server"
 import { __ThrowError, __Optional, __Required, __Query } from "../middleware/ValidationControl"
 
 export const UsersGet = async (req: Request, res: Response) => {
@@ -17,22 +19,26 @@ export const UsersGet = async (req: Request, res: Response) => {
     }
 
     try {
+        const user = new User(req.user)
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
         let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        if (filter_request)
-            Object.keys(filter_request).forEach((key: string) => {
-                if (key === "year") {
-                    filter_request.register = { $regex: '^' + filter_request[key] }
-                    delete filter_request.year
-                }
+        if (filter_request && filter_request.year && filter_request.period) {
+            filter_request.register = { $regex: `^.*(?=.*${filter_request.year})(?=.{4}[${filter_request.period}]).*$` }
+            delete filter_request.year
+            delete filter_request.period
+        }
 
-                if (key === "period") {
-                    filter_request.register = { $regex: "^.{4}[" + filter_request[key] + "]" }
-                    delete filter_request.period
-                }
-            })
+        if (filter_request && filter_request.year) {
+            filter_request.register = { $regex: '^' + filter_request.year }
+            delete filter_request.year
+        }
+
+        if (filter_request && filter_request.period) {
+            filter_request.register = { $regex: "^.{4}[" + filter_request.period + "]" }
+            delete filter_request.period
+        }
 
         if (req.query.search)
             filter_request = {
@@ -45,6 +51,12 @@ export const UsersGet = async (req: Request, res: Response) => {
                     { "phone": { $regex: req.query.search } }
                 ]
             }
+
+        if (user.role === "Encargado") {
+            filter_request.place = user.place
+            filter_request.assigned_area = user.assigned_area
+            filter_request.role = "Prestador"
+        }
 
         const users = await User.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
@@ -81,11 +93,10 @@ export const UserGet = async (req: Request, res: Response) => {
 }
 
 export const UserPost = async (req: Request, res: Response) => {
-    let total_hours: number = 0
     try {
         __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
 
-        const user: any = req.user
+        const user = new User(req.user)
         if (user.role === "Encargado" && req.body.role !== "Prestador")
             __ThrowError(`El usuario de tipo 'Encargado' no puede crear un usuario de tipo '${req.body.role}'`)
 
@@ -115,20 +126,11 @@ export const UserPost = async (req: Request, res: Response) => {
 
         __Optional(req.body.avatar, `avatar`, `string`, null)
 
-        if (req.body.role === "Prestador")
+        if (req.body.role === "Prestador") {
             __Required(req.body.school, `school`, `string`, null)
-
-        req.body.role === "Prestador"
-            ? __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
-            : req.body.provider_type = "No aplica"
-
-        if (req.body.role === 'Prestador')
+            __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
             __Required(req.body.total_hours, `total_hours`, `number`, null)
-
-        if (req.body.total_hours && req.body.role === 'Prestador')
-            total_hours = req.body.total_hours
-
-        delete req.body.total_hours
+        }
     } catch (error) {
         return res.status(400).json({
             error
@@ -138,8 +140,16 @@ export const UserPost = async (req: Request, res: Response) => {
     try {
         const user = await new User(req.body).save()
 
+        if (user) {
+            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const to = String(user.email)
+            const subject = "Bienvenido!"
+            const body = mensaje(`Bienvenido al ${user.assigned_area} de ${user.place}`)
+            await sendEmail(from, to, subject, body)
+        }
+
         if (user && user.role === "Prestador")
-            await new Card({ "provider_register": user.register, "total_hours": total_hours }).save()
+            await new Card({ "provider_register": user.register, "total_hours": req.body.total_hours }).save()
 
         return user
             ? res.status(201).json({
@@ -148,7 +158,7 @@ export const UserPost = async (req: Request, res: Response) => {
             : res.status(500).json({
                 message: "No se pudo crear el usuario",
             })
-    } catch (error: any) {
+    } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
             error: error?.toString()
@@ -163,9 +173,6 @@ export const UserDelete = async (req: Request, res: Response) => {
         let deletedCount: number = 0
 
         if (user && user.role === "Prestador") {
-            await Promise.all([
-
-            ])
             const card_result = await Card.deleteOne({ "provider_register": req.params.id })
             const result = await User.deleteOne({ 'register': req.params.id })
 
@@ -228,10 +235,10 @@ export const UserPatch = async (req: Request, res: Response) => {
 
         __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
 
-        const user: any = req.user
-        user.role === "Encargado"
+        const user = new User(req.user)
+        user.role === "Encargado" && req.body.role
             ? __ThrowError("El usuario de tipo 'Encargado' no puede modificar roles")
-            : __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador'])
+            : __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador', 'Administrador'])
     } catch (error) {
         return res.status(400).json({
             error
@@ -251,6 +258,31 @@ export const UserPatch = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({
             message: "Ocurrió un error en el servidor",
+            error: error?.toString()
+        })
+    }
+}
+
+export const restorePassword = async (req: Request, res: Response) => {
+    try {
+        const user = await User.findOne({ "register": req.params.id })
+
+        if (user) {
+            user.password = user.register
+            user.save()
+        }
+
+        return user
+            ? res.status(200).json({
+                message: `Se restauró la contraseña del usuario ${req.params.id}`
+            })
+            : res.status(400).json({
+                message: `No se encontró el usuario ${req.params.id}`
+            })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: `Ocurrió un error en el servidor`,
             error: error?.toString()
         })
     }

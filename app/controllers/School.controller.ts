@@ -16,16 +16,31 @@ export const getSchools = async (req: Request, res: Response) => {
     try {
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-        const filter: object = req.query.filter ?
-            req.query.search ?
-                {
-                    ...JSON.parse(String(req.query.filter)),
-                    $or: [{ "school_name": { $regex: '.*' + req.query.search + '.*' } }]
-                }
-                : JSON.parse(String(req.query.filter))
-            : null
+        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-        const schools = await School.find(filter).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+        if (filter_request)
+            Object.keys(filter_request).forEach((key: string) => {
+                if (key === "municipality")
+                    filter_request.municipality = { $regex: filter_request.municipality, $options: "i" }
+
+                if (key === "colony")
+                    filter_request.colony = { $regex: filter_request.colony, $options: "i" }
+            })
+
+        if (req.query.search)
+            filter_request = {
+                ...filter_request,
+                $or: [
+                    { "school_name": { $regex: req.query.search, $options: "i" } },
+                    { "street": { $regex: req.query.search, $options: "i" } },
+                    { "school_identifier": { $regex: req.query.search } },
+                    { "exterior_number": { $regex: req.query.search } },
+                    { "phone": { $regex: req.query.search } }
+                ]
+            }
+
+
+        const schools = await School.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
         return res.status(200).json({
             message: 'Listo',
@@ -88,7 +103,6 @@ export const postSchool = async (req: Request, res: Response) => {
         return school
             ? res.status(201).json({
                 message: `Escuela añadida`,
-                school
             })
             : res.status(500).json({
                 message: `No se pudo crear la escuela`
