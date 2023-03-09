@@ -923,6 +923,7 @@ POST /users
 
 | Parameter           | Type     | Required | Allowed values                                              | Description                                           |
 | :------------------ | :------- | :------- | :---------------------------------------------------------- | :---------------------------------------------------- |
+| `curp`              | `string` | Yes      | Any                                                         | Curp of the user
 | `first_name`        | `string` | Yes      | Any                                                         | First name of the user                                |
 | `first_last_name`   | `string` | Yes      | Any                                                         | First second last name of the user (apellido paterno) |
 | `age`               | `string` | Yes      | Any                                                         | Age of the user                                       |
@@ -995,6 +996,7 @@ PATCH /users/:register
 
 | Parameter           | Type     | Required | Allowed values                                              | Description                                           |
 | :------------------ | :------- | :------- | :---------------------------------------------------------- | :---------------------------------------------------- |
+| `curp`              | `string` | No       | Any                                                         | Curp of the user
 | `first_name`        | `string` | No       | Any                                                         | First name of the user                                |
 | `first_last_name`   | `string` | No       | Any                                                         | First second last name of the user (apellido paterno) |
 | `age`               | `string` | No       | Any                                                         | Age of the user                                       |
