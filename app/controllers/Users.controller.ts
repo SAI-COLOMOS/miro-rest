@@ -48,6 +48,7 @@ export const UsersGet = async (req: Request, res: Response) => {
                     { "first_last_name": { $regex: req.query.search, $options: "i" } },
                     { "second_last_name": { $regex: req.query.search, $options: "i" } },
                     { "register": { $regex: req.query.search, $options: "i" } },
+                    { "curp": { $regex: req.query.search, $options: "i" } },
                     { "phone": { $regex: req.query.search } }
                 ]
             }
@@ -103,6 +104,8 @@ export const UserPost = async (req: Request, res: Response) => {
         __Required(req.body.first_name, `first_name`, `string`, null)
 
         __Required(req.body.first_last_name, `first_last_name`, `string`, null)
+
+        __Required(req.body.curp, `curp`, `string`, null)
 
         __Optional(req.body.second_last_name, `second_last_name`, `string`, null)
 
@@ -210,6 +213,8 @@ export const UserPatch = async (req: Request, res: Response) => {
         __Optional(req.body.first_last_name, `first_last_name`, `string`, null)
 
         __Optional(req.body.second_last_name, `second_last_name`, `string`, null)
+
+        __Optional(req.body.curp, `curp`, `string`, null)
 
         __Optional(req.body.age, `age`, `string`, null)
 
