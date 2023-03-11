@@ -89,7 +89,6 @@ const UserSchema = new Schema(
     provider_type: {
       type: String,
       enum: ["Servicio social", "Prácticas profesionales", "No aplica"],
-      required: [true, "El tipo de prestador es necesario"],
     },
     place: {
       type: String,
@@ -139,8 +138,7 @@ async function newRegisterForProvider(
     .where({
       register: {
         $regex:
-          `${year}${seasson}${place!.place_identifier}${
-            area[0].area_identifier
+          `${year}${seasson}${place!.place_identifier}${area[0].area_identifier
           }` + ".*",
       },
     });
@@ -162,9 +160,8 @@ async function newRegisterForProvider(
     }
   }
 
-  return `${year}${seasson}${place!.place_identifier}${
-    area[0].area_identifier
-  }${serie}`;
+  return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier
+    }${serie}`;
 }
 
 async function newRegisterForAdministratorOrManager(
@@ -192,9 +189,8 @@ async function newRegisterForAdministratorOrManager(
     Math.random() * 9
   ).toString()}${Math.floor(Math.random() * 9).toString()}`;
 
-  return `${first_last_name}${second_last_name}${first_name}${
-    place!.place_identifier
-  }${area[0].area_identifier}${random}`;
+  return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier
+    }${area[0].area_identifier}${random}`;
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
