@@ -89,7 +89,6 @@ const UserSchema = new Schema(
     provider_type: {
       type: String,
       enum: ["Servicio social", "Prácticas profesionales", "No aplica"],
-      required: [true, "El tipo de prestador es necesario"],
     },
     place: {
       type: String,

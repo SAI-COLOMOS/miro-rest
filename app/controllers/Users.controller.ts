@@ -25,18 +25,48 @@ export const UsersGet = async (req: Request, res: Response) => {
         let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
         if (filter_request && filter_request.year && filter_request.period) {
-            filter_request.register = { $regex: `^.*(?=.*${filter_request.year})(?=.{4}[${filter_request.period}]).*$` }
+            const period_condition = filter_request.period === "A"
+                ? { $lte: [{ $month: '$createdAt' }, 6] }
+                : { $gte: [{ $month: '$createdAt' }, 7] }
+
+            filter_request = {
+                ...filter_request, $expr: {
+                    $and: [
+                        { $eq: [{ $year: '$createdAt' }, Number(filter_request.year)] },
+                        period_condition
+                    ]
+                }
+            }
+
             delete filter_request.year
             delete filter_request.period
         }
 
         if (filter_request && filter_request.year) {
-            filter_request.register = { $regex: '^' + filter_request.year }
+            filter_request = {
+                ...filter_request, $expr: {
+                    $eq: [{ $year: '$createdAt' }, Number(filter_request.year)]
+                }
+            }
+
             delete filter_request.year
         }
 
         if (filter_request && filter_request.period) {
-            filter_request.register = { $regex: "^.{4}[" + filter_request.period + "]" }
+            if (filter_request.period === "A")
+                filter_request = {
+                    ...filter_request, $expr: {
+                        $lte: [{ $month: '$createdAt' }, 6]
+                    }
+                }
+
+            if (filter_request.period === "B")
+                filter_request = {
+                    ...filter_request, $expr: {
+                        $gte: [{ $month: '$createdAt' }, 7]
+                    }
+                }
+
             delete filter_request.period
         }
 
