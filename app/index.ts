@@ -1,17 +1,18 @@
 import Server from "./server"
-import "./database"
-import localtunnel from "localtunnel";
-Server.listen(Server.get('port'));
+import Mongoose from "mongoose"
+import Environment from "./config/Environment"
 
-console.log("Holaaaaa");
+Server.listen(Server.get('port'))
 
-(async () => {
-    const tunnel = await localtunnel({ port: 3000 });
-  
-    // the assigned public url for your tunnel
-    // i.e. https://abcdefgjhij.localtunnel.me
-    console.log(`
+Mongoose.set('strictQuery', false)
+Mongoose.connect(Environment.MonogoDB.uri)
+Mongoose.connection.once('open', () => {
+}).on('error', error => {
+    console.error(error)
+    process.exit(0)
+})
 
+console.log(`
 888b     d888 8888888 8888888b.   .d88888b.         8888888b.  8888888888  .d8888b.  88888888888 
 8888b   d8888   888   888   Y88b d88P" "Y88b        888   Y88b 888        d88P  Y88b     888     
 88888b.d88888   888   888    888 888     888        888    888 888        Y88b.          888     
@@ -24,11 +25,4 @@ console.log("Holaaaaa");
 ~ ${new Date()} ~
 
 - Servidor listo en http://127.0.0.1:${Server.get('port')}
-- Servidor en línea en ${tunnel.url}
-
-    `)
-  
-    tunnel.on('close', () => {
-      console.warn("¡La conexión con el túnel ha sido cerrada!")
-    });
-  })();
+`)
