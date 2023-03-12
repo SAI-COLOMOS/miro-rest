@@ -1,0 +1,26 @@
+services:
+  api:
+    image: node
+    ports:
+      - "3000:3000"
+    restart: on-failure
+    networks:
+      - api-network
+    links:
+      - db
+  db:
+    image: mongo:4.4.6
+    ports:
+      - "27017:27017"
+    restart: on-failure
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=sai
+      - MONGO_INITDB_ROOT_PASSWORD=@Oveja1
+    networks:
+      - api-network
+    volumes:
+      - api-volumen:/data/db
+volumes:
+  api-volumen:
+networks:
+  api-network: {}
