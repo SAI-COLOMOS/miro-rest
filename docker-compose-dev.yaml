@@ -1,14 +1,18 @@
 services:
   api:
-    image: node
+    build: 
+      context: .
+      dockerfile: dockerfile.dev
     ports:
       - "3000:3000"
     restart: on-failure
     networks:
       - api-network
     links:
-      - db
-  db:
+      - mongo
+    volumes:
+      - .:/home/api
+  mongo:
     image: mongo:4.4.6
     ports:
       - "27017:27017"

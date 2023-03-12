@@ -1,0 +1,15 @@
+FROM node
+
+RUN npm install -g nodemon
+RUN mkdir /home/api
+
+WORKDIR /home/api
+
+EXPOSE 3000
+
+
+#RUN npm --version
+
+CMD npm install && nodemon "./dist/index.js"
+#[ "nodemon", "./dist/index.js" ]
+#CMD [ "npm", "run dev" ]
