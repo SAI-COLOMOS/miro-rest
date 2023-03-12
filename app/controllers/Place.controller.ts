@@ -31,11 +31,7 @@ export const getPlaces = async (req: Request, res: Response) => {
             filter_request = {
                 ...filter_request,
                 $or: [
-                    { "place_name": { $regex: req.query.search, $options: "i" } },
-                    { "street": { $regex: req.query.search, $options: "i" } },
-                    { "place_identifier": { $regex: req.query.search } },
-                    { "exterior_number": { $regex: req.query.search } },
-                    { "phone": { $regex: req.query.search } }
+                    { "place_name": { $regex: req.query.search, $options: "i" } }
                 ]
             }
 

@@ -125,11 +125,25 @@ export const UserGet = async (req: Request, res: Response) => {
 
 export const UserPost = async (req: Request, res: Response) => {
     try {
-        __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
-
         const user = new User(req.user)
-        if (user.role === "Encargado" && req.body.role !== "Prestador")
-            __ThrowError(`El usuario de tipo 'Encargado' no puede crear un usuario de tipo '${req.body.role}'`)
+
+        if (user.role === 'Encargado') {
+            req.body.place = user.place
+            req.body.assigned_area = user.assigned_area
+            req.body.role = 'Prestador'
+        }
+
+        if (user.role === 'Administrador') {
+            __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
+            __Required(req.body.place, `place`, `string`, null)
+            __Required(req.body.assigned_area, `assigned_area`, `string`, null)
+        }
+
+        if (req.body.role === "Prestador") {
+            __Required(req.body.school, `school`, `string`, null)
+            __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
+            __Required(req.body.total_hours, `total_hours`, `number`, null)
+        }
 
         __Required(req.body.first_name, `first_name`, `string`, null)
 
@@ -151,19 +165,9 @@ export const UserPost = async (req: Request, res: Response) => {
 
         __Required(req.body.blood_type, `blood_type`, `string`, ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'])
 
-        __Required(req.body.place, `place`, `string`, null)
-
-        __Required(req.body.assigned_area, `assigned_area`, `string`, null)
-
         __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
 
         __Optional(req.body.avatar, `avatar`, `string`, null)
-
-        if (req.body.role === "Prestador") {
-            __Required(req.body.school, `school`, `string`, null)
-            __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
-            __Required(req.body.total_hours, `total_hours`, `number`, null)
-        }
     } catch (error) {
         return res.status(400).json({
             error
@@ -232,11 +236,22 @@ export const UserDelete = async (req: Request, res: Response) => {
 
 export const UserPatch = async (req: Request, res: Response) => {
     try {
+        const user = new User(req.user)
+
         if (req.body.password)
             __ThrowError("El campo 'password' no se puede actualizar")
 
         if (req.body.register)
             __ThrowError("El campo 'register' no se puede actualizar")
+
+        if (user.role === 'Encargado') {
+            if (req.body.place)
+                __ThrowError("El usuario de tipo 'Encargado' no puede modificar el campo 'place'")
+            if (req.body.assigned_area)
+                __ThrowError("El usuario de tipo 'Encargado' no puede modificar el campo 'assigned_area'")
+            if (req.body.role)
+                __ThrowError("El usuario de tipo 'Encargado' no puede modificar el campo 'role'")
+        }
 
         __Optional(req.body.first_name, `first_name`, `string`, null)
 
@@ -270,10 +285,9 @@ export const UserPatch = async (req: Request, res: Response) => {
 
         __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
 
-        const user = new User(req.user)
-        user.role === "Encargado" && req.body.role
-            ? __ThrowError("El usuario de tipo 'Encargado' no puede modificar roles")
-            : __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador', 'Administrador'])
+        __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador', 'Administrador'])
+
+        __Optional(req.body.total_hours, `total_hours`, `number`, null)
     } catch (error) {
         return res.status(400).json({
             error
@@ -282,8 +296,12 @@ export const UserPatch = async (req: Request, res: Response) => {
 
     try {
         const result = await User.updateOne({ 'register': req.params.id }, req.body)
+        let card_results: number = 0
 
-        return result.modifiedCount > 0
+        if (req.body.total_hours)
+            card_results = (await Card.updateOne({ 'provider_register': req.params.id }, { 'total_hours': req.body.total_hours })).modifiedCount
+
+        return result.modifiedCount + card_results > 0
             ? res.status(200).json({
                 message: `Se actualizó la información del usuario ${req.params.id}`
             })

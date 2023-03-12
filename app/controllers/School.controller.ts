@@ -31,11 +31,7 @@ export const getSchools = async (req: Request, res: Response) => {
             filter_request = {
                 ...filter_request,
                 $or: [
-                    { "school_name": { $regex: req.query.search, $options: "i" } },
-                    { "street": { $regex: req.query.search, $options: "i" } },
-                    { "school_identifier": { $regex: req.query.search } },
-                    { "exterior_number": { $regex: req.query.search } },
-                    { "phone": { $regex: req.query.search } }
+                    { "school_name": { $regex: req.query.search, $options: "i" } }
                 ]
             }
 
