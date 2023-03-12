@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import User, { UserInterface } from "../models/User";
 import JWT, { JwtPayload } from "jsonwebtoken";
-import Enviroment from "../config/Enviroment";
+import Environment from "../config/Environment";
 import { link, mensaje, sendEmail } from "../config/Mailer";
 import { __Optional, __Required, __ThrowError } from "../middleware/ValidationControl";
 
@@ -9,7 +9,7 @@ function createToken(user: UserInterface, time: String) {
     return JWT.sign({
         register: user.register
     },
-        Enviroment.JWT.secret,
+        Environment.JWT.secret,
         {
             expiresIn: String(time)
         })
@@ -76,7 +76,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
         if (user) {
             const token = createToken(user, "5d")
             newRoute = `exp://192.168.100.36:19000/--/recovery?token=${token}`
-            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const from = `"SAI" ${Environment.Mailer.email}`
             const to = String(user.email)
             const subject = "Recuperación de contraseña"
             const body = link(newRoute)
@@ -98,7 +98,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
 export const recoverPassword = async (req: Request, res: Response) => {
     let token
     try {
-        token = JWT.verify(String(req.query.token), Enviroment.JWT.secret) as JwtPayload
+        token = JWT.verify(String(req.query.token), Environment.JWT.secret) as JwtPayload
     } catch (error) {
         return res.status(400).json({
             message: "El link ha caducado",
@@ -122,7 +122,7 @@ export const recoverPassword = async (req: Request, res: Response) => {
         if (user && !(await user.validatePassword(req.body.password))) {
             user.password = req.body.password
             user.save()
-            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const from = `"SAI" ${Environment.Mailer.email}`
             const to = user.email
             const subject = "Recuperación de contraseña"
             const body = mensaje("Se actualizó la contraseña de su usuario.")

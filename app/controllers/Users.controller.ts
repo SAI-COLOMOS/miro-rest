@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import User from "../models/User"
 import Card from "../models/Card"
-import Enviroment from "../config/Enviroment"
+import Environment from "../config/Environment"
 import { mensaje, sendEmail } from "../config/Mailer"
 import fs from 'fs/promises'
 import { global_path } from "../server"
@@ -178,7 +178,7 @@ export const UserPost = async (req: Request, res: Response) => {
         const user = await new User(req.body).save()
 
         if (user) {
-            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const from = `"SAI" ${Environment.Mailer.email}`
             const to = String(user.email)
             const subject = "Bienvenido!"
             const body = mensaje(`Bienvenido al ${user.assigned_area} de ${user.place}`)

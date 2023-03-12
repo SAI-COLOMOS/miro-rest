@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Agenda from "../models/Agenda";
 import Card from "../models/Card";
 import User from "../models/User";
-import Enviroment from "../config/Enviroment";
+import Environment from "../config/Environment";
 import schedule from 'node-schedule'
 import { mensaje, sendEmail } from "../config/Mailer"
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
@@ -292,7 +292,7 @@ const scheduleEmailNotifications = async (event_identifier: string, time: string
     schedule.scheduleJob(event_identifier, time,
         async function (name: string, event: string) {
             const users = await User.find({ "status": "Activo", "role": "Prestador" })
-            const from = `"SAI" ${Enviroment.Mailer.email}`
+            const from = `"SAI" ${Environment.Mailer.email}`
             const subject = "Recuperación de contraseña"
             const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
             for (const user of users) {

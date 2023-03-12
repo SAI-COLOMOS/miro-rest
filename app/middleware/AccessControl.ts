@@ -1,10 +1,10 @@
 import { Strategy, ExtractJwt, StrategyOptions } from "passport-jwt"
-import Enviroment from "../config/Enviroment"
+import Environment from "../config/Environment"
 import User from "../models/User"
 
 const options: StrategyOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: Enviroment.JWT.secret
+    secretOrKey: Environment.JWT.secret
 }
 
 export default new Strategy(options, async (payload, done) => {
