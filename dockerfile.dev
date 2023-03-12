@@ -10,6 +10,6 @@ EXPOSE 3000
 
 #RUN npm --version
 
-CMD npm install && nodemon "./dist/index.js"
+CMD npm install && nodemon ./dist/index.js
 #[ "nodemon", "./dist/index.js" ]
 #CMD [ "npm", "run dev" ]
