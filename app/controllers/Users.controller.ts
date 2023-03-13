@@ -248,6 +248,9 @@ export const UserPatch = async (req: Request, res: Response) => {
         if (req.body.register)
             __ThrowError("El campo 'register' no se puede actualizar")
 
+        if (user.role === 'Administrador' && req.body.role == 'Encargado')
+            delete req.body.provider_type
+
         if (user.role === 'Encargado') {
             if (req.body.place)
                 __ThrowError("El usuario de tipo 'Encargado' no puede modificar el campo 'place'")
