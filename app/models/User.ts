@@ -90,6 +90,7 @@ const UserSchema = new Schema(
     provider_type: {
       type: String,
       enum: ["Servicio social", "Prácticas profesionales", "No aplica"],
+      default: "No aplica"
     },
     place: {
       type: String,
