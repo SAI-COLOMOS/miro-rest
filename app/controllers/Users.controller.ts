@@ -130,11 +130,13 @@ export const UserPost = async (req: Request, res: Response) => {
         if (user.role === 'Encargado') {
             req.body.place = user.place
             req.body.assigned_area = user.assigned_area
-            req.body.provider_type = 'No aplica'
             req.body.role = 'Prestador'
         }
-
+        
         if (user.role === 'Administrador') {
+            if(req.body.role == 'Encargado') {
+                req.body.provider_type = 'No aplica'
+            }
             __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
             __Required(req.body.place, `place`, `string`, null)
             __Required(req.body.assigned_area, `assigned_area`, `string`, null)
