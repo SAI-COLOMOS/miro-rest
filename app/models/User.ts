@@ -119,10 +119,7 @@ const UserSchema = new Schema(
   }
 );
 
-async function newRegisterForProvider(
-  inputPlace: string,
-  inputAssigned_area: string
-): Promise<string> {
+async function newRegisterForProvider(inputPlace: string, inputAssigned_area: string): Promise<string> {
   const [year, month] = new Date().toISOString().split("-");
 
   const seasson = Number(month) <= 6 ? "A" : "B";
@@ -133,9 +130,7 @@ async function newRegisterForProvider(
     item.area_name === inputAssigned_area ? true : null
   );
 
-  const lastRegister = await User.findOne()
-    .sort({ register: "desc" })
-    .select("register")
+  const lastRegister = await User.findOne().sort({ register: "desc" }).select("register")
     .where({
       register: {
         $regex:
@@ -147,10 +142,7 @@ async function newRegisterForProvider(
   let serie = "001";
 
   if (lastRegister) {
-    let nextSerie =
-      Number(
-        lastRegister.register.substring(lastRegister.register.length - 3)
-      ) + 1;
+    let nextSerie = Number(lastRegister.register.substring(lastRegister.register.length - 3)) + 1;
 
     if (nextSerie < 10) {
       serie = "00" + nextSerie;
@@ -161,8 +153,7 @@ async function newRegisterForProvider(
     }
   }
 
-  return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier
-    }${serie}`;
+  return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}${serie}`
 }
 
 async function newRegisterForAdministratorOrManager(
@@ -186,12 +177,9 @@ async function newRegisterForAdministratorOrManager(
     item.area_name === inputAssigned_area ? true : null
   );
 
-  const random: string = `${Math.floor(
-    Math.random() * 9
-  ).toString()}${Math.floor(Math.random() * 9).toString()}`;
+  const random: string = `${Math.floor(Math.random() * 9).toString()}${Math.floor(Math.random() * 9).toString()}`;
 
-  return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier
-    }${area[0].area_identifier}${random}`;
+  return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier}${area[0].area_identifier}${random}`;
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {

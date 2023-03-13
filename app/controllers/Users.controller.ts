@@ -132,12 +132,13 @@ export const UserPost = async (req: Request, res: Response) => {
             req.body.assigned_area = user.assigned_area
             req.body.role = 'Prestador'
         }
-        
+
         if (user.role === 'Administrador') {
-            if(req.body.role == 'Encargado') {
-                req.body.provider_type = 'No aplica'
-            }
             __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
+
+            if (req.body.role == 'Encargado')
+                delete req.body.provider_type
+
             __Required(req.body.place, `place`, `string`, null)
             __Required(req.body.assigned_area, `assigned_area`, `string`, null)
         }
