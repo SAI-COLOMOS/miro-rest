@@ -130,6 +130,7 @@ export const UserPost = async (req: Request, res: Response) => {
         if (user.role === 'Encargado') {
             req.body.place = user.place
             req.body.assigned_area = user.assigned_area
+            req.body.provider_type = 'No aplica'
             req.body.role = 'Prestador'
         }
 
