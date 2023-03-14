@@ -106,11 +106,11 @@ export const UsersGet = async (req: Request, res: Response) => {
 export const UserGet = async (req: Request, res: Response) => {
     try {
         const user = await User.findOne({ 'register': req.params.id })
-        let response: object | null = user ? { ...user } : null
+        let response: object | null = user ? { ...user.toObject() } : null
 
         if (user && user.role === 'Prestador') {
             const card: CardInterface | null = await Card.findOne({ "provider_register": user.register })
-            response = card ? { ...response, "total_hours": card.total_hours } : response
+            response = card ? { ...response, "total_hours": card.total_hours } : { ...response }
         }
 
         return user
