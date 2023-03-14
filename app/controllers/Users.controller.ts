@@ -125,6 +125,11 @@ export const UserGet = async (req: Request, res: Response) => {
 
 export const UserPost = async (req: Request, res: Response) => {
     try {
+        Object.keys(req.body).forEach((key: string) => {
+            if (req.body[key] === "")
+                delete req.body[key]
+        })
+
         const user = new User(req.user)
 
         if (user.role === 'Encargado') {
@@ -135,10 +140,6 @@ export const UserPost = async (req: Request, res: Response) => {
 
         if (user.role === 'Administrador') {
             __Required(req.body.role, `role`, `string`, ['Administrador', 'Encargado', 'Prestador'])
-
-            if (req.body.role == 'Encargado')
-                delete req.body.provider_type
-
             __Required(req.body.place, `place`, `string`, null)
             __Required(req.body.assigned_area, `assigned_area`, `string`, null)
         }
@@ -240,6 +241,11 @@ export const UserDelete = async (req: Request, res: Response) => {
 
 export const UserPatch = async (req: Request, res: Response) => {
     try {
+        Object.keys(req.body).forEach((key: string) => {
+            if (req.body[key] === "")
+                delete req.body[key]
+        })
+
         const user = new User(req.user)
 
         if (req.body.password)
@@ -247,9 +253,6 @@ export const UserPatch = async (req: Request, res: Response) => {
 
         if (req.body.register)
             __ThrowError("El campo 'register' no se puede actualizar")
-
-        if (user.role === 'Administrador' && req.body.role == 'Encargado')
-            delete req.body.provider_type
 
         if (user.role === 'Encargado') {
             if (req.body.place)
