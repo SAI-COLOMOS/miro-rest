@@ -22,7 +22,7 @@ export const UsersGet = async (req: Request, res: Response) => {
         const user = new User(req.user)
         const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
         const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
+        let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
         if (filter_request && filter_request.year && filter_request.period) {
             const period_condition = filter_request.period === "A"
@@ -382,7 +382,7 @@ export const updatePassword = async (req: Request, res: Response) => {
         }
 
         return user
-            ? res.status(400).json({
+            ? res.status(401).json({
                 message: "La nueva contraseña no puede ser igual a la actual"
             })
             : res.status(400).json({
