@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import User from "../models/User"
-import Card from "../models/Card"
+import Card, { CardInterface } from "../models/Card"
 import Environment from "../config/Environment"
 import { mensaje, sendEmail } from "../config/Mailer"
 import fs from 'fs/promises'
@@ -106,11 +106,17 @@ export const UsersGet = async (req: Request, res: Response) => {
 export const UserGet = async (req: Request, res: Response) => {
     try {
         const user = await User.findOne({ 'register': req.params.id })
+        let response: object | null = user ? { ...user } : null
+
+        if (user && user.role === 'Prestador') {
+            const card: CardInterface | null = await Card.findOne({ "provider_register": user.register })
+            response = card ? { ...response, "total_hours": card.total_hours } : response
+        }
 
         return user
             ? res.status(200).json({
                 message: "Listo",
-                user: user
+                user: response
             })
             : res.status(400).json({
                 message: `Usuario ${req.params.id} no encontrado`
