@@ -26,18 +26,16 @@ export const global_path = __dirname
 
 /* Configuraciones */
 app.set('port', process.env.PORT || 3000)
-//app.set('views', path.join(__dirname, 'views'))
-//app.set('view engine', 'pug')
-//app.use(express.static(__dirname + '/public'))
+app.set('view engine', 'pug')
+app.set('views', `${__dirname}/views`)
+app.use(express.static(__dirname + '/public'))
 
-/* Middlewares */
+/* Middleware */
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(passport.initialize())
 passport.use(ControlAccess)
-
-/* Código del servidor */
 
 // Rutas
 app.use(Tests)
