@@ -833,7 +833,7 @@ fetch(
             "first_last_name": "Martínez",
             "second_last_name": "Loza",
             "age": "19",
-            "email": "fernandaml@example.com",
+            "email": "fernandaml@example.com",The `filter` parameter has to be an object with the following structure:
             "phone": "3320478599",
             "avatar": "/protected/default.png",
             "emergency_contact": "Ámerica Loza Guiterréz",
@@ -937,7 +937,7 @@ POST /users
 | `assigned_area`     | `string` | Yes      | Any                                                         | Area where the user will be assigned                  |
 | `school`            | `string` | Yes*     | Any                                                         | School where the user is from                         |
 | `role`              | `string` | Yes      | ['Administrador', 'Encargado', 'Prestador']                 | Role of the user                                      |
-| `status`            | `string` | Yes      | Any                                                         | Status of the user                                    |
+| `status`            | `string` | Yes      | ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']                                                         | Status of the user                                    |
 | `total_hours`       | `number` | Yes*     | Any                                                         | Total of hours that the user need to complete         |
 | `second_last_name`  | `string` | No       | Any                                                         | Second last name of the user (apellido materno)       |
 
@@ -1010,7 +1010,7 @@ PATCH /users/:register
 | `assigned_area`     | `string` | No       | Any                                                         | Area where the user will be assigned                  |
 | `school`            | `string` | No       | Any                                                         | School where the user is from                         |
 | `role`              | `string` | No       | ['Administrador', 'Encargado', 'Prestador']                 | Role of the user                                      |
-| `status`            | `string` | No       | Any                                                         | Status of the user                                    |
+| `status`            | `string` | No       | ['Activo', 'Suspendido', 'Inactivo', 'Finalizado']                                                         | Status of the user                                    |
 | `total_hours`       | `number` | No       | Any                                                         | Total of hours that the user need to complete         |
 | `second_last_name`  | `string` | No       | Any                                                         | Second last name of the user (apellido materno)       |
 
@@ -1325,3 +1325,242 @@ fetch(
     "message": "Se eliminaron las horas del prestador"
 }
 ```
+
+### Events
+
+#### Get events
+
+- Endpoint
+
+``` http
+GET /agenda
+```
+
+- Request
+
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `place`, `belonging_place`, `belonging_area` will be overwritten by the values found in the user's data.
+
+| Parameters     | Type     | Required | Allowed values | Description                                                |
+|----------------|----------|----------|----------------|------------------------------------------------------------|
+| place          | `string` | No       | Any            | Name of the place where the event is going to be performed |
+| belonging_area | `string` | No       | Any            | Name of the area to which the event belongs                |
+| belonging_area | `string` | No       | Any            | Name of the place to which the event belongs               |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of users to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can only search by the `name`.
+
+```javascript
+fetch(
+    `.../agenda?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+#### Get an event
+
+- Endpoint 
+
+``` http
+GET /agenda/:event_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../users/${event_identifier}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+#### Create an event
+
+- Endpoint 
+
+```http
+POST /agenda
+```
+
+- Request
+
+| Parameters      | Type     | Required | Allowed values  | Description                                                                                          |
+|-----------------|----------|----------|-----------------|------------------------------------------------------------------------------------------------------|
+| name            | `string` | Yes      | Any             | Name of the event                                                                                    |
+| description     | `string` | Yes      | Any             | Description of the event                                                                             |
+| offered_hours   | `number` | Yes      | Any             | Amount of hours given to the service providers when the event finishes                               |
+| penalty_hours   | `number` | Yes      | Any             | Amount of hours that will be substracted from the offered hours if the service provider arrives late |
+| vacancy         | `number` | Yes      | Any             | Number of people required for the event                                                              |
+| starting_date   | `string` | Yes      | ISO date string | The date and time on which the event should start                                                    |
+| ending_date     | `string` | Yes      | ISO date string | The date and time on which the event should end                                                      |
+| author_register | `string` | Yes      | User register   | The register of the user that created the event                                                      |
+| publishing_date | `string` | Yes      | ISO date string | The date and time on which the event will be available to subscribe to for service providers         |
+| place           | `string` | Yes      | Any             | The name of the place on which the event is going to be held on                                      |
+| belonging_area  | `string` | Yes      | Any             | The name of the area by which the event was created                                                  |
+| belonging_place | `string` | Yes      | Any             | The name of the place by which the event was created                                                 |
+
+```javascript
+fetch(
+    `.../agenda`,
+    {
+        method: "POST",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            name,
+            description,
+            offered_hours,
+            penalty_hours,
+            vacancy,
+            starting_date,
+            ending_date,
+            author_register,
+            publishing_date,
+            place,
+            belonging_area,
+            belonging_place
+        })
+    }
+)
+```
+
+#### Update an event
+
+- Endpoint 
+
+```http
+PATCH /agenda/:event_identifier
+```
+
+- Request
+
+| Parameters      | Type     | Required | Allowed values  | Description                                                                                          |
+|-----------------|----------|----------|-----------------|------------------------------------------------------------------------------------------------------|
+| name            | `string` | No      | Any             | Name of the event                                                                                    |
+| description     | `string` | No      | Any             | Description of the event                                                                             |
+| offered_hours   | `number` | No      | Any             | Amount of hours given to the service providers when the event finishes                               |
+| penalty_hours   | `number` | No      | Any             | Amount of hours that will be substracted from the offered hours if the service provider arrives late |
+| vacancy         | `number` | No      | Any             | Number of people required for the event                                                              |
+| starting_date   | `string` | No      | ISO date string | The date and time on which the event should start                                                    |
+| ending_date     | `string` | No      | ISO date string | The date and time on which the event should end                                                      |
+| author_register | `string` | No      | User register   | The register of the user that created the event                                                      |
+| publishing_date | `string` | No      | ISO date string | The date and time on which the event will be available to subscribe to for service providers         |
+| place           | `string` | No      | Any             | The name of the place on which the event is going to be held on                                      |
+| belonging_area  | `string` | No      | Any             | The name of the area by which the event was created                                                  |
+| belonging_place | `string` | No      | Any             | The name of the place by which the event was created                                                 |
+
+```javascript
+fetch(
+    `.../agenda/${event_identifier}`,
+    {
+        method: "PATCH",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            name,
+            description,
+            offered_hours,
+            penalty_hours,
+            vacancy,
+            starting_date,
+            ending_date,
+            author_register,
+            publishing_date,
+            place,
+            belonging_area,
+            belonging_place
+        })
+    }
+)
+```
+
+#### Update event status
+
+- Endpoint
+
+```http
+PATCH /agenda/:event_identifier/status
+```
+
+- Request
+
+| Parameters        | Type     | Required | Allowed values              | Description                                          |
+|-------------------|----------|----------|-----------------------------|------------------------------------------------------|
+| status            | `string` | Yes      | ["Disponible", "Concluido"] | The current status of the event                      |
+| modifier_register | `string` | Yes      | User register               | The register of the user that  will update the event |
+
+```javascript
+fetch(
+    `.../agenda/${event_identifier}/status`,
+    {
+        method: "PATCH",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            status,
+            modifier_register
+        })
+    }
+)
+```
+
+#### Delete an event
+
+- Endpoint
+
+```http
+DELETE /agenda/:event_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../agenda/${event_identifier}`,
+    {
+        method: "DELETE",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
