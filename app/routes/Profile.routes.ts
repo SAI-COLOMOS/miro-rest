@@ -7,6 +7,6 @@ const path = '/profile'
 
 route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getProfile)
 
-route.get(`${path}/:id/feed`, Passport.authenticate('jwt', { session: false }), getFeed)
+route.get(`/feed`, Passport.authenticate('jwt', { session: false }), getFeed)
 
 export default route

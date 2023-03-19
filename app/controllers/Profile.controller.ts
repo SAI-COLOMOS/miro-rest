@@ -33,10 +33,10 @@ export const getProfile = async (req: Request, res: Response) => {
 export const getFeed = async (req: Request, res: Response) => {
     try {
         const user = new User(req.user)
-        const searched_user = await User.findOne({ 'register': req.params.id })
+        const searched_user = await User.findOne({ 'register': user.register })
 
         if (searched_user) {
-            const events = await Agenda.find({ "attendance.attendee_list.attendee_register": req.params.id, "attendance.status": "Disponible" }).sort({ "createdAt": "desc" })
+            const events = await Agenda.find({ "attendance.attendee_list.attendee_register": user.register, "attendance.status": "Disponible" }).sort({ "createdAt": "desc" })
 
             const card = await Card.findOne({ "provider_register": searched_user.register })
 
@@ -54,7 +54,7 @@ export const getFeed = async (req: Request, res: Response) => {
         }
 
         return res.status(400).json({
-            message: `No se encontró el usuario ${req.params.id}`
+            message: `No se encontró el usuario ${user.register}`
         })
     } catch (error) {
         return res.status(500).json({
