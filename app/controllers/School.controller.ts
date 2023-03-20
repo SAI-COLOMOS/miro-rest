@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { __Query, __Optional, __Required } from "../middleware/ValidationControl"
 import School from "../models/School"
 
-export const getSchools = async (req: Request, res: Response) => {
+export const getSchools = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Query(req.query.items, `items`, `number`)
 
@@ -50,7 +50,7 @@ export const getSchools = async (req: Request, res: Response) => {
     }
 }
 
-export const getSchool = async (req: Request, res: Response) => {
+export const getSchool = async (req: Request, res: Response): Promise<Response> => {
     try {
         const school = await School.findOne({ "school_identifier": req.params.id })
 
@@ -70,7 +70,7 @@ export const getSchool = async (req: Request, res: Response) => {
     }
 }
 
-export const postSchool = async (req: Request, res: Response) => {
+export const postSchool = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.school_name, `school_name`, `string`, null)
 
@@ -111,7 +111,7 @@ export const postSchool = async (req: Request, res: Response) => {
     }
 }
 
-export const updateSchool = async (req: Request, res: Response) => {
+export const updateSchool = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Optional(req.body.school_name, `school_name`, `string`, null)
 
@@ -152,7 +152,7 @@ export const updateSchool = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteSchool = async (req: Request, res: Response) => {
+export const deleteSchool = async (req: Request, res: Response): Promise<Response> => {
     try {
         const result = await School.deleteOne({ "school_identifier": req.params.id })
 

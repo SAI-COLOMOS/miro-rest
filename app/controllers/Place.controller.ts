@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import Place from "../models/Place"
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
-export const getPlaces = async (req: Request, res: Response) => {
+export const getPlaces = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Query(req.query.items, `items`, `number`)
 
@@ -49,7 +49,7 @@ export const getPlaces = async (req: Request, res: Response) => {
     }
 }
 
-export const getPlace = async (req: Request, res: Response) => {
+export const getPlace = async (req: Request, res: Response): Promise<Response> => {
     try {
         const place = await Place.findOne({ "place_identifier": req.params.id })
 
@@ -69,7 +69,7 @@ export const getPlace = async (req: Request, res: Response) => {
     }
 }
 
-export const postPlace = async (req: Request, res: Response) => {
+export const postPlace = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.place_name, `place_name`, `string`, null)
 
@@ -110,7 +110,7 @@ export const postPlace = async (req: Request, res: Response) => {
     }
 }
 
-export const updatePlace = async (req: Request, res: Response) => {
+export const updatePlace = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Optional(req.body.place_name, `place_name`, `string`, null)
 
@@ -151,7 +151,7 @@ export const updatePlace = async (req: Request, res: Response) => {
     }
 }
 
-export const deletePlace = async (req: Request, res: Response) => {
+export const deletePlace = async (req: Request, res: Response): Promise<Response> => {
     try {
         const result = await Place.deleteOne({ "place_identifier": req.params.id })
 

@@ -5,7 +5,7 @@ import Environment from "../config/Environment";
 import { link, mensaje, sendEmail } from "../config/Mailer";
 import { __Optional, __Required, __ThrowError } from "../middleware/ValidationControl";
 
-function createToken(user: UserInterface, time: String) {
+function createToken (user: UserInterface, time: String): string {
     return JWT.sign({
         register: user.register
     },
@@ -15,7 +15,7 @@ function createToken(user: UserInterface, time: String) {
         })
 }
 
-export const LoginGet = async (req: Request, res: Response) => {
+export const LoginGet = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.credential, "credential", "string", null)
 
@@ -54,7 +54,7 @@ export const LoginGet = async (req: Request, res: Response) => {
     }
 }
 
-export const sendRecoveryToken = async (req: Request, res: Response) => {
+export const sendRecoveryToken = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.credential, `credential`, `string`, null)
     } catch (error) {
@@ -95,7 +95,7 @@ export const sendRecoveryToken = async (req: Request, res: Response) => {
     }
 }
 
-export const recoverPassword = async (req: Request, res: Response) => {
+export const recoverPassword = async (req: Request, res: Response): Promise<Response> => {
     let token
     try {
         token = JWT.verify(String(req.query.token), Environment.JWT.secret) as JwtPayload

@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import Place, { AreaInterface, PlaceInterface } from "../models/Place"
 import { __Required, __Optional, __Query } from "../middleware/ValidationControl"
 
-export const getAreas = async (req: Request, res: Response) => {
+export const getAreas = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Query(req.query.items, `items`, `number`)
 
@@ -52,7 +52,7 @@ export const getAreas = async (req: Request, res: Response) => {
     }
 }
 
-export const getAreasFromOnePlace = async (req: Request, res: Response) => {
+export const getAreasFromOnePlace = async (req: Request, res: Response): Promise<Response> => {
     try {
         const place = await Place.findOne({ "place_identifier": req.params.id })
 
@@ -72,7 +72,7 @@ export const getAreasFromOnePlace = async (req: Request, res: Response) => {
     }
 }
 
-export const getArea = async (req: Request, res: Response) => {
+export const getArea = async (req: Request, res: Response): Promise<Response> => {
     try {
         const place = await Place.findOne({ "place_identifier": req.params.id })
 
@@ -98,7 +98,7 @@ export const getArea = async (req: Request, res: Response) => {
     }
 }
 
-export const addArea = async (req: Request, res: Response) => {
+export const addArea = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.area_name, `area_name`, `string`, null)
 
@@ -153,7 +153,7 @@ export const addArea = async (req: Request, res: Response) => {
     }
 }
 
-export const updateArea = async (req: Request, res: Response) => {
+export const updateArea = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Optional(req.body.area_name, `area_name`, `string`, null)
 
@@ -188,7 +188,7 @@ export const updateArea = async (req: Request, res: Response) => {
     }
 }
 
-export const removeArea = async (req: Request, res: Response) => {
+export const removeArea = async (req: Request, res: Response): Promise<Response> => {
     try {
         const result = await Place.updateOne({ "place_identifier": req.params.id },
             { $pull: { "place_areas": { "area_identifier": req.params.id2 } } })

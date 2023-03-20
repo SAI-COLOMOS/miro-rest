@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import Agenda from "../models/Agenda"
 import { __CheckEnum, __ThrowError, __Required, __Optional } from "../middleware/ValidationControl"
 
-export const getAttendees = async (req: Request, res: Response) => {
+export const getAttendees = async (req: Request, res: Response): Promise<Response> => {
     try {
         const event = await Agenda.findOne({ "event_identifier": req.params.id })
 
@@ -22,7 +22,7 @@ export const getAttendees = async (req: Request, res: Response) => {
     }
 }
 
-export const AddAttendee = async (req: Request, res: Response) => {
+export const AddAttendee = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.attendee_register, `attendee_register`, `string`, null)
 
@@ -59,7 +59,7 @@ export const AddAttendee = async (req: Request, res: Response) => {
     }
 }
 
-export const updateAttendee = async (req: Request, res: Response) => {
+export const updateAttendee = async (req: Request, res: Response): Promise<Response> => {
     try {
         if (req.body.attendee_register)
             __ThrowError("El campo 'attendee_register' no se puede actualizar")

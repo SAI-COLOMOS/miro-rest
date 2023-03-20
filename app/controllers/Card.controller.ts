@@ -68,7 +68,7 @@ export const getCards = async (req: Request, res: Response) => {
     }
 }
 
-export const getProviderHours = async (req: Request, res: Response) => {
+export const getProviderHours = async (req: Request, res: Response): Promise<Response> => {
     try {
         const card = await Card.findOne({ "provider_register": req.params.id })
 
@@ -88,7 +88,7 @@ export const getProviderHours = async (req: Request, res: Response) => {
     }
 }
 
-export const AddHoursToCard = async (req: Request, res: Response) => {
+export const AddHoursToCard = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.activity_name, `activity_name`, `string`, null)
 
@@ -124,7 +124,7 @@ export const AddHoursToCard = async (req: Request, res: Response) => {
     }
 }
 
-export const UpdateHoursFromCard = async (req: Request, res: Response) => {
+export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
     let update: object = {}
     try {
         if (req.body.provider_register)
@@ -175,7 +175,7 @@ export const UpdateHoursFromCard = async (req: Request, res: Response) => {
     }
 }
 
-export const RemoveHoursFromCard = async (req: Request, res: Response) => {
+export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
     try {
         const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.params.id2 } } })
 
@@ -197,7 +197,7 @@ export const RemoveHoursFromCard = async (req: Request, res: Response) => {
     }
 }
 
-const CountHours = async (id: string, res: Response) => {
+const CountHours = async (id: string, res: Response): Promise<Response | void> => {
     try {
         const card = await Card.findOne({ "provider_register": id })
 

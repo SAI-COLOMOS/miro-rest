@@ -7,7 +7,7 @@ import schedule from 'node-schedule'
 import { mensaje, sendEmail } from "../config/Mailer"
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
-export const getAgenda = async (req: Request, res: Response) => {
+export const getAgenda = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Query(req.query.items, `items`, `number`)
 
@@ -42,7 +42,7 @@ export const getAgenda = async (req: Request, res: Response) => {
     }
 }
 
-export const getEvent = async (req: Request, res: Response) => {
+export const getEvent = async (req: Request, res: Response): Promise<Response> => {
     try {
         const event = await Agenda.findOne({ "event_identifier": req.params.id })
 
@@ -62,7 +62,7 @@ export const getEvent = async (req: Request, res: Response) => {
     }
 }
 
-export const createEvent = async (req: Request, res: Response) => {
+export const createEvent = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.name, `name`, `string`, null)
 
@@ -127,7 +127,7 @@ export const createEvent = async (req: Request, res: Response) => {
     }
 }
 
-export const updateEvent = async (req: Request, res: Response) => {
+export const updateEvent = async (req: Request, res: Response): Promise<Response> => {
     try {
         if (req.body.event_identifier)
             __ThrowError("El campo 'event_identifier' no se puede modificar")
@@ -211,7 +211,7 @@ export const updateEvent = async (req: Request, res: Response) => {
     }
 }
 
-export const updateEventStatus = async (req: Request, res: Response) => {
+export const updateEventStatus = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.status, `status`, `string`, ["Disponible", "Concluido"])
 
@@ -263,7 +263,7 @@ export const updateEventStatus = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteEvent = async (req: Request, res: Response) => {
+export const deleteEvent = async (req: Request, res: Response): Promise<Response> => {
     try {
         const result = await Agenda.deleteOne({ 'event_identifier': req.params.id })
 
@@ -287,7 +287,7 @@ export const deleteEvent = async (req: Request, res: Response) => {
     }
 }
 
-const scheduleEmailNotifications = async (event_identifier: string, time: string, event_name: string) => {
+const scheduleEmailNotifications = async (event_identifier: string, time: string, event_name: string): Promise<void> => {
 
     schedule.scheduleJob(event_identifier, time,
         async function (name: string, event: string) {
@@ -304,7 +304,7 @@ const scheduleEmailNotifications = async (event_identifier: string, time: string
     )
 }
 
-const endEvent = async (event_identifier: string, time: string) => {
+const endEvent = async (event_identifier: string, time: string): Promise<void> => {
 
     schedule.scheduleJob(`end_${event_identifier}`, time,
         async function (event_identifier: string) {

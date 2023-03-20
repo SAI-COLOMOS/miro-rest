@@ -9,7 +9,6 @@ import ControlAccess from "./middleware/AccessControl"
 //import { fileURLToPath } from "url"
 
 // Importaciones de rutas
-import Tests from "./routes/Tests.routes";
 import Auth from "./routes/Auth.routes"
 import Users from "./routes/Users.routes"
 import Profile from "./routes/Profile.routes";
@@ -38,7 +37,6 @@ app.use(passport.initialize())
 passport.use(ControlAccess)
 
 // Rutas
-app.use(Tests)
 app.use(Auth)
 app.use(Users)
 app.use(Profile)

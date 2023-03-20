@@ -7,7 +7,7 @@ import fs from 'fs/promises'
 import { global_path } from "../server"
 import { __ThrowError, __Optional, __Required, __Query } from "../middleware/ValidationControl"
 
-export const UsersGet = async (req: Request, res: Response) => {
+export const UsersGet = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Query(req.query.items, `items`, `number`)
 
@@ -103,7 +103,7 @@ export const UsersGet = async (req: Request, res: Response) => {
     }
 }
 
-export const UserGet = async (req: Request, res: Response) => {
+export const UserGet = async (req: Request, res: Response): Promise<Response> => {
     try {
         const user = await User.findOne({ 'register': req.params.id })
         let response: object | null = user ? { ...user.toObject() } : null
@@ -129,7 +129,7 @@ export const UserGet = async (req: Request, res: Response) => {
     }
 }
 
-export const UserPost = async (req: Request, res: Response) => {
+export const UserPost = async (req: Request, res: Response): Promise<Response> => {
     try {
         Object.keys(req.body).forEach((key: string) => {
             if (req.body[key] === "")
@@ -214,7 +214,7 @@ export const UserPost = async (req: Request, res: Response) => {
     }
 }
 
-export const UserDelete = async (req: Request, res: Response) => {
+export const UserDelete = async (req: Request, res: Response): Promise<Response> => {
     try {
         const user = await User.findOne({ 'register': req.params.id })
 
@@ -245,7 +245,7 @@ export const UserDelete = async (req: Request, res: Response) => {
     }
 }
 
-export const UserPatch = async (req: Request, res: Response) => {
+export const UserPatch = async (req: Request, res: Response): Promise<Response> => {
     try {
         Object.keys(req.body).forEach((key: string) => {
             if (req.body[key] === "")
@@ -332,7 +332,7 @@ export const UserPatch = async (req: Request, res: Response) => {
     }
 }
 
-export const restorePassword = async (req: Request, res: Response) => {
+export const restorePassword = async (req: Request, res: Response): Promise<Response> => {
     try {
         const user = await User.findOne({ "register": req.params.id })
 
@@ -357,7 +357,7 @@ export const restorePassword = async (req: Request, res: Response) => {
     }
 }
 
-export const updatePassword = async (req: Request, res: Response) => {
+export const updatePassword = async (req: Request, res: Response): Promise<Response> => {
     try {
         __Required(req.body.password, `password`, `string`, null)
 
@@ -396,7 +396,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     }
 }
 
-export const updateAvatar = async (req: Request, res: Response) => {
+export const updateAvatar = async (req: Request, res: Response): Promise<Response> => {
     try {
         if (!req.file)
             return res.status(400).json({
