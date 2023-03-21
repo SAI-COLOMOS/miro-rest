@@ -15,7 +15,7 @@ export function __Required (value: any, field_name: string, value_type: string, 
 
   if (!value) __ThrowError(`El campo '${field_name}' es obligatorio`)
 
-  if (typeof value === value_type) __ThrowError(message)
+  if (typeof value !== value_type) __ThrowError(message)
 
   if (arr) __CheckEnum(arr, value, field_name)
 }
