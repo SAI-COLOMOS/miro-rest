@@ -78,8 +78,6 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
 
     __Required(req.body.vacancy, `vacancy`, `number`, null)
 
-    __Required(req.body.penalty_hours, `penalty_hours`, `number`, null)
-
     __Required(req.body.starting_date, `starting_date`, `string`, null, true)
 
     __Required(req.body.ending_date, `ending_date`, `string`, null, true)
@@ -243,9 +241,7 @@ export const updateEventStatus = async (req: Request, res: Response): Promise<Re
             $push: {
               "activities": {
                 "activity_name": event.name,
-                "hours": attendee.status === "Asistió"
-                  ? event.offered_hours
-                  : event.offered_hours - event.penalty_hours,
+                "hours": event.offered_hours,
                 "responsible_register": req.body.modifier_register
               }
             }
@@ -328,9 +324,7 @@ const endEvent = async (event_identifier: string, time: string): Promise<void> =
               $push: {
                 "activities": {
                   "activity_name": event.name,
-                  "hours": attendee.status === "Asistió"
-                    ? event.offered_hours
-                    : event.offered_hours - event.penalty_hours,
+                  "hours": event.offered_hours,
                   "responsible_register": event.author_register
                 }
               }

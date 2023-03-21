@@ -11,11 +11,11 @@ import ControlAccess from "./middleware/AccessControl"
 // Importaciones de rutas
 import Auth from "./routes/Auth.routes"
 import Users from "./routes/Users.routes"
-import Profile from "./routes/Profile.routes";
-import Card from './routes/Card.routes';
+import Profile from "./routes/Profile.routes"
+import Card from './routes/Card.routes'
 import Agenda from './routes/Agenda.routes'
 import Place from './routes/Place.routes'
-import School from './routes/School.routes';
+import School from './routes/School.routes'
 
 /* Variables */
 const app = express()

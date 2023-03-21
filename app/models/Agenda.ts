@@ -27,7 +27,6 @@ export interface AgendaInterface extends Document {
   belonging_place: string,
   modifier_register: string,
   is_template: boolean,
-  penalty_hours: number
 }
 
 const AttendeeListSchema = new Schema({
@@ -79,10 +78,6 @@ const AgendaSchema = new Schema({
   offered_hours: {
     type: Number,
     required: [true, "La oferta de horas es obligatoria"]
-  },
-  penalty_hours: {
-    type: Number,
-    requires: [true, "Las horas de penalización son obligatorias"]
   },
   vacancy: {
     type: Number,

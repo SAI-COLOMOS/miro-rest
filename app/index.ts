@@ -8,8 +8,8 @@ Mongoose.set('strictQuery', false)
 Mongoose.connect(Environment.MonogoDB.uri)
 Mongoose.connection.once('open', () => {
 }).on('error', error => {
-    console.error(error)
-    process.exit(0)
+  console.error(error)
+  process.exit(0)
 })
 
 console.log(`
