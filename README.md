@@ -42,6 +42,13 @@ Cabe mencionar que, cómo este proyecto está en constante desarrollo, no siempr
         - [Add an activity to a card](#add-an-activity-to-a-card)
         - [Update an activity from a card](#update-an-activity-from-a-card)
         - [Delete an activity from a card](#delete-an-activity-from-a-card)
+    - [Events](#events)
+        - [Get events](#get-events)
+        - [Get event](#get-an-event)
+        - [Create an event](#create-an-event)
+        - [Update an event](#update-an-event)
+        - [Update an event's status](#update-event-status)
+        - [Delete an event](#delete-an-event)
 
 ## Uso de la API
 
@@ -1377,6 +1384,53 @@ fetch(
 )
 ```
 
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "events": [
+        {
+            "_id": "63f6f669d8d89fff2e230c2f",
+            "is_template": false,
+            "name": "Primer evento",
+            "description": "Descripción de evento",
+            "offered_hours": 15,
+            "penalty_hours": 5,
+            "vacancy": 5,
+            "attendance": {
+                "attendee_list": [
+                    {
+                        "attendee_register": "2023A0101001",
+                        "status": "Inscrito",
+                        "check_in": "2023-02-12T05:29:26.388Z",
+                        "_id": "6400024ab380bc85215eae6f"
+                    },
+                    {
+                        "attendee_register": "2022B0101002",
+                        "status": "Retardo",
+                        "check_in": "2023-02-12T05:29:26.388Z",
+                        "_id": "6400075ff8bd8ff09ec33479"
+                    }
+                ],
+                "status": "Disponible",
+                "_id": "63f6f669d8d89fff2e230c2e"
+            },
+            "starting_date": "2023-02-11T02:49:29.492Z",
+            "ending_date": "2023-02-11T02:49:29.492Z",
+            "author_register": "123",
+            "publishing_date": "2023-02-16T04:17:50.194Z",
+            "place": "Bosque los colomos",
+            "belonging_area": "centro de educacion y cultura ambiental",
+            "belonging_place": "Bosque los colomos",
+            "createdAt": "2023-02-23T05:15:21.989Z",
+            "updatedAt": "2023-03-02T02:19:27.056Z",
+            "event_identifier": "f669d8d89fff2e230c2f"
+        }
+    ]
+}
+```
+
 #### Get an event
 
 - Endpoint 
@@ -1399,6 +1453,51 @@ fetch(
         }
     }
 )
+```
+
+- Example response from server
+
+```json
+{
+    "message": "Listo",
+    "event": {
+        "_id": "63f6f669d8d89fff2e230c2f",
+        "is_template": false,
+        "name": "Primer evento",
+        "description": "Descripción de evento",
+        "offered_hours": 15,
+        "penalty_hours": 5,
+        "vacancy": 5,
+        "attendance": {
+            "attendee_list": [
+                {
+                    "attendee_register": "2023A0101001",
+                    "status": "Inscrito",
+                    "check_in": "2023-02-12T05:29:26.388Z",
+                    "_id": "6400024ab380bc85215eae6f"
+                },
+                {
+                    "attendee_register": "2022B0101002",
+                    "status": "Retardo",
+                    "check_in": "2023-02-12T05:29:26.388Z",
+                    "_id": "6400075ff8bd8ff09ec33479"
+                }
+            ],
+            "status": "Disponible",
+            "_id": "63f6f669d8d89fff2e230c2e"
+        },
+        "starting_date": "2023-02-11T02:49:29.492Z",
+        "ending_date": "2023-02-11T02:49:29.492Z",
+        "author_register": "123",
+        "publishing_date": "2023-02-16T04:17:50.194Z",
+        "place": "Bosque los colomos",
+        "belonging_area": "centro de educacion y cultura ambiental",
+        "belonging_place": "Bosque los colomos",
+        "createdAt": "2023-02-23T05:15:21.989Z",
+        "updatedAt": "2023-03-02T02:19:27.056Z",
+        "event_identifier": "f669d8d89fff2e230c2f"
+    }
+}
 ```
 
 #### Create an event
