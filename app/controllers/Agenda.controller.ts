@@ -72,6 +72,8 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
   try {
     __Required(req.body.name, `name`, `string`, null)
 
+    __Required(req.body.tolerance, `tolerance`, `number`, null)
+
     __Required(req.body.description, `description`, `string`, null)
 
     __Required(req.body.offered_hours, `offered_hours`, `number`, null)
@@ -151,6 +153,8 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
     __Required(req.body.modifier_register, `modifier_register`, `string`, null)
 
     __Optional(req.body.is_template, `is_template`, `boolean`, null)
+
+    __Optional(req.body.tolerance, `tolerance`, `number`, null)
 
     __Optional(req.body.name, `name`, `string`, null)
 

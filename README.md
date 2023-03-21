@@ -1515,7 +1515,7 @@ POST /agenda
 | name            | `string` | Yes      | Any             | Name of the event                                                                                    |
 | description     | `string` | Yes      | Any             | Description of the event                                                                             |
 | offered_hours   | `number` | Yes      | Any             | Amount of hours given to the service providers when the event finishes                               |
-| penalty_hours   | `number` | Yes      | Any             | Amount of hours that will be substracted from the offered hours if the service provider arrives late |
+| tolerance       | `number` | Yes      | Any             | Amount of minutes of tolerance for the event |
 | vacancy         | `number` | Yes      | Any             | Number of people required for the event                                                              |
 | starting_date   | `string` | Yes      | ISO date string | The date and time on which the event should start                                                    |
 | ending_date     | `string` | Yes      | ISO date string | The date and time on which the event should end                                                      |
@@ -1568,7 +1568,7 @@ PATCH /agenda/:event_identifier
 | name            | `string` | No      | Any             | Name of the event                                                                                    |
 | description     | `string` | No      | Any             | Description of the event                                                                             |
 | offered_hours   | `number` | No      | Any             | Amount of hours given to the service providers when the event finishes                               |
-| penalty_hours   | `number` | No      | Any             | Amount of hours that will be substracted from the offered hours if the service provider arrives late |
+| tolerance       | `number` | No      | Any             | Amount of minutes of tolerance for the event |
 | vacancy         | `number` | No      | Any             | Number of people required for the event                                                              |
 | starting_date   | `string` | No      | ISO date string | The date and time on which the event should start                                                    |
 | ending_date     | `string` | No      | ISO date string | The date and time on which the event should end                                                      |

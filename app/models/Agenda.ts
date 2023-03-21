@@ -63,9 +63,9 @@ const AgendaSchema = new Schema({
   modifier_register: {
     type: String,
   },
-  is_template: {
-    type: Boolean,
-    default: false
+  tolerance: {
+    type: Number,
+    required: [true, 'La tolerancia del evento es obligatoria']
   },
   name: {
     type: String,
