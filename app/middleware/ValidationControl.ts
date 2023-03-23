@@ -27,7 +27,7 @@ export function __Optional (value: any, field_name: string, value_type: string, 
 
   if (value && typeof value !== value_type) __ThrowError(message)
 
-  if (arr) __CheckEnum(arr, value, field_name)
+  if (arr && value) __CheckEnum(arr, value, field_name)
 }
 
 export function __Query (value: any, field_name: string, value_type: string) {
