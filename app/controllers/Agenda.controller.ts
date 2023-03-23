@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
-import Agenda from "../models/Agenda"
+import Agenda, { AgendaInterface } from "../models/Agenda"
 import Card from "../models/Card"
-import User from "../models/User"
+import User, { UserInterface } from "../models/User"
 import Environment from "../config/Environment"
 import schedule from 'node-schedule'
 import { mensaje, sendEmail } from "../config/Mailer"
@@ -34,7 +34,13 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       filter_request.belonging_place = user.place
     }
 
-    const result = await Agenda.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    if (user.role === 'Prestador') {
+      filter_request.belonging_area = user.assigned_area
+      filter_request.belonging_place = user.place
+      filter_request.attendance.status = 'Disponible'
+    }
+
+    const result = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({
       message: "Listo",
@@ -70,6 +76,11 @@ export const getEvent = async (req: Request, res: Response): Promise<Response> =
 
 export const createEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
+    const user: UserInterface = new User(req.user)
+    req.body.belonging_place = user.place
+    req.body.belonging_area = user.assigned_area
+    req.body.author_register = user.register
+
     __Required(req.body.name, `name`, `string`, null)
 
     __Required(req.body.tolerance, `tolerance`, `number`, null)
@@ -84,17 +95,10 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
 
     __Required(req.body.ending_date, `ending_date`, `string`, null, true)
 
-    __Required(req.body.author_register, `author_register`, `string`, null)
-
     __Required(req.body.publishing_date, `publishing_date`, `string`, null, true)
 
     __Required(req.body.place, `place`, `string`, null)
 
-    __Required(req.body.belonging_place, `belonging_place`, `string`, null)
-
-    __Required(req.body.belonging_area, `belonging_area`, `string`, null)
-
-    __Optional(req.body.is_template, `is_template`, `boolean`, null)
   } catch (error) {
     return res.status(400).json({
       error
@@ -102,7 +106,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
   }
 
   try {
-    const event = await new Agenda(req.body).save()
+    const event: AgendaInterface = await new Agenda(req.body).save()
     let time: Date
 
     if (event) {

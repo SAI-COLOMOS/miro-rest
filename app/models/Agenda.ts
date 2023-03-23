@@ -12,27 +12,28 @@ export interface AttendanceInterface extends Document {
 }
 
 export interface AgendaInterface extends Document {
-  event_identifier: string,
-  name: string,
-  description: string,
-  offered_hours: number,
-  vacancy: number,
-  attendance: AttendanceInterface,
-  starting_date: Date,
-  ending_date: Date,
-  author_register: string,
-  publishing_date: Date,
-  place: string,
-  belonging_area: string,
-  belonging_place: string,
-  modifier_register: string,
-  is_template: boolean,
+  event_identifier: string
+  name: string
+  description: string
+  offered_hours: number
+  tolerance: number
+  vacancy: number
+  attendance: AttendanceInterface
+  starting_date: Date
+  ending_date: Date
+  author_register: string
+  publishing_date: Date
+  place: string
+  belonging_area: string
+  belonging_place: string
+  modifier_register: string
 }
 
 const AttendeeListSchema = new Schema({
   attendee_register: {
     type: String,
     index: true,
+    unique: true,
     required: [true, "El registro del usuario es obligatorio"]
   },
   status: {
