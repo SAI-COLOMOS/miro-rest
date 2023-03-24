@@ -1265,7 +1265,7 @@ fetch(
 - Endpoint
 
 ```http
-PATCH /card/:register/activity/:activity_identifier
+PATCH /card/:register/activity
 ```
 
 - Parameters
@@ -1276,12 +1276,13 @@ PATCH /card/:register/activity/:activity_identifier
 | hours                | `number` | no       | Any            | Quantity of hours earned             |
 | responsible_register | `string` | no       | Any            | Responsible register of the activity |
 | assignation_date     | `string` | no       | ISO Date       | Date of assignation                  |
+| _id                  | `string` | yes      | Any            | Identifier of a card                 |
 
 - Request
 
 ```javascript
 fetch(
-    `.../cards/${register}/activity/${activity_identifier}`,
+    `.../cards/${register}/activity`,
     {
         method: "PATCH",
         headers: {
@@ -1306,14 +1307,20 @@ fetch(
 - Endpoint
 
 ```http
-DELETE /card/:register/activity/:activity_identifier
+DELETE /card/:register/activity
 ```
+
+- Parameters
+
+| Parameters           | Type     | Required | Allowed values | Description                          |
+|----------------------|----------|----------|----------------|--------------------------------------|
+| _id                  | `string` | yes      | Any            | Identifier of a card                 |
 
 - Request
 
 ```javascript
 fetch(
-    `.../cards/${register}/activity/${activity_identifier}`,
+    `.../cards/${register}/activity`,
     {
         method: "DELETE",
         headers: {
