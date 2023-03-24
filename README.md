@@ -1289,6 +1289,9 @@ fetch(
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`
             `Cache-Control`: `no-cache`
+        },
+        body: {
+          _id: "641d15ffe0b0fa36997604d4"
         }
     }
 )
@@ -1327,6 +1330,9 @@ fetch(
             `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`
             `Cache-Control`: `no-cache`
+        },
+        body: {
+          _id: "641d15ffe0b0fa36997604d4"
         }
     }
 )
