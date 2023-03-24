@@ -176,6 +176,14 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
 
 export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
   try {
+    __Required(req.body._id, `_id`, `string`, null)
+  } catch (error) {
+    return res.status(400).json({
+      error
+    })
+  }
+
+  try {
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.body._id } } })
 
     if (result.modifiedCount > 0)
