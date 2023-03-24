@@ -192,7 +192,14 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
       const from = `"SAI" ${Environment.Mailer.email}`
       const to = String(user.email)
       const subject = "Bienvenido!"
-      const body = mensaje(`Bienvenido al ${user.assigned_area} de ${user.place}`)
+      const body = mensaje(`Bienvenido al ${user.assigned_area} de ${user.place}.\n
+      Revisa que tu información sea correcta:\n
+      - Nombre: ${user.first_name} ${user.first_last_name} ${user.second_last_name}\n
+      - Curp: ${user.curp}\n
+      - Teléfono: ${user.phone}\n
+      - Teléfono de emergencia: ${user.emergency_phone}\n
+      - Contácto de emergencia: ${user.emergency_contact}\n
+      - Tipo de sangre: ${user.blood_type}\n`)
       await sendEmail(from, to, subject, body)
     }
 
