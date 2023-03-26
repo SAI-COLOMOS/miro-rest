@@ -21,7 +21,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const user = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
+    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
     if (req.query.search)
       filter_request = {
@@ -37,6 +37,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     if (user.role === 'Prestador') {
       filter_request.belonging_area = user.assigned_area
       filter_request.belonging_place = user.place
+      filter_request.attendance = {}
       filter_request.attendance.status = 'Disponible'
     }
 
