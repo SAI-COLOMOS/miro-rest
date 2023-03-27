@@ -16,6 +16,7 @@ import Card from './routes/Card.routes'
 import Agenda from './routes/Agenda.routes'
 import Place from './routes/Place.routes'
 import School from './routes/School.routes'
+import Form from './routes/Form.routes'
 
 /* Variables */
 const app = express()
@@ -44,5 +45,6 @@ app.use(Card)
 app.use(Agenda)
 app.use(Place)
 app.use(School)
+app.use(Form)
 
 export default app

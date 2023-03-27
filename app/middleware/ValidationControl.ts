@@ -13,9 +13,15 @@ export function __Required (value: any, field_name: string, value_type: string, 
     ? `El campo '${field_name}' debe ser tipo '${value_type}' con la fecha en formato ISO`
     : `El campo '${field_name}' debe ser tipo '${value_type}'`
 
-  if (!value) __ThrowError(`El campo '${field_name}' es obligatorio`)
+  if (value === null || value === undefined) __ThrowError(`El campo '${field_name}' es obligatorio`)
 
-  if (typeof value !== value_type) __ThrowError(message)
+  if (value_type === 'array') {
+    if (!Array.isArray(value))
+      __ThrowError(message)
+  } else {
+    if (typeof value !== value_type)
+      __ThrowError(message)
+  }
 
   if (arr) __CheckEnum(arr, value, field_name)
 }
@@ -25,7 +31,13 @@ export function __Optional (value: any, field_name: string, value_type: string, 
     ? `El campo '${field_name}' debe ser tipo '${value_type}' con la fecha en formato ISO`
     : `El campo '${field_name}' debe ser tipo '${value_type}'`
 
-  if (value && typeof value !== value_type) __ThrowError(message)
+  if (value_type === 'array') {
+    if (value && !Array.isArray(value))
+      __ThrowError(message)
+  } else {
+    if (value && typeof value !== value_type)
+      __ThrowError(message)
+  }
 
   if (arr && value) __CheckEnum(arr, value, field_name)
 }
