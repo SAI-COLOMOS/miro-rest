@@ -4,62 +4,80 @@ import Agenda, { AgendaInterface } from "../models/Agenda"
 import Card from "../models/Card"
 
 interface Request_body {
-    message: string
-    events: AgendaInterface[]
-    achieved_hours?: number
-    total_hours?: number
+  message: string
+  events: AgendaInterface[]
+  achieved_hours?: number
+  total_hours?: number
+  available_events?: Array<object>
 }
 
-export const getProfile = async (req: Request, res: Response) => {
-    try {
-        const user = await User.findOne({ 'register': req.params.id })
+export const getProfile = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const user = await User.findOne({ 'register': req.params.id })
 
-        return user
-            ? res.status(200).json({
-                message: "Listo",
-                user
-            })
-            : res.status(400).json({
-                message: `Usuario ${req.params.id} no encontrado`
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: "Ocurrió un error en el servidor",
-            error: error?.toString()
-        })
-    }
+    return user
+      ? res.status(200).json({
+        message: "Listo",
+        user
+      })
+      : res.status(400).json({
+        message: `Usuario ${req.params.id} no encontrado`
+      })
+  } catch (error) {
+    return res.status(500).json({
+      message: "Ocurrió un error en el servidor",
+      error: error?.toString()
+    })
+  }
 }
 
-export const getFeed = async (req: Request, res: Response) => {
-    try {
-        const user = new User(req.user)
-        const searched_user = await User.findOne({ 'register': req.params.id })
+export const getFeed = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const user = new User(req.user)
 
-        if (searched_user) {
-            const events = await Agenda.find({ "attendance.attendee_list.attendee_register": req.params.id, "attendance.status": "Disponible" }).sort({ "createdAt": "desc" })
+    const registeredEvents: AgendaInterface[] = await Agenda.find({
+      "attendance.attendee_list.attendee_register": user.register,
+      "attendance.status": "Disponible"
+    }).sort({ "createdAt": "desc" })
 
-            const card = await Card.findOne({ "provider_register": searched_user.register })
-
-            const response_body: Request_body = {
-                message: "Feed lista",
-                events
-            }
-
-            if (user.role === "Prestador" && card) {
-                response_body.achieved_hours = card.achieved_hours
-                response_body.total_hours = card.total_hours
-            }
-
-            return res.status(200).json(response_body)
-        }
-
-        return res.status(400).json({
-            message: `No se encontró el usuario ${req.params.id}`
-        })
-    } catch (error) {
-        return res.status(500).json({
-            message: `Ocurrió un error en el servidor`,
-            error: error?.toString()
-        })
+    const response_body: Request_body = {
+      message: "Feed lista",
+      events: registeredEvents
     }
+
+    if (user.role === "Prestador") {
+      const card = await Card.findOne({ "provider_register": user.register })
+
+      const events: AgendaInterface[] = await Agenda.find({
+        "belonging_place": user.place,
+        "belonging_area": user.assigned_area,
+        "attendance.status": "Disponible",
+        "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } }
+      }).sort({ "createdAt": "desc" })
+
+      const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => event.vacancy > event.attendance.attendee_list.length)
+
+      const availableEvents: Array<object> = []
+
+      filteredEvents.forEach((event: AgendaInterface) => {
+        availableEvents.push({
+          "name": event.name,
+          "starting_date": event.starting_date.toISOString(),
+          "place": event.place
+        })
+      })
+
+      response_body.achieved_hours = card?.achieved_hours
+      response_body.total_hours = card?.total_hours
+      response_body.available_events = availableEvents
+    }
+
+    return res.status(200).json(response_body)
+
+  } catch (error) {
+    return res.status(500).json({
+      message: `Ocurrió un error en el servidor`,
+      error: error?.toString()
+    })
+  }
 }

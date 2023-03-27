@@ -1,4 +1,4 @@
-import Enviroment from "./Enviroment"
+import Environment from "./Environment"
 import nodemailer from "nodemailer"
 
 const transporter = nodemailer.createTransport({
@@ -6,8 +6,8 @@ const transporter = nodemailer.createTransport({
     port: 465,
     secure: true,
     auth: {
-        user: Enviroment.Mailer.email,
-        pass: Enviroment.Mailer.appPass,
+        user: Environment.Mailer.email,
+        pass: Environment.Mailer.appPass,
     },
 })
 

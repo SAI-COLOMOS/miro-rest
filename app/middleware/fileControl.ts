@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express"
 import { global_path } from "../server"
 
 const storage_config = multer.diskStorage({
-    destination: function (req, file, done) {
+    destination: function (_req, file, done) {
         if (!file)
             done({ message: "No hay archivo", name: "Error" }, 'dist/temp')
 
@@ -21,7 +21,7 @@ const upload = multer({
     limits: {
         fileSize: 5000000
     },
-    fileFilter(req, file, done) {
+    fileFilter (_req: Request, file, done) {
         file.mimetype.startsWith('image/')
             ? done(null, true)
             : done(null, false)
@@ -29,7 +29,7 @@ const upload = multer({
     storage: storage_config
 })
 
-export const resize = async (req: Request, res: Response, next: NextFunction) => {
+export const resize = async (req: Request, _res: Response, next: NextFunction) => {
     if (!req.file)
         return next()
 
