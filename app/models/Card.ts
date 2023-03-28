@@ -5,6 +5,7 @@ export interface HoursInterface extends Document {
   hours: number
   assignation_date: Date
   responsible_register: string
+  responsible_name: string
 }
 
 export interface CardInterface extends Document {
@@ -30,6 +31,10 @@ const ActivitySchema = new Schema({
   responsible_register: {
     type: String,
     required: [true, "El registro del encargado es necesario"]
+  },
+  responsible_name: {
+    type: String,
+    required: [true, "El nombre del encargado es necesario"]
   }
 }, {
   versionKey: false,

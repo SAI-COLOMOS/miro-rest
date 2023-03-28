@@ -95,6 +95,7 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
 
     const user = new User(req.user)
     req.body.responsible_register = user.register
+    req.body.responsible_name = `${user.first_name} ${user.first_last_name}${user.second_last_name ? ` ${user.second_last_name}` : ''}`
 
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
@@ -195,6 +196,11 @@ const CountHours = async (id: string, res: Response): Promise<Response | void> =
         count = count + activity.hours
 
       card.achieved_hours = count
+      card.save()
+    }
+
+    if (card?.activities.length === 0) {
+      card.achieved_hours = 0
       card.save()
     }
   } catch (error) {
