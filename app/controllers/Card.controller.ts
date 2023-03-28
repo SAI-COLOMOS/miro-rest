@@ -98,7 +98,7 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
 
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
-    if (result.modifiedCount > 0)
+    if (result.modifiedCount > 0 && req.body.hours)
       CountHours(req.params.id, res)
 
     return result.modifiedCount > 0
