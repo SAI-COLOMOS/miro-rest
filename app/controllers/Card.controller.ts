@@ -6,15 +6,8 @@ import { __ThrowError, __Query, __Required, __Optional } from "../middleware/Val
 export const getCards = async (req: Request, res: Response) => {
   try {
     __Query(req.query.items, `items`, `number`)
-
     __Query(req.query.page, `page`, `number`)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const user = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
@@ -61,10 +54,9 @@ export const getCards = async (req: Request, res: Response) => {
       cards: cards ? cards : []
     })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -91,19 +83,12 @@ export const getProviderHours = async (req: Request, res: Response): Promise<Res
 export const AddHoursToCard = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.activity_name, `activity_name`, `string`, null)
-
     __Required(req.body.hours, `hours`, `number`, null)
-
-    __Required(req.body.responsible_register, `responsible_register`, `string`, null)
-
     __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
+    const user = new User(req.user)
+    req.body.responsible_register = user.register
+
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
     if (result.modifiedCount > 0)
@@ -117,17 +102,22 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
         message: `El usuario ${req.params.id} no se encontró`
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
-  let update: { [index: string]: unknown } = {}
   try {
     __Required(req.body._id, `_id`, `string`, null)
+
+    Object.keys(req.body).forEach((key: string) => {
+      if (req.body[key] === "")
+        delete req.body[key]
+    })
+
+    let update: { [index: string]: unknown } = {}
 
     __Optional(req.body.activity_name, `activity_name`, `string`, null)
     if (req.body.activity_name)
@@ -140,21 +130,8 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
     __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
     if (req.body.assignation_date)
       update = { ...update, "activities.$.assignation_date": req.body.assignation_date }
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
-    const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.body._id },
-      {
-        $set: {
-          "activities.$.activity_name": req.body.activity_name,
-          "activities.$.assignation_date": req.body.assignation_date,
-          "activities.$.hours": req.body.hours
-        }
-      })
+    const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.body._id }, { $set: update })
 
     if (result.modifiedCount > 0 && req.body.hours)
       CountHours(req.params.id, res)
@@ -167,23 +144,16 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
         message: `No se encontró el tarjetón del usuario ${req.params.id} o la actividad ${req.body._id}`,
       })
   } catch (error) {
-    return res.status(500).json({
-      message: `Ocurrió un error en el servidor`,
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body._id, `_id`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.body._id } } })
 
     if (result.modifiedCount > 0)
@@ -193,14 +163,13 @@ export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<
       ? res.status(200).json({
         message: "Se eliminaron las horas del prestador"
       })
-      : res.status(404).json({
+      : res.status(400).json({
         message: "No se encontró la actividad"
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
