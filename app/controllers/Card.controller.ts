@@ -67,7 +67,7 @@ export const getProviderHours = async (req: Request, res: Response): Promise<Res
     return card
       ? res.status(200).json({
         message: "Tarjetón de usuario encontrado",
-        activities: card.activities,
+        activities: card.activities.reverse(),
         achieved_hours: card.achieved_hours,
         total_hours: card.total_hours
       })
