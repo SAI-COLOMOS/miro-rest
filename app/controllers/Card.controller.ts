@@ -82,6 +82,11 @@ export const getProviderHours = async (req: Request, res: Response): Promise<Res
 
 export const AddHoursToCard = async (req: Request, res: Response): Promise<Response> => {
   try {
+    Object.keys(req.body).forEach((key: string) => {
+      if (req.body[key] === "")
+        delete req.body[key]
+    })
+
     __Required(req.body.activity_name, `activity_name`, `string`, null)
     __Required(req.body.hours, `hours`, `number`, null)
     __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
@@ -110,12 +115,12 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
 
 export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
   try {
-    __Required(req.body._id, `_id`, `string`, null)
-
     Object.keys(req.body).forEach((key: string) => {
       if (req.body[key] === "")
         delete req.body[key]
     })
+
+    __Required(req.body._id, `_id`, `string`, null)
 
     let update: { [index: string]: unknown } = {}
 
@@ -152,6 +157,11 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
 
 export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<Response> => {
   try {
+    Object.keys(req.body).forEach((key: string) => {
+      if (req.body[key] === "")
+        delete req.body[key]
+    })
+
     __Required(req.body._id, `_id`, `string`, null)
 
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.body._id } } })
