@@ -14,6 +14,7 @@ export interface AttendanceInterface extends Document {
 export interface AgendaInterface extends Document {
   event_identifier: string
   name: string
+  avatar: string
   description: string
   offered_hours: number
   tolerance: number
@@ -51,7 +52,7 @@ const AttendanceSchema = new Schema({
   status: {
     type: String,
     required: [true, "El status es obligatorio"],
-    enum: ["Disponible", "Concluido", "Concluido por sistema"]
+    enum: ["Disponible", "Concluido", "Concluido por sistema", "Vacantes completas", "En proceso"]
   }
 })
 
@@ -60,6 +61,9 @@ const AgendaSchema = new Schema({
     type: String,
     unique: true,
     index: true
+  },
+  avatar: {
+    type: String,
   },
   modifier_register: {
     type: String,
