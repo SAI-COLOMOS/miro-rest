@@ -10,18 +10,17 @@ import { __ThrowError, __Query, __Required, __Optional } from "../middleware/Val
 export const getAgenda = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Query(req.query.items, `items`, `number`)
-
     __Query(req.query.page, `page`, `number`)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
-  try {
+
+    const currentDate = new Date()
     const user = new User(req.user)
+    const history: boolean = Boolean(req.query.history)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : { starting_date: { $gt: currentDate } }
+
+    if (history)
+      delete filter_request.starting_date
 
     if (req.query.search)
       filter_request = {
@@ -35,23 +34,22 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     }
 
     if (user.role === 'Prestador') {
-      filter_request.belonging_area = user.assigned_area
       filter_request.belonging_place = user.place
-      filter_request.attendance = {}
-      filter_request.attendance.status = 'Disponible'
+      filter_request.belonging_area = user.assigned_area
+      filter_request['attendance.status'] = 'Disponible'
     }
 
-    const result = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
+    console.log(filter_request)
+    const result: AgendaInterface[] = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({
       message: "Listo",
       events: result
     })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -83,30 +81,15 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     req.body.author_register = user.register
 
     __Required(req.body.name, `name`, `string`, null)
-
     __Required(req.body.tolerance, `tolerance`, `number`, null)
-
     __Required(req.body.description, `description`, `string`, null)
-
     __Required(req.body.offered_hours, `offered_hours`, `number`, null)
-
     __Required(req.body.vacancy, `vacancy`, `number`, null)
-
     __Required(req.body.starting_date, `starting_date`, `string`, null, true)
-
     __Required(req.body.ending_date, `ending_date`, `string`, null, true)
-
     __Required(req.body.publishing_date, `publishing_date`, `string`, null, true)
-
     __Required(req.body.place, `place`, `string`, null)
 
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
-
-  try {
     const event: AgendaInterface = await new Agenda(req.body).save()
     let time: Date
 
@@ -125,16 +108,14 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     return event
       ? res.status(201).json({
         message: "Evento creado",
-        event: event
       })
       : res.status(500).json({
         message: "No se pudo crear el evento"
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
