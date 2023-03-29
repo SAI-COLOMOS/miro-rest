@@ -34,10 +34,11 @@ export const getProfile = async (req: Request, res: Response): Promise<Response>
 export const getFeed = async (req: Request, res: Response): Promise<Response> => {
   try {
     const user = new User(req.user)
+    const currentDate = new Date()
 
     const registeredEvents: AgendaInterface[] = await Agenda.find({
       "attendance.attendee_list.attendee_register": user.register,
-      "attendance.status": "Disponible"
+      "starting_date": { $gt: currentDate }
     }).sort({ "createdAt": "desc" })
 
     const response_body: Request_body = {
@@ -52,14 +53,13 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
         "belonging_place": user.place,
         "belonging_area": user.assigned_area,
         "attendance.status": "Disponible",
-        "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } }
+        "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } },
+        "starting_date": { $gt: currentDate }
       }).sort({ "createdAt": "desc" })
-
-      const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => event.vacancy > event.attendance.attendee_list.length)
 
       const availableEvents: Array<object> = []
 
-      filteredEvents.forEach((event: AgendaInterface) => {
+      events.forEach((event: AgendaInterface) => {
         availableEvents.push({
           "name": event.name,
           "starting_date": event.starting_date.toISOString(),
