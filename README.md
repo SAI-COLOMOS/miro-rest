@@ -1678,6 +1678,8 @@ fetch(
 
 ### Forms
 
+All endpoints have a boolean parameter `isTemplate` which is used to redirect if the logic of the request is going to be applied to the forms collection or the formtemplates collection. 
+
 ### Get forms
 
 - Endpoint
@@ -1715,7 +1717,7 @@ The `search` parameter has to be a string with the query by which the results wi
 
 ```javascript
 fetch(
-    `.../forms?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}`,
+    `.../forms?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}&isTemplate=${isTemplate}`,
     {
         method: "GET",
         headers: {
@@ -1739,7 +1741,7 @@ GET /forms/:form_identifier
 
 ```javascript
 fetch(
-    `.../users/${form_identifier}`,
+    `.../users/${form_identifier}?isTemplate=${isTemplate}`,
     {
         method: "GET",
         headers: {
@@ -1790,6 +1792,7 @@ fetch(
             `Cache-Control`: `no-cache`
         },
         body: JSON.stringtify({
+            isTemplate
             name,
             description,
             belonging_area,
@@ -1841,6 +1844,7 @@ fetch(
             `Cache-Control`: `no-cache`
         },
         body: JSON.stringtify({
+            isTemplate,
             name,
             description,
             belonging_area,
@@ -1871,7 +1875,8 @@ fetch(
           `Content-Type`: `application/json`,
             `Authorization`: `Bearer ${token}`,
             `Cache-Control`: `no-cache`
-        }
+        },
+        body:JSON.stringtify({isTemplate})
     }
 )
 ```
