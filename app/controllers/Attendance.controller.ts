@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import Agenda, { AgendaInterface, AttendeeListInterface } from "../models/Agenda"
+import User, { UserInterface } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getAttendees = async (req: Request, res: Response): Promise<Response> => {
@@ -25,55 +26,38 @@ export const getAttendees = async (req: Request, res: Response): Promise<Respons
 export const AddAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
     const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": req.params.id })
-    if (event && event.attendance.attendee_list.length === event.vacancy)
-      __ThrowError("El evento tiene todas las vacantes ocupadas")
+    if (!event)
+      return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
 
-    __Required(req.body.attendee_register, `attendee_register`, `string`, null)
+    if (event.attendance.attendee_list.length === event.vacancy)
+      __ThrowError('El evento tiene todas las vacantes ocupadas')
 
-    const alreadyRegistered = event?.attendance.attendee_list.find((attendee: AttendeeListInterface) => req.body.attendee_register === attendee.attendee_register)
+    const user: UserInterface = new User(req.user)
+    req.body.attendee_register = user.register
+
+    const alreadyRegistered: AttendeeListInterface | undefined = event?.attendance.attendee_list.find((attendee: AttendeeListInterface) => req.body.attendee_register === attendee.attendee_register)
 
     if (alreadyRegistered !== undefined)
       __ThrowError('El usuario ya está inscrito')
 
-    req.body.status = "Inscrito"
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
+    req.body.status = 'Inscrito'
 
-  try {
-    const result = await Agenda.updateOne({ "event_identifier": req.params.id }, {
-      $push: {
-        "attendance.attendee_list": req.body
-      }
-    })
+    await Agenda.updateOne({ "event_identifier": req.params.id }, { $push: { "attendance.attendee_list": req.body } })
 
-    return result.modifiedCount > 0
-      ? res.status(201).json({
-        message: `Se añadió el usuario a la lista`
-      })
-      : res.status(400).json({
-        message: `No se encontró el evento ${req.params.id}`
-      })
-  } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
+    return res.status(201).json({
+      message: `Se añadió el usuario a la lista`
     })
+  } catch (error) {
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const CheckAttendace = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const event: AgendaInterface | null = await Agenda.findOne({
       "event_identifier": req.params.id,
       "attendance.attendee_list.attendee_register": req.body.attendee_register
@@ -89,46 +73,29 @@ export const CheckAttendace = async (req: Request, res: Response): Promise<Respo
 
     currentDate > limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
 
-    const result = await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
+    await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
       $set: {
         "attendance.attendee_list.$.status": req.body.status,
         "attendance.attendee_list.$.check_in": new Date().toISOString()
       }
     })
 
-    return result.modifiedCount > 0
-      ? res.status(200).json({
-        message: 'Se actualizó el estado de asistencia del usuario'
-      })
-      : res.status(500).json({
-        message: 'Ocurrió una excepción al realizar los cambios'
-      })
-
-  } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
+    return res.status(200).json({
+      message: 'Se actualizó el estado de asistencia del usuario'
     })
+  } catch (error) {
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const updateAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
-
     __Optional(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito"])
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
-    const result = await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
-      $set: {
-        "attendance.attendee_list.$.status": req.body.status,
-      }
-    })
+    const result = await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, { $set: { "attendance.attendee_list.$.status": req.body.status } })
 
     return result.modifiedCount > 0
       ? res.status(200).json({
@@ -138,9 +105,8 @@ export const updateAttendee = async (req: Request, res: Response): Promise<Respo
         message: `No se encontró el evento ${req.params.id} o el usuario ${req.body.attendee_register}`
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }

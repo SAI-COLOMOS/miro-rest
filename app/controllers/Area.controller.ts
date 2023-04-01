@@ -5,15 +5,8 @@ import { __Required, __Optional, __Query } from "../middleware/ValidationControl
 export const getAreas = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Query(req.query.items, `items`, `number`)
-
     __Query(req.query.page, `page`, `number`)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
@@ -28,14 +21,11 @@ export const getAreas = async (req: Request, res: Response): Promise<Response> =
       })
 
     if (req.query.search)
-      filter_request = {
-        ...filter_request,
-        $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }]
-      }
+      filter_request = { ...filter_request, $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }] }
 
     const places = await Place.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-    let areas: Array<AreaInterface> = []
+    const areas: Array<AreaInterface> = []
 
     if (places.length > 0)
       places.forEach((place: PlaceInterface) => areas.push(...place.place_areas))
@@ -45,10 +35,9 @@ export const getAreas = async (req: Request, res: Response): Promise<Response> =
       areas
     })
   } catch (error) {
-    return res.status(500).json({
-      message: `Ocurrió un error en el servidor`,
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -76,16 +65,12 @@ export const getArea = async (req: Request, res: Response): Promise<Response> =>
   try {
     const place = await Place.findOne({ "place_identifier": req.params.id })
 
-    let area
-    if (place)
-      place.place_areas.forEach((area_iterated: AreaInterface) => {
-        if (area_iterated.area_identifier === req.params.id2) area = area_iterated
-      })
+    const area: AreaInterface | undefined = place?.place_areas.find((area_iterated: AreaInterface) => area_iterated.area_identifier === req.params.id2)
 
     return area
       ? res.status(200).json({
         message: "Listo",
-        area: area
+        area
       })
       : res.status(400).json({
         message: `No se encontró el lugar ${req.params.id} o el área ${req.params.id2}`
@@ -103,13 +88,7 @@ export const addArea = async (req: Request, res: Response): Promise<Response> =>
     __Required(req.body.area_name, `area_name`, `string`, null)
 
     __Required(req.body.phone, `phone`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const place = await Place.findOne({ "place_identifier": req.params.id })
 
     if (place) {
@@ -146,25 +125,17 @@ export const addArea = async (req: Request, res: Response): Promise<Response> =>
       message: `No se encontró el parque ${req.params.id}`
     })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const updateArea = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Optional(req.body.area_name, `area_name`, `string`, null)
-
     __Optional(req.body.phone, `phone`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const result = await Place.updateOne({ "place_identifier": req.params.id, "place_areas.area_identifier": req.params.id2 },
       {
         $set: {
@@ -181,10 +152,9 @@ export const updateArea = async (req: Request, res: Response): Promise<Response>
         message: `No se encontró el lugar ${req.params.id} o el área ${req.params.id2}`
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 

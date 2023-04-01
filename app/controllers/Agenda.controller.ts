@@ -13,7 +13,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     __Query(req.query.page, `page`, `number`)
 
     const currentDate = new Date()
-    const user = new User(req.user)
+    const user: UserInterface = new User(req.user)
     const history: boolean = Boolean(req.query.history)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
@@ -79,6 +79,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     req.body.belonging_place = user.place
     req.body.belonging_area = user.assigned_area
     req.body.author_register = user.register
+    req.body.author_name = `${user.first_name} ${user.first_last_name}${user.second_last_name ? ` ${user.second_last_name}` : ''}`
 
     __Required(req.body.name, `name`, `string`, null)
     __Required(req.body.tolerance, `tolerance`, `number`, null)
@@ -136,40 +137,25 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
     if (req.body.attendance)
       __ThrowError("El campo 'attendance' no se puede modificar desde éste endpoint")
 
-    __Required(req.body.modifier_register, `modifier_register`, `string`, null)
-
     __Optional(req.body.is_template, `is_template`, `boolean`, null)
-
     __Optional(req.body.tolerance, `tolerance`, `number`, null)
-
     __Optional(req.body.name, `name`, `string`, null)
-
     __Optional(req.body.description, `description`, `string`, null)
-
     __Optional(req.body.offered_hours, `offered_hours`, `number`, null)
-
     __Optional(req.body.penalty_hours, `penalty_hours`, `number`, null)
-
     __Optional(req.body.vacancy, `vacancy`, `number`, null)
-
     __Optional(req.body.place, `place`, `string`, null)
-
     __Optional(req.body.publishing_date, `publishing_date`, `string`, null, true)
-
     __Optional(req.body.starting_date, `starting_date`, `string`, null, true)
-
     __Optional(req.body.ending_date, `ending_date`, `string`, null, true)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
+    const user: UserInterface = new User(req.user)
+    req.body.modifier_register = user.register
+
     const result = await Agenda.updateOne({ "event_identifier": req.params.id }, req.body)
 
     if (result.modifiedCount > 0) {
-      const event = req.body.ending_date || req.body.publishing_date
+      const event: AgendaInterface | null = req.body.ending_date || req.body.publishing_date
         ? await Agenda.findOne({ "event_identifier": req.params.id })
         : null
 
@@ -198,10 +184,9 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
       message: `No se encontró el evento ${req.params.id}`
     })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -209,14 +194,9 @@ export const updateEventStatus = async (req: Request, res: Response): Promise<Re
   try {
     __Required(req.body.status, `status`, `string`, ["Disponible", "Concluido"])
 
-    __Required(req.body.modifier_register, `modifier_register`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
+    const user: UserInterface = new User(req.user)
+    req.body.modifier_register = user.register
 
-  try {
     const event = await Agenda.findOne({ "event_identifier": req.params.id })
 
     if (event) {
@@ -248,10 +228,9 @@ export const updateEventStatus = async (req: Request, res: Response): Promise<Re
         message: `No se encontró el evento ${req.params.id}`
       })
   } catch (error) {
-    return res.status(500).json({
-      message: `Ocurrió un error en el servidor`,
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 

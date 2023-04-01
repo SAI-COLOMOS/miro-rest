@@ -18,18 +18,10 @@ function createToken (user: UserInterface, time: String): string {
 export const LoginGet = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.credential, "credential", "string", null)
-
     __Required(req.body.password, "password", "string", null)
-
     __Optional(req.body.keepAlive, "keepAlive", "boolean", null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  let user = null
-  try {
+    let user: UserInterface | null = null
     if (req.body.credential.search('@') !== -1) {
       user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
     } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {
@@ -47,24 +39,17 @@ export const LoginGet = async (req: Request, res: Response): Promise<Response> =
         message: "Hubo un problema al tratar de iniciar sesión",
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const sendRecoveryToken = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.credential, `credential`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  let user, newRoute
-  try {
+    let user, newRoute
     if (req.body.credential.search('@') !== -1) {
       user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
     } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {
@@ -85,13 +70,12 @@ export const sendRecoveryToken = async (req: Request, res: Response): Promise<Re
 
     return res.status(200).json({
       message: "Si se encontró el usuario; Se mandó un correo de recuperación",
-      newRoute: newRoute
+      newRoute
     })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -110,13 +94,7 @@ export const recoverPassword = async (req: Request, res: Response): Promise<Resp
 
     if (!(/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password))
       __ThrowError("La contraseña no cumple con la estructura deseada")
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
 
     if (user && !(await user.validatePassword(req.body.password))) {
@@ -137,9 +115,8 @@ export const recoverPassword = async (req: Request, res: Response): Promise<Resp
       message: "La nueva contraseña no puede ser igual a la actual"
     })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }

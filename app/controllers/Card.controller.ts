@@ -1,7 +1,7 @@
-import { Request, Response } from "express"
-import Card from "../models/Card"
-import User from "../models/User"
-import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
+import { Request, Response } from 'express'
+import Card, { CardInterface } from '../models/Card'
+import User from '../models/User'
+import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
 
 export const getCards = async (req: Request, res: Response) => {
   try {
@@ -11,20 +11,35 @@ export const getCards = async (req: Request, res: Response) => {
     const user = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
+    let filter_request: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    filter_request.role = 'Prestador'
 
-    if (filter_request)
-      Object.keys(filter_request).forEach((key: string) => {
-        if (key === "year") {
-          filter_request.register = { $regex: '^' + filter_request[key] }
-          delete filter_request.year
-        }
+    if (filter_request && filter_request.year && filter_request.period) {
+      const period_condition = filter_request.period === "A"
+        ? { $lte: [{ $month: '$createdAt' }, 6] }
+        : { $gte: [{ $month: '$createdAt' }, 7] }
+      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filter_request.year)] }
+      filter_request = { ...filter_request, $expr: { $and: [year_condition, period_condition] } }
 
-        if (key === "period") {
-          filter_request.register = { $regex: "^.{4}[" + filter_request[key] + "]" }
-          delete filter_request.period
-        }
-      })
+      delete filter_request.year
+      delete filter_request.period
+    }
+
+    if (filter_request && filter_request.year) {
+      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filter_request.year)] }
+      filter_request = { ...filter_request, $expr: year_condition }
+
+      delete filter_request.year
+    }
+
+    if (filter_request && filter_request.period) {
+      const period_condition = filter_request.period === "A"
+        ? { $lte: [{ $month: '$createdAt' }, 6] }
+        : { $gte: [{ $month: '$createdAt' }, 7] }
+
+      filter_request = { ...filter_request, $expr: period_condition }
+      delete filter_request.period
+    }
 
     if (req.query.search)
       filter_request = {
@@ -34,24 +49,25 @@ export const getCards = async (req: Request, res: Response) => {
           { "first_last_name": { $regex: req.query.search, $options: "i" } },
           { "second_last_name": { $regex: req.query.search, $options: "i" } },
           { "register": { $regex: req.query.search, $options: "i" } },
+          { "curp": { $regex: req.query.search, $options: "i" } },
           { "phone": { $regex: req.query.search } }
         ]
       }
 
-    if (user.role === "Encargado") {
+    if (user.role === 'Encargado') {
+      filter_request.role = 'Prestador'
       filter_request.place = user.place
       filter_request.assigned_area = user.assigned_area
-      filter_request.role = "Prestador"
     }
 
     const users = await User.find(filter_request).sort({ "createdAt": "desc" })
-    let cards = null
+    let cards: CardInterface[] = []
     if (users.length > 0)
       cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
 
     return res.status(200).json({
       message: "Listo",
-      cards: cards ? cards : []
+      cards
     })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500

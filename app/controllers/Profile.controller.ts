@@ -57,15 +57,11 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
         "starting_date": { $gt: currentDate }
       }).sort({ "createdAt": "desc" })
 
-      const availableEvents: Array<object> = []
-
-      events.forEach((event: AgendaInterface) => {
-        availableEvents.push({
-          "name": event.name,
-          "starting_date": event.starting_date.toISOString(),
-          "place": event.place
-        })
-      })
+      const availableEvents: Array<object> = events.map((event: AgendaInterface) => ({
+        "name": event.name,
+        "starting_date": event.starting_date.toISOString(),
+        "place": event.place
+      }))
 
       response_body.achieved_hours = card?.achieved_hours
       response_body.total_hours = card?.total_hours
