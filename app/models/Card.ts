@@ -34,7 +34,7 @@ const ActivitySchema = new Schema({
   },
   responsible_name: {
     type: String,
-    required: [true, "El nombre del encargado es necesario"]
+    required: [true, "El nombre del encargado es obligatorio"]
   }
 }, {
   versionKey: false,
