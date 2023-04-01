@@ -23,6 +23,7 @@ export interface AgendaInterface extends Document {
   starting_date: Date
   ending_date: Date
   author_register: string
+  author_name: string
   publishing_date: Date
   place: string
   belonging_area: string
@@ -106,6 +107,10 @@ const AgendaSchema = new Schema({
   author_register: {
     type: String,
     required: [true, "El registro del autor es obligatorio"]
+  },
+  author_name: {
+    type: String,
+    required: [true, "El nombre del encargado es obligatorio"]
   },
   publishing_date: {
     type: Date,
