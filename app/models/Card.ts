@@ -1,6 +1,6 @@
 import { model, Schema, Document } from "mongoose"
 
-export interface HoursInterface extends Document {
+export interface HoursInterface {
   activity_name: string
   hours: number
   assignation_date: Date
