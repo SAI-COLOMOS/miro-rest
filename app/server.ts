@@ -5,6 +5,7 @@ import express from 'express'
 import morgan from 'morgan'
 import passport from "passport"
 import ControlAccess from "./middleware/AccessControl"
+// import bodyParser from "body-parser"
 //import path from 'path'
 //import { fileURLToPath } from "url"
 
@@ -32,7 +33,8 @@ app.use(express.static(__dirname + '/public'))
 
 /* Middleware */
 app.use(morgan('dev'))
-app.use(express.json())
+app.use(express.json({limit: '5mb'}))
+// app.use(bodyParser.json({limit: '5mb'}))
 app.use(express.urlencoded({ extended: false }))
 app.use(passport.initialize())
 passport.use(ControlAccess)
