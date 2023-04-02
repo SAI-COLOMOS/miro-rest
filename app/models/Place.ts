@@ -54,7 +54,7 @@ const PlaceSchema = new Schema({
   },
   municipality: {
     type: String,
-    required: [true, "El municipio es encesario"]
+    required: [true, "El municipio es necesario"]
   },
   street: {
     type: String,
