@@ -100,7 +100,7 @@ export const CheckAttendace = async (req: Request, res: Response): Promise<Respo
 export const updateAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
-    __Optional(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito"])
+    __Required(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito"])
 
     const result = await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, { $set: { "attendance.attendee_list.$.status": req.body.status } })
 
