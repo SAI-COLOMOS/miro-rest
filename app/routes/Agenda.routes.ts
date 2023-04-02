@@ -34,7 +34,7 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), AddAttendee)
 
 // Actualizar el estado de un usuario en la lista de asistencia
-route.patch(`${path}/:id/inscription`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
+route.patch(`${path}/:id/status`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
 
 // Actualizar la asistencia del evento de un usuario
 route.patch(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, CheckAttendace)
