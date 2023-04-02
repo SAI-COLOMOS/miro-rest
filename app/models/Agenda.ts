@@ -1,13 +1,13 @@
 import { model, Schema, Document } from "mongoose"
 
-export interface AttendeeListInterface {
+export interface AttendeeInterface {
   attendee_register: string
   status: string
   check_in?: Date
 }
 
 export interface AttendanceInterface extends Document {
-  attendee_list: AttendeeListInterface[]
+  attendee_list: AttendeeInterface[]
   status: string
 }
 
@@ -31,7 +31,7 @@ export interface AgendaInterface extends Document {
   modifier_register: string
 }
 
-const AttendeeListSchema = new Schema({
+const AttendeeSchema = new Schema({
   attendee_register: {
     type: String,
     index: true,
@@ -49,7 +49,7 @@ const AttendeeListSchema = new Schema({
 })
 
 const AttendanceSchema = new Schema({
-  attendee_list: [AttendeeListSchema],
+  attendee_list: [AttendeeSchema],
   status: {
     type: String,
     required: [true, "El status es obligatorio"],

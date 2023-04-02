@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Agenda, { AgendaInterface, AttendeeListInterface } from "../models/Agenda"
+import Agenda, { AgendaInterface, AttendeeInterface } from "../models/Agenda"
 import User, { UserInterface } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from "../middleware/ValidationControl"
 
@@ -34,7 +34,7 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
 
     const user: UserInterface = new User(req.user)
 
-    const alreadyRegistered: AttendeeListInterface | undefined = event?.attendance.attendee_list.find((attendee: AttendeeListInterface) => user.register === attendee.attendee_register)
+    const alreadyRegistered: AttendeeInterface | undefined = event?.attendance.attendee_list.find((attendee: AttendeeInterface) => user.register === attendee.attendee_register)
 
     if (alreadyRegistered !== undefined)
       __ThrowError('El usuario ya está inscrito')
@@ -69,7 +69,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 
     const user: UserInterface = new User(req.user)
 
-    const attendee_index: number = event.attendance.attendee_list.findIndex((attendee: AttendeeListInterface) => attendee.attendee_register === user.register)
+    const attendee_index: number = event.attendance.attendee_list.findIndex((attendee: AttendeeInterface) => attendee.attendee_register === user.register)
 
     if (attendee_index === -1)
       return res.status(400).json({ message: `El usuario no está inscrito al evento ${req.params.id}` })

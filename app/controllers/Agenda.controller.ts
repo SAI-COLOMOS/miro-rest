@@ -277,7 +277,7 @@ const endEvent = async (event_identifier: string, time: string): Promise<void> =
     async function (event_identifier: string) {
       const result = await Agenda.findOne({ "event_identifier": event_identifier })
 
-      if (result?.attendance.status === "Disponible") {
+      if (result?.attendance.status === 'Disponible') {
         result.attendance.status = "Concluido por sistema"
         result.save()
 
