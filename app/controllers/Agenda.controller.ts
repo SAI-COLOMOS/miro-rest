@@ -23,10 +23,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       delete filter_request.starting_date
 
     if (req.query.search)
-      filter_request = {
-        ...filter_request,
-        $or: [{ "name": { $regex: req.body.search, $options: "i" } }]
-      }
+      filter_request = { ...filter_request, $or: [{ "name": { $regex: req.body.search, $options: "i" } }] }
 
     if (user.role === 'Encargado') {
       filter_request.belonging_area = user.assigned_area
@@ -39,7 +36,6 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       filter_request['attendance.status'] = 'Disponible'
     }
 
-    console.log(filter_request)
     const result: AgendaInterface[] = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({
@@ -96,12 +92,10 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     let time: Date
 
     if (event) {
-      // Añadimos un event emitter para mandar un correo durante la fecha de publicación 
       time = event.publishing_date
       time.setHours(time.getHours() - 1)
       scheduleEmailNotifications(event.event_identifier, time.toISOString(), event.name)
 
-      // Añadimos un event emitter para concluir el evento si es que no se concluyó
       time = event.ending_date
       time.setHours(time.getHours() + 1)
       endEvent(event.event_identifier, time.toISOString())
