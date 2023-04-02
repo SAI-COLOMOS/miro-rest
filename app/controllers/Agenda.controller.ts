@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
 import Agenda, { AgendaInterface } from "../models/Agenda"
-import Card from "../models/Card"
+import Card, { CardInterface } from "../models/Card"
 import User, { UserInterface } from "../models/User"
 import Environment from "../config/Environment"
 import schedule from 'node-schedule'
@@ -17,13 +17,14 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const history: boolean = Boolean(req.query.history)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : { starting_date: { $gt: currentDate } }
+    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    filter_request.starting_date = { $gt: currentDate }
 
     if (history)
       delete filter_request.starting_date
 
     if (req.query.search)
-      filter_request = { ...filter_request, $or: [{ "name": { $regex: req.body.search, $options: "i" } }] }
+      filter_request = { ...filter_request, $or: [{ "name": { $regex: req.query.search, $options: "i" } }] }
 
     if (user.role === 'Encargado') {
       filter_request.belonging_area = user.assigned_area
@@ -36,15 +37,16 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       filter_request['attendance.status'] = 'Disponible'
     }
 
-    const result: AgendaInterface[] = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
+    const events: AgendaInterface[] = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({
       message: "Listo",
-      events: result
+      events
     })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    if (statusCode === 500) console.log(error?.toString())
     return res.status(statusCode).json(response)
   }
 }
@@ -98,7 +100,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
 
       time = event.ending_date
       time.setHours(time.getHours() + 1)
-      endEvent(event.event_identifier, time.toISOString())
+      endEvent(event.event_identifier, event.author_name, time.toISOString())
     }
 
     return event
@@ -168,7 +170,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
         time = event.ending_date
         time.setHours(time.getHours() + 1)
         schedule.cancelJob(`end_${event.event_identifier}`)
-        endEvent(event.event_identifier, time.toISOString())
+        endEvent(event.event_identifier, event.author_name, time.toISOString())
       }
 
       return res.status(200).json({
@@ -255,12 +257,11 @@ export const deleteEvent = async (req: Request, res: Response): Promise<Response
 }
 
 const scheduleEmailNotifications = async (event_identifier: string, time: string, event_name: string): Promise<void> => {
-
   schedule.scheduleJob(event_identifier, time,
     async function (name: string, event: string) {
       const users = await User.find({ "status": "Activo", "role": "Prestador" })
       const from = `"SAI" ${Environment.Mailer.email}`
-      const subject = "Recuperación de contraseña"
+      const subject = "Hay un evento pronto a estar disponible!"
       const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
       for (const user of users) {
         await sendEmail(from, user.email, subject, body)
@@ -271,33 +272,37 @@ const scheduleEmailNotifications = async (event_identifier: string, time: string
   )
 }
 
-const endEvent = async (event_identifier: string, time: string): Promise<void> => {
-
+const endEvent = async (event_identifier: string, author_name: string, time: string): Promise<void> => {
   schedule.scheduleJob(`end_${event_identifier}`, time,
-    async function (event_identifier: string) {
-      const result = await Agenda.findOne({ "event_identifier": event_identifier })
+    async function (event_identifier: string, author_name: string): Promise<void> {
+      const event = await Agenda.findOne({ "event_identifier": event_identifier })
 
-      if (result?.attendance.status === 'Disponible') {
-        result.attendance.status = "Concluido por sistema"
-        result.save()
+      if (!event || event.attendance.status === 'Concluido') return
 
-        const event: any = await Agenda.findOne({ "event_identifier": event_identifier })
-
-        for (const attendee of event.attendance.attendee_list) {
-          if (attendee.status === "Asistió" || attendee.status === "Retardo") {
-            await Card.updateOne({ "provider_register": attendee.attendee_register }, {
-              $push: {
-                "activities": {
-                  "activity_name": event.name,
-                  "hours": event.offered_hours,
-                  "responsible_register": event.author_register
-                }
-              }
-            })
-          }
+      event.attendance.status = 'Concluido por sistema'
+      const currentDate = new Date()
+      for (const [index, attendee] of event.attendance.attendee_list.entries()) {
+        if (attendee.status === 'Inscrito') {
+          event.attendance.attendee_list[index].status = 'No asistió'
+          continue
         }
+
+        const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
+        if (!card) continue
+
+        card.activities.push({
+          "activity_name": event.name,
+          "hours": event.offered_hours,
+          "responsible_register": event.author_register,
+          "assignation_date": currentDate,
+          "responsible_name": author_name
+        })
+
+        card.markModified('activities')
+        card.save()
+        event.save()
       }
       schedule.cancelJob(`end_${event_identifier}`)
-    }.bind(null, event_identifier)
+    }.bind(null, event_identifier, author_name)
   )
 }
