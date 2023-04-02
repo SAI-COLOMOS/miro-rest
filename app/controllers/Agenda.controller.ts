@@ -90,6 +90,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     __Required(req.body.ending_date, `ending_date`, `string`, null, true)
     __Required(req.body.publishing_date, `publishing_date`, `string`, null, true)
     __Required(req.body.place, `place`, `string`, null)
+    __Optional(req.body.avatar, `avatar`, `string`, null)
 
     const event: AgendaInterface = await new Agenda(req.body).save()
     let time: Date
@@ -148,6 +149,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
     __Optional(req.body.publishing_date, `publishing_date`, `string`, null, true)
     __Optional(req.body.starting_date, `starting_date`, `string`, null, true)
     __Optional(req.body.ending_date, `ending_date`, `string`, null, true)
+    __Optional(req.body.avatar, `avatar`, `string`, null)
 
     const user: UserInterface = new User(req.user)
     req.body.modifier_register = user.register
