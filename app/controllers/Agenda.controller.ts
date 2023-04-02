@@ -15,6 +15,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const currentDate = new Date()
     const user: UserInterface = new User(req.user)
     const history: boolean = Boolean(req.query.history)
+    const avatar: boolean = Boolean(req.query.avatar)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
@@ -38,11 +39,20 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     }
 
     const events: AgendaInterface[] = await Agenda.find(filter_request).sort({ "starting_date": "desc" }).limit(items).skip(page * items)
+    if (events.length === 0) return res.status(200).json({ message: 'Listo', events })
 
-    return res.status(200).json({
-      message: "Listo",
-      events
-    })
+    const result: object[] = []
+    if (avatar) {
+      events.forEach((event: AgendaInterface) => {
+        if (event.avatar) result.push({ avatar: event.avatar, event_identifier: event.event_identifier })
+      })
+    } else {
+      events.forEach((event: AgendaInterface) => {
+        const { avatar: _, objEvent } = event.toObject()
+        result.push(objEvent)
+      })
+    }
+    return res.status(200).json({ message: "Listo", events: result })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }

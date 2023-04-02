@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Place from "../models/Place"
+import Place, { PlaceInterface } from "../models/Place"
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getPlaces = async (req: Request, res: Response): Promise<Response> => {
@@ -9,6 +9,7 @@ export const getPlaces = async (req: Request, res: Response): Promise<Response> 
 
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
+    const avatar: boolean = Boolean(req.query.avatar)
     let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
     if (filter_request)
@@ -23,12 +24,21 @@ export const getPlaces = async (req: Request, res: Response): Promise<Response> 
     if (req.query.search)
       filter_request = { ...filter_request, $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }] }
 
-    const places = await Place.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    const places: PlaceInterface[] = await Place.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    if (places.length === 0) return res.status(200).json({ message: 'Listo', places })
 
-    return res.status(200).json({
-      message: 'Listo',
-      places
-    })
+    const result: object[] = []
+    if (avatar) {
+      places.forEach((place: PlaceInterface) => {
+        if (place.avatar) result.push({ avatar: place.avatar, place_identifier: place.place_identifier })
+      })
+    } else {
+      places.forEach((place: PlaceInterface) => {
+        const { avatar: _, ...objPlace } = place.toObject()
+        result.push(objPlace)
+      })
+    }
+    return res.status(200).json({ message: 'Listo', places: result })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
