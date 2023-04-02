@@ -1,9 +1,9 @@
 import { model, Schema, Document } from "mongoose"
 
-export interface AttendeeListInterface extends Document {
+export interface AttendeeListInterface {
   attendee_register: string
   status: string
-  check_in: Date
+  check_in?: Date
 }
 
 export interface AttendanceInterface extends Document {
@@ -134,9 +134,11 @@ const AgendaSchema = new Schema({
 })
 
 AgendaSchema.post<AgendaInterface>("save", async function () {
-  const id: String = this._id.toString()
-  this.event_identifier = id.substring(id.length - 20, id.length)
-  this.save()
+  if (this.isNew) {
+    const id: String = this._id.toString()
+    this.event_identifier = id.substring(id.length - 20, id.length)
+    this.save()
+  }
 })
 
 const Agenda = model<AgendaInterface>("Agenda", AgendaSchema)
