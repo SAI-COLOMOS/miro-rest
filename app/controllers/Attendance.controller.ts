@@ -33,16 +33,23 @@ export const AddAttendee = async (req: Request, res: Response): Promise<Response
       __ThrowError('El evento tiene todas las vacantes ocupadas')
 
     const user: UserInterface = new User(req.user)
-    req.body.attendee_register = user.register
 
-    const alreadyRegistered: AttendeeListInterface | undefined = event?.attendance.attendee_list.find((attendee: AttendeeListInterface) => req.body.attendee_register === attendee.attendee_register)
+    const alreadyRegistered: AttendeeListInterface | undefined = event?.attendance.attendee_list.find((attendee: AttendeeListInterface) => user.register === attendee.attendee_register)
 
     if (alreadyRegistered !== undefined)
       __ThrowError('El usuario ya está inscrito')
 
-    req.body.status = 'Inscrito'
+    event.attendance.attendee_list.push({
+      attendee_register: user.register,
+      status: 'Inscrito'
+    })
 
-    await Agenda.updateOne({ "event_identifier": req.params.id }, { $push: { "attendance.attendee_list": req.body } })
+    if (event.attendance.attendee_list.length === event.vacancy)
+      event.attendance.status = 'Vacantes completas'
+
+    event.markModified('attendance.attendee_list')
+
+    event.save()
 
     return res.status(201).json({
       message: `Se añadió el usuario a la lista`
