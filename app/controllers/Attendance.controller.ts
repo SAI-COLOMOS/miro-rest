@@ -23,7 +23,7 @@ export const getAttendees = async (req: Request, res: Response): Promise<Respons
   }
 }
 
-export const AddAttendee = async (req: Request, res: Response): Promise<Response> => {
+export const addAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
     const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": req.params.id })
     if (!event)
@@ -61,7 +61,32 @@ export const AddAttendee = async (req: Request, res: Response): Promise<Response
   }
 }
 
-export const CheckAttendace = async (req: Request, res: Response): Promise<Response> => {
+export const removeAttendee = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": req.params.id })
+    if (!event)
+      return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
+
+    const user: UserInterface = new User(req.user)
+
+    const attendee_index: number = event.attendance.attendee_list.findIndex((attendee: AttendeeListInterface) => attendee.attendee_register === user.register)
+
+    if (attendee_index === -1)
+      return res.status(400).json({ message: `El usuario no está inscrito al evento ${req.params.id}` })
+
+    event.attendance.attendee_list[attendee_index].status = 'Desinscrito'
+    event.markModified('attendance.attendee_list')
+    event.save()
+
+    return res.status(200).json({ message: 'Se desinscribió el usuario del evento' })
+  } catch (error) {
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
+  }
+}
+
+export const checkAttendace = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
 
@@ -100,7 +125,7 @@ export const CheckAttendace = async (req: Request, res: Response): Promise<Respo
 export const updateAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
-    __Required(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito"])
+    __Required(req.body.status, `status`, `string`, ["Inscrito", "Desinscrito", "Asistió", "Retardo", "No asistió"])
 
     const result = await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, { $set: { "attendance.attendee_list.$.status": req.body.status } })
 
