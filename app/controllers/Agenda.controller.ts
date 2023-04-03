@@ -63,7 +63,10 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
 
 export const getEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
+    const avatar: boolean = Boolean(req.query.avatar)
     const event = await Agenda.findOne({ "event_identifier": req.params.id })
+
+    if (avatar && event) return res.status(200).json({ avatar: event.avatar })
 
     return event
       ? res.status(200).json({
