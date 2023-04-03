@@ -48,7 +48,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       })
     } else {
       events.forEach((event: AgendaInterface) => {
-        const { avatar: _, objEvent } = event.toObject()
+        const { avatar: _, ...objEvent } = event.toObject()
         result.push(objEvent)
       })
     }
