@@ -109,7 +109,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     if (event) {
       time = event.publishing_date
       time.setHours(time.getHours() - 1)
-      emailNotifications(event.event_identifier, '2023-04-04T00:05:17.545Z', event.name)
+      emailNotifications(event.event_identifier, '2023-04-04T00:16:17.545Z', event.name)
 
       time = event.ending_date
       time.setHours(time.getHours() + 1)
@@ -282,6 +282,7 @@ const emailNotifications = async (event_identifier: string, time: string, event_
       const subject = "Hay un evento pronto a estar disponible!"
       const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
       for (const user of users) {
+        console.log(user.email)
         await sendEmail(from, user.email, subject, body)
       }
     }.bind(null, event_name)
