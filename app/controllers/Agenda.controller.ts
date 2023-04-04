@@ -107,9 +107,9 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     let time: Date
 
     if (event) {
-      // time = event.publishing_date
-      // time.setHours(time.getHours() - 1)
-      emailNotifications(event.event_identifier, '2023-04-03T23:55:43.563Z', event.name)
+      time = event.publishing_date
+      time.setHours(time.getHours() - 1)
+      emailNotifications(event.event_identifier, '2023-04-04T00:05:17.545Z', event.name)
 
       time = event.ending_date
       time.setHours(time.getHours() + 1)
