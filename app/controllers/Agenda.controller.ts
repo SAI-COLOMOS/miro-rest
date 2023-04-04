@@ -104,25 +104,27 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     __Optional(req.body.avatar, `avatar`, `string`, null)
 
     const event: AgendaInterface = await new Agenda(req.body).save()
-    let time: Date
 
-    if (event) {
-      time = event.publishing_date
-      time.setHours(time.getHours() - 1)
-      emailNotifications(event.event_identifier, '2023-04-04T00:16:17.545Z', event.name)
+    if (!event) res.status(500).json({ message: "No se pudo crear el evento" })
 
-      time = event.ending_date
-      time.setHours(time.getHours() + 1)
-      endEvent(event.event_identifier, event.author_name, time.toISOString())
+    const currentDate: Date = new Date()
+    if (event.publishing_date < currentDate) {
+      const users = await User.find({ "status": "Activo", "role": "Prestador" })
+      const from = `"SAI" ${Environment.Mailer.email}`
+      const subject = '¡Hay un evento disponible para tí!'
+      const body = mensaje(`La inscripción para el evento  ${event.name} empieza en una hora.`)
+      for (const user of users) {
+        await sendEmail(from, user.email, subject, body)
+      }
+    } else {
+      emailNotifications(event.event_identifier, event.publishing_date.toISOString(), event.name)
     }
 
-    return event
-      ? res.status(201).json({
-        message: "Evento creado",
-      })
-      : res.status(500).json({
-        message: "No se pudo crear el evento"
-      })
+    const time: Date = event.ending_date
+    time.setHours(time.getHours() + 1)
+    endEvent(event.event_identifier, event.author_name, time.toISOString())
+
+    return res.status(201).json({ message: "Evento creado" })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
@@ -279,10 +281,9 @@ const emailNotifications = async (event_identifier: string, time: string, event_
     async function (name: string) {
       const users = await User.find({ "status": "Activo", "role": "Prestador" })
       const from = `"SAI" ${Environment.Mailer.email}`
-      const subject = "Hay un evento pronto a estar disponible!"
+      const subject = '¡Hay un evento disponible para tí!'
       const body = mensaje(`La inscripción para el evento  ${name} empieza en una hora.`)
       for (const user of users) {
-        console.log(user.email)
         await sendEmail(from, user.email, subject, body)
       }
     }.bind(null, event_name)
