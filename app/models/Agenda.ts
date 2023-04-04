@@ -53,7 +53,7 @@ const AttendanceSchema = new Schema({
   status: {
     type: String,
     required: [true, "El status es obligatorio"],
-    enum: ["Disponible", "Concluido", "Concluido por sistema", "Vacantes completas", "En proceso", "Borrador"]
+    enum: ["Disponible", "Concluido", "Concluido por sistema", "Vacantes completas", "En proceso", "Borrador", "Por publicar"]
   }
 })
 
@@ -93,7 +93,7 @@ const AgendaSchema = new Schema({
     type: AttendanceSchema,
     default: {
       attendee_list: [],
-      status: "Disponible"
+      status: "Por publicar"
     }
   },
   starting_date: {
@@ -133,12 +133,25 @@ const AgendaSchema = new Schema({
   timestamps: true
 })
 
-AgendaSchema.post<AgendaInterface>("save", async function () {
-  if (this.isNew) {
-    const id: String = this._id.toString()
-    this.event_identifier = id.substring(id.length - 20, id.length)
-    this.save()
+AgendaSchema.pre<AgendaInterface>("save", async function (next) {
+  if (!this.isNew) next()
+
+  const pool = '0123456789qwertyuioplkjhgfdsazxcvbnmMNBVCXZASDFGHJKLPOIUYTREWQ'
+  let identifier: string = ''
+  let flag: boolean = true
+  while (flag) {
+    for (let index = 0; index < 20; index++) {
+      const random: number = Math.round(Math.random() * (pool.length - 1))
+      identifier = identifier + pool[random]
+    }
+    const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": identifier })
+    if (!event) {
+      this.event_identifier = identifier
+      flag = false
+    }
+    identifier = ''
   }
+  next()
 })
 
 const Agenda = model<AgendaInterface>("Agenda", AgendaSchema)

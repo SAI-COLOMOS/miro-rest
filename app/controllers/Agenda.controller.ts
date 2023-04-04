@@ -107,9 +107,9 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     let time: Date
 
     if (event) {
-      time = event.publishing_date
-      time.setHours(time.getHours() - 1)
-      scheduleEmailNotifications(event.event_identifier, time.toISOString(), event.name)
+      // time = event.publishing_date
+      // time.setHours(time.getHours() - 1)
+      emailNotifications(event.event_identifier, '2023-04-03T23:55:43.563Z', event.name)
 
       time = event.ending_date
       time.setHours(time.getHours() + 1)
@@ -176,7 +176,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
         time = event.publishing_date
         time.setHours(time.getHours() - 1)
         schedule.cancelJob(event.event_identifier)
-        scheduleEmailNotifications(event.event_identifier, time.toISOString(), event.name)
+        emailNotifications(event.event_identifier, time.toISOString(), event.name)
       }
 
       if (event && req.body.ending_date) {
@@ -210,34 +210,39 @@ export const updateEventStatus = async (req: Request, res: Response): Promise<Re
 
     const event = await Agenda.findOne({ "event_identifier": req.params.id })
 
-    if (event) {
-      event.attendance.status = req.body.status
+    if (!event) return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
+
+    event.attendance.status = req.body.status
+
+    if (event.attendance.status === 'Disponible') {
+      event.save()
+      return res.status(200).json({ message: `Se actualizó el status del evento ${req.params.id}` })
+    }
+
+    const currentDate: Date = new Date()
+    for (const [index, attendee] of event.attendance.attendee_list.entries()) {
+      if (attendee.status === 'Inscrito') {
+        event.attendance.attendee_list[index].status = 'No asistió'
+        continue
+      }
+
+      const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
+      if (!card) continue
+
+      card.activities.push({
+        "activity_name": event.name,
+        "hours": event.offered_hours,
+        "responsible_register": event.author_register,
+        "assignation_date": currentDate,
+        "responsible_name": event.author_name
+      })
+
+      card.markModified('activities')
+      card.save()
       event.save()
     }
 
-    if (event && event.attendance.status === "Concluido") {
-      for (const attendee of event.attendance.attendee_list) {
-        if (attendee.status === "Asistió" || attendee.status === "Retardo") {
-          await Card.updateOne({ "provider_register": attendee.attendee_register }, {
-            $push: {
-              "activities": {
-                "activity_name": event.name,
-                "hours": event.offered_hours,
-                "responsible_register": req.body.modifier_register
-              }
-            }
-          })
-        }
-      }
-    }
-
-    return event
-      ? res.status(200).json({
-        message: `Se actualizó el status del evento ${req.params.id}`
-      })
-      : res.status(400).json({
-        message: `No se encontró el evento ${req.params.id}`
-      })
+    return res.status(200).json({ message: `Se actualizó el status del evento ${req.params.id}` })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
@@ -269,9 +274,9 @@ export const deleteEvent = async (req: Request, res: Response): Promise<Response
   }
 }
 
-const scheduleEmailNotifications = async (event_identifier: string, time: string, event_name: string): Promise<void> => {
+const emailNotifications = async (event_identifier: string, time: string, event_name: string): Promise<void> => {
   schedule.scheduleJob(event_identifier, time,
-    async function (name: string, event: string) {
+    async function (name: string) {
       const users = await User.find({ "status": "Activo", "role": "Prestador" })
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = "Hay un evento pronto a estar disponible!"
@@ -279,15 +284,13 @@ const scheduleEmailNotifications = async (event_identifier: string, time: string
       for (const user of users) {
         await sendEmail(from, user.email, subject, body)
       }
-
-      schedule.cancelJob(event)
-    }.bind(null, event_name, event_identifier)
+    }.bind(null, event_name)
   )
 }
 
 const endEvent = async (event_identifier: string, author_name: string, time: string): Promise<void> => {
   schedule.scheduleJob(`end_${event_identifier}`, time,
-    async function (event_identifier: string, author_name: string): Promise<void> {
+    async function (event_identifier: string, author_name: string) {
       const event = await Agenda.findOne({ "event_identifier": event_identifier })
 
       if (!event || event.attendance.status === 'Concluido') return
@@ -315,7 +318,6 @@ const endEvent = async (event_identifier: string, author_name: string, time: str
         card.save()
         event.save()
       }
-      schedule.cancelJob(`end_${event_identifier}`)
     }.bind(null, event_identifier, author_name)
   )
 }
