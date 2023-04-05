@@ -1,9 +1,10 @@
-import { model, Schema, Document } from "mongoose"
+import { model, Schema, Document } from 'mongoose'
 
 export interface AttendeeInterface {
   attendee_register: string
   status: string
   check_in?: Date
+  createdAt?: Date
 }
 
 export interface AttendanceInterface extends Document {
@@ -46,6 +47,8 @@ const AttendeeSchema = new Schema({
   check_in: {
     type: Date
   }
+}, {
+  timestamps: true
 })
 
 const AttendanceSchema = new Schema({
@@ -53,7 +56,7 @@ const AttendanceSchema = new Schema({
   status: {
     type: String,
     required: [true, "El status es obligatorio"],
-    enum: ["Disponible", "Concluido", "Concluido por sistema", "Vacantes completas", "En proceso", "Borrador", "Por publicar"]
+    enum: ["Disponible", "Concluido", "Concluido por sistema", "Vacantes completas", "En proceso", "Borrador", "Por publicar", "Por comenzar"]
   }
 })
 
