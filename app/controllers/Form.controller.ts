@@ -6,6 +6,8 @@ import FormTemplate, { FormTemplateInterface } from '../models/FormTemplate'
 
 export const getForms = async (req: Request, res: Response): Promise<Response> => {
   try {
+    if (!req.query.isTemplate) __ThrowError("El parámetro 'isTemplate' es obligatorio")
+    __Query(req.body.isTemplate, 'isTemplate', 'boolean')
     __Query(req.query.items, 'items', 'number')
     __Query(req.query.page, 'page', 'number')
     __Query(req.query.isTemplate, 'isTemplate', 'boolean')
@@ -52,7 +54,6 @@ export const getForm = async (req: Request, res: Response): Promise<Response> =>
     __Query(req.body.isTemplate, 'isTemplate', 'boolean')
 
     const isTemplate: boolean = Boolean(String(req.query.isTemplate).toLowerCase() === 'false' ? false : true)
-    console.log(isTemplate)
     const form: FormInterface | FormTemplateInterface | null = isTemplate
       ? await FormTemplate.findOne({ "form_identifier": req.params.id })
       : await Form.findOne({ "form_identifier": req.params.id })
