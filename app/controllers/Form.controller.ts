@@ -11,7 +11,7 @@ export const getForms = async (req: Request, res: Response): Promise<Response> =
     __Query(req.query.isTemplate, 'isTemplate', 'boolean')
 
     const user: UserInterface = new User(req.user)
-    const isTemplate: boolean = Boolean(req.query.isTemplate)
+    const isTemplate: boolean = Boolean((String(req.query.isTemplate).toLowerCase() === 'false' ? false : true))
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     let filter_request: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
@@ -51,8 +51,8 @@ export const getForm = async (req: Request, res: Response): Promise<Response> =>
     if (!req.query.isTemplate) __ThrowError("El parámetro 'isTemplate' es obligatorio")
     __Query(req.body.isTemplate, 'isTemplate', 'boolean')
 
-    const isTemplate: boolean = Boolean(req.query.isTemplate)
-
+    const isTemplate: boolean = Boolean(String(req.query.isTemplate).toLowerCase() === 'false' ? false : true)
+    console.log(isTemplate)
     const form: FormInterface | FormTemplateInterface | null = isTemplate
       ? await FormTemplate.findOne({ "form_identifier": req.params.id })
       : await Form.findOne({ "form_identifier": req.params.id })
