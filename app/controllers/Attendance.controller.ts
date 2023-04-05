@@ -134,15 +134,12 @@ export const checkAttendace = async (req: Request, res: Response): Promise<Respo
       "attendance.attendee_list.attendee_register": req.body.attendee_register
     })
 
-    if (!event)
-      return res.status(400).json({
-        message: `No se encontró el evento ${req.params.id}`
-      })
+    if (!event) return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
 
-    const limitDate = new Date(event.starting_date.getTime() + event.tolerance * 60 * 1000)
+    const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
 
-    currentDate > limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
+    currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
 
     await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
       $set: {
