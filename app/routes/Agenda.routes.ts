@@ -1,11 +1,11 @@
-import { Router } from "express"
-import Passport from "passport"
-import { addAttendee, checkAttendace, getAttendees, removeAttendee, updateAttendee } from "../controllers/Attendance.controller"
-import { createEvent, deleteEvent, getAgenda, getEvent, updateEvent, updateEventStatus } from "../controllers/Agenda.controller"
-import { isAdministradorOrEncargado } from "../middleware/RoleControl"
+import { Router } from 'express'
+import Passport from 'passport'
+import { addAttendee, checkAttendace, getAttendees, removeAttendee, updateAttendee } from '../controllers/Attendance.controller'
+import { createEvent, deleteEvent, getAgenda, getEvent, updateEvent, updateEventStatus } from '../controllers/Agenda.controller'
+import { isAdministradorOrEncargado } from '../middleware/RoleControl'
 
 const route = Router()
-const path = "/agenda"
+const path = '/agenda'
 
 // -------------------------- Events ------------------------------------
 
@@ -33,7 +33,10 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 // Añadir a la lista de asistencia un usuario
 route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), addAttendee)
 
-// Añadir a la lista de asistencia un usuario
+// Añadir varios a la lista de asistencia un usuario
+route.post(`${path}/:id/several`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, addAttendee)
+
+// Remover de la lista de asistencia un usuario
 route.patch(`${path}/:id/unsubscribe`, Passport.authenticate('jwt', { session: false }), removeAttendee)
 
 // Actualizar el estado de un usuario en la lista de asistencia
