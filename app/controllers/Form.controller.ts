@@ -16,16 +16,16 @@ export const getForms = async (req: Request, res: Response): Promise<Response> =
     const isTemplate: boolean = Boolean((String(req.query.isTemplate).toLowerCase() === 'true'))
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    let filterRequest: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
     if (user.role === 'Encargado') {
-      filter_request.belonging_area = user.assigned_area
-      filter_request.belonging_place = user.place
+      filterRequest.belonging_area = user.assigned_area
+      filterRequest.belonging_place = user.place
     }
 
     if (req.query.search)
-      filter_request = {
-        ...filter_request,
+      filterRequest = {
+        ...filterRequest,
         $or: [
           { "name": { $regex: req.query.search, $options: 'i' } },
           { "form_identifier": { $regex: req.query.search, $options: 'i' } }
@@ -33,8 +33,8 @@ export const getForms = async (req: Request, res: Response): Promise<Response> =
       }
 
     const forms: FormTemplateInterface[] | FormInterface[] = isTemplate
-      ? await FormTemplate.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
-      : await Form.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+      ? await FormTemplate.find(filterRequest).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+      : await Form.find(filterRequest).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({
       message: 'Listo',

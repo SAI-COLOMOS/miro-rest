@@ -15,40 +15,42 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
     const user: UserInterface = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    let filterRequest: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
-    if (filter_request && filter_request.year && filter_request.period) {
-      const period_condition = filter_request.period === "A"
+    if (filterRequest && filterRequest.year && filterRequest.period) {
+      const period_condition = filterRequest.period === "A"
         ? { $lte: [{ $month: '$createdAt' }, 6] }
         : { $gte: [{ $month: '$createdAt' }, 7] }
-      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filter_request.year)] }
+      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filterRequest.year)] }
 
-      filter_request = { ...filter_request, $expr: { $and: [year_condition, period_condition] } }
+      filterRequest = { ...filterRequest, $expr: { $and: [year_condition, period_condition] } }
 
-      delete filter_request.year
-      delete filter_request.period
+      delete filterRequest.year
+      delete filterRequest.period
     }
 
-    if (filter_request && filter_request.year) {
-      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filter_request.year)] }
-      filter_request = { ...filter_request, $expr: year_condition }
+    if (filterRequest && filterRequest.year) {
+      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filterRequest.year)] }
+      filterRequest = { ...filterRequest, $expr: year_condition }
 
-      delete filter_request.year
+      delete filterRequest.year
     }
 
-    if (filter_request && filter_request.period) {
-      const period_condition = filter_request.period === "A"
+    if (filterRequest && filterRequest.period) {
+      const period_condition = filterRequest.period === "A"
         ? { $lte: [{ $month: '$createdAt' }, 6] }
         : { $gte: [{ $month: '$createdAt' }, 7] }
 
-      filter_request = { ...filter_request, $expr: period_condition }
+      filterRequest = { ...filterRequest, $expr: period_condition }
 
-      delete filter_request.period
+      delete filterRequest.period
     }
 
     if (req.query.search)
-      filter_request = {
-        ...filter_request,
+      filterRequest = {
+        ...filterRequest,
         $or: [
           { "first_name": { $regex: req.query.search, $options: "i" } },
           { "first_last_name": { $regex: req.query.search, $options: "i" } },
@@ -60,17 +62,14 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
       }
 
     if (user.role === 'Encargado') {
-      filter_request.role = 'Prestador'
-      filter_request.place = user.place
-      filter_request.assigned_area = user.assigned_area
+      filterRequest.role = 'Prestador'
+      filterRequest.place = user.place
+      filterRequest.assigned_area = user.assigned_area
     }
 
-    const users: UserInterface[] = await User.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    const users: UserInterface[] = await User.find(filterRequest, filterAvatar).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-    return res.status(200).json({
-      message: "Listo",
-      users
-    })
+    return res.status(200).json({ message: "Listo", users })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
@@ -80,7 +79,9 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
 
 export const UserGet = async (req: Request, res: Response): Promise<Response> => {
   try {
+    const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
     const user: UserInterface | null = await User.findOne({ 'register': req.params.id })
+    if (user && avatar) return res.status(200).json({ message: 'Lsito', avatar: user.avatar })
     let response: object | null = user ? { ...user.toObject() } : null
 
     if (user && user.role === 'Prestador') {

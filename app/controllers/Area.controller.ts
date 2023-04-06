@@ -9,21 +9,21 @@ export const getAreas = async (req: Request, res: Response): Promise<Response> =
 
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : null
+    let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : null
 
-    if (filter_request)
-      Object.keys(filter_request).forEach((key: string) => {
+    if (filterRequest)
+      Object.keys(filterRequest).forEach((key: string) => {
         if (key === "municipality")
-          filter_request.municipality = { $regex: filter_request.municipality, $options: "i" }
+          filterRequest.municipality = { $regex: filterRequest.municipality, $options: "i" }
 
         if (key === "colony")
-          filter_request.colony = { $regex: filter_request.colony, $options: "i" }
+          filterRequest.colony = { $regex: filterRequest.colony, $options: "i" }
       })
 
     if (req.query.search)
-      filter_request = { ...filter_request, $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }] }
+      filterRequest = { ...filterRequest, $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }] }
 
-    const places = await Place.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    const places = await Place.find(filterRequest).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
     const areas: Array<AreaInterface> = []
 
