@@ -1456,7 +1456,7 @@ GET /agenda/:event_identifier
 
 ```javascript
 fetch(
-    `.../users/${event_identifier}`,
+    `.../agenda/${event_identifier}`,
     {
         method: "GET",
         headers: {
@@ -1741,7 +1741,7 @@ GET /forms/:form_identifier
 
 ```javascript
 fetch(
-    `.../users/${form_identifier}?isTemplate=${isTemplate}`,
+    `.../forms/${form_identifier}?isTemplate=${isTemplate}`,
     {
         method: "GET",
         headers: {
@@ -1831,7 +1831,7 @@ The objects of the array `questions` should have the following structure
 |---------------|----------|----------|----------------------------------------------------------------------------|----------------------------------------------------------------|
 | interrogation | `string` | Yes      | Any                                                                        | The actual question to ask                                     |
 | question_type | `string` | Yes      | ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala'] | The type of the question                                       |
-| enum_options  | `array`  | No       | Any                                                                        | The response options in case the question type is no 'Abierta' |
+| enum_options  | `array`  | No       | Any    users                                                                    | The response options in case the question type is no 'Abierta' |
 
 ```javascript
 fetch(
@@ -1853,7 +1853,7 @@ fetch(
             questions
         })
     }
-)
+)users
 ```
 
 ### Delete a form
