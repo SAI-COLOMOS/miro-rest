@@ -37,8 +37,9 @@ export const getPlaces = async (req: Request, res: Response): Promise<Response> 
 
 export const getPlace = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const avatar: boolean = Boolean(req.query.avatar)
-    const place = await Place.findOne({ "place_identifier": req.params.id })
+    const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    const place = await Place.findOne({ "place_identifier": req.params.id }, filterAvatar)
 
     if (avatar && place) return res.status(200).json({ avatar: place.avatar })
 

@@ -80,7 +80,9 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
 export const UserGet = async (req: Request, res: Response): Promise<Response> => {
   try {
     const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
-    const user: UserInterface | null = await User.findOne({ 'register': req.params.id })
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    const user: UserInterface | null = await User.findOne({ 'register': req.params.id }, filterAvatar)
+
     if (user && avatar) return res.status(200).json({ message: 'Lsito', avatar: user.avatar })
     let response: object | null = user ? { ...user.toObject() } : null
 
