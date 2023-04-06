@@ -4,6 +4,7 @@ import Place, { AreaInterface } from "./Place"
 
 export interface UserInterface extends Document {
   register: string
+  avatar: string
   curp: string
   first_name: string
   first_last_name: string
