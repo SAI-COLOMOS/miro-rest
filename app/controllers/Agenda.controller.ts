@@ -18,52 +18,37 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const avatar: boolean = Boolean(req.query.avatar)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
-    filter_request.starting_date = { $gt: currentDate }
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    filterRequest.starting_date = { $gte: currentDate }
 
-    if (history) delete filter_request.starting_date
+    if (history) delete filterRequest.starting_date
 
     if (req.query.search)
-      filter_request = { ...filter_request, $or: [{ "name": { $regex: req.query.search, $options: "i" } }] }
+      filterRequest = { ...filterRequest, $or: [{ "name": { $regex: req.query.search, $options: "i" } }] }
 
     if (user.role === 'Encargado') {
-      filter_request.belonging_area = user.assigned_area
-      filter_request.belonging_place = user.place
-      filter_request['attendance.status'] = { $not: { $regex: "Concluido" } }
+      filterRequest.belonging_area = user.assigned_area
+      filterRequest.belonging_place = user.place
+      filterRequest['attendance.status'] = { $not: { $regex: "Concluido" } }
     }
 
     if (user.role === 'Prestador') {
-      filter_request.belonging_place = user.place
-      filter_request.belonging_area = user.assigned_area
-      filter_request['attendance.status'] = { $not: { $regex: "Concluido" } }
+      filterRequest.belonging_place = user.place
+      filterRequest.belonging_area = user.assigned_area
+      filterRequest['attendance.status'] = { $not: { $regex: "Concluido" } }
     }
 
-    const events: AgendaInterface[] = await Agenda.find(filter_request).sort({ "starting_date": "asc" }).limit(items).skip(page * items)
-    if (events.length === 0) return res.status(200).json({ message: 'Listo', events })
+    const events: AgendaInterface[] = await Agenda.find(filterRequest, filterAvatar).sort({ "starting_date": "asc" }).limit(items).skip(page * items)
+    if (events.length === 0 || user.role !== 'Prestador') return res.status(200).json({ message: 'Listo', events })
 
-    const result: object[] = []
-    if (avatar) {
-      events.forEach((event: AgendaInterface) => {
-        if (event.avatar) result.push({ avatar: event.avatar, event_identifier: event.event_identifier })
-      })
-    } else {
-      events.forEach((event: AgendaInterface) => {
-        const { avatar: _, ...objEvent } = event.toObject()
-        result.push(objEvent)
-      })
-    }
+    const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => {
+      const list: AttendeeInterface[] = event.attendance.attendee_list
+      const registered: boolean = list.some((attendee: AttendeeInterface) => attendee.attendee_register === user.register)
+      return registered || event.attendance.status === 'Disponible'
+    })
 
-    if (user.role === 'Prestador') {
-      const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => {
-        const list: AttendeeInterface[] = event.attendance.attendee_list
-        const registered: boolean = list.some((attendee: AttendeeInterface) => attendee.attendee_register === user.register)
-        return registered || event.attendance.status === 'Disponible'
-      })
-
-      return res.status(200).json({ message: "Listo", events: filteredEvents })
-    }
-
-    return res.status(200).json({ message: "Listo", events: result })
+    return res.status(200).json({ message: "Listo", events: filteredEvents })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
@@ -74,8 +59,9 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
 
 export const getEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const avatar: boolean = Boolean(req.query.avatar)
-    const event = await Agenda.findOne({ "event_identifier": req.params.id })
+    const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    const event = await Agenda.findOne({ "event_identifier": req.params.id }, filterAvatar)
     if (!event) return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
 
     if (avatar) return res.status(200).json({ avatar: event.avatar })
@@ -102,11 +88,16 @@ export const getEvent = async (req: Request, res: Response): Promise<Response> =
 export const createEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
     const user: UserInterface = new User(req.user)
-    req.body.belonging_place = user.place
-    req.body.belonging_area = user.assigned_area
+    if (user.role === 'Encargado') {
+      req.body.belonging_place = user.place
+      req.body.belonging_area = user.assigned_area
+    } else {
+      __Required(req.body.belonging_place, `belonging_place`, `string`, null)
+      __Required(req.body.belonging_area, `belonging_area`, `string`, null)
+    }
+
     req.body.author_register = user.register
     req.body.author_name = `${user.first_name} ${user.first_last_name}${user.second_last_name ? ` ${user.second_last_name}` : ''}`
-
     __Required(req.body.name, `name`, `string`, null)
     __Required(req.body.tolerance, `tolerance`, `number`, null)
     __Required(req.body.description, `description`, `string`, null)
@@ -342,7 +333,7 @@ const endEvent = async (event_identifier: string, author_name: string, time: str
     async function (event_identifier: string, author_name: string) {
       const event = await Agenda.findOne({ "event_identifier": event_identifier })
 
-      if (!event || event.attendance.status === 'Concluido') return
+      if (!event || event.attendance.status === 'Concluido' || 'Concluido por sistema') return
 
       event.attendance.status = 'Concluido por sistema'
       const currentDate = new Date()
