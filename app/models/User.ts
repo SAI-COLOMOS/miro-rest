@@ -34,8 +34,7 @@ const UserSchema = new Schema(
     curp: {
       type: String,
       required: [true, "La CURP es necesaria"],
-      trim: true,
-      unique: true
+      trim: true
     },
     first_name: {
       type: String,
