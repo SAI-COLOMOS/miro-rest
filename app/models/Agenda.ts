@@ -2,9 +2,12 @@ import { model, Schema, Document } from 'mongoose'
 
 export interface AttendeeInterface {
   attendee_register: string
+  first_name: string
+  first_last_name: string
+  second_last_name: string
   status: string
   check_in?: Date
-  createdAt?: Date
+  enrollment_date?: Date
 }
 
 export interface AttendanceInterface extends Document {
@@ -39,6 +42,20 @@ const AttendeeSchema = new Schema({
     unique: true,
     required: [true, "El registro del usuario es obligatorio"]
   },
+  first_name: {
+    type: String,
+    required: [true, "El nombre es necesario"],
+    trim: true
+  },
+  first_last_name: {
+    type: String,
+    required: [true, "Un apellido es necesario"],
+    trim: true
+  },
+  second_last_name: {
+    type: String,
+    trim: true
+  },
   status: {
     type: String,
     required: [true, "El status del usuario es obligatorio"],
@@ -46,9 +63,10 @@ const AttendeeSchema = new Schema({
   },
   check_in: {
     type: Date
+  },
+  enrollment_date: {
+    type: Date
   }
-}, {
-  timestamps: true
 })
 
 const AttendanceSchema = new Schema({

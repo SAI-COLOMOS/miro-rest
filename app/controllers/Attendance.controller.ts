@@ -45,10 +45,15 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
     if (registeredIndex === -1)
       event.attendance.attendee_list.push({
         attendee_register: user.register,
+        first_name: user.first_name,
+        first_last_name: user.first_last_name,
+        second_last_name: user.second_last_name,
         status: 'Inscrito'
       })
-    else
+    else {
       event.attendance.attendee_list[registeredIndex].status = 'Inscrito'
+      event.attendance.attendee_list[registeredIndex].enrollment_date = new Date()
+    }
 
     if (event.attendance.attendee_list.length === event.vacancy)
       event.attendance.status = 'Vacantes completas'
@@ -78,11 +83,17 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
 
       if (index !== -1)
         event.attendance.attendee_list[index].status = 'Inscrito'
-      else
+      else {
+        const user: UserInterface | null = await User.findOne({ 'register': attendeeInList.register })
+        if (!user) continue
         event.attendance.attendee_list.push({
           attendee_register: attendeeInList.register,
+          first_name: user.first_name,
+          first_last_name: user.first_last_name,
+          second_last_name: user.second_last_name,
           status: 'Inscrito'
         })
+      }
     }
 
     event.markModified('attendance.attendee_list')
@@ -107,7 +118,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 
     if (attendee_index === -1) return res.status(400).json({ message: `El usuario no está inscrito al evento ${req.params.id}` })
 
-    const limitDate: Date = new Date(event.attendance.attendee_list[attendee_index].createdAt!.getTime() + (6 * 1000 * 60 * 60))
+    const limitDate: Date = new Date(event.attendance.attendee_list[attendee_index].enrollment_date!.getTime() + (6 * 1000 * 60 * 60))
     if (limitDate < new Date()) return res.status(400).json({ message: 'Ya no es posible desinscribirse del evento' })
 
     event.attendance.attendee_list[attendee_index].status = 'Desinscrito'
