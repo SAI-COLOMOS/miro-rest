@@ -5,10 +5,10 @@ import Card from "../models/Card"
 
 interface Request_body {
   message: string
-  events: AgendaInterface[]
+  enrolled_events: AgendaInterface[]
   achieved_hours?: number
   total_hours?: number
-  available_events?: Array<object>
+  available_events?: object[]
 }
 
 export const getProfile = async (req: Request, res: Response): Promise<Response> => {
@@ -36,32 +36,24 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     const user = new User(req.user)
     const currentDate = new Date()
 
-    const registeredEvents: AgendaInterface[] = await Agenda.find({
+    const enrolled_events: AgendaInterface[] = await Agenda.find({
       "attendance.attendee_list.attendee_register": user.register,
-      "starting_date": { $gt: currentDate }
-    }).sort({ "createdAt": "desc" })
+      "starting_date": { $gte: currentDate },
+      "attendance.status": { $not: { $regex: 'Concluido' } }
+    }, { avatar: 0 }).sort({ "starting_date": "asc" })
 
-    const response_body: Request_body = {
-      message: "Feed lista",
-      events: registeredEvents
-    }
+    const response_body: Request_body = { message: "Feed lista", enrolled_events }
 
     if (user.role === "Prestador") {
       const card = await Card.findOne({ "provider_register": user.register })
 
-      const events: AgendaInterface[] = await Agenda.find({
+      const availableEvents: AgendaInterface[] = await Agenda.find({
         "belonging_place": user.place,
         "belonging_area": user.assigned_area,
         "attendance.status": "Disponible",
         "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } },
-        "starting_date": { $gt: currentDate }
-      }).sort({ "createdAt": "desc" })
-
-      const availableEvents: Array<object> = events.map((event: AgendaInterface) => ({
-        "name": event.name,
-        "starting_date": event.starting_date.toISOString(),
-        "place": event.place
-      }))
+        "starting_date": { $gte: currentDate }
+      }, { avatar: 0 }).sort({ "starting_date": "asc" })
 
       response_body.achieved_hours = card?.achieved_hours
       response_body.total_hours = card?.total_hours
