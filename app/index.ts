@@ -1,12 +1,14 @@
-import Server from "./server"
-import Mongoose from "mongoose"
-import Environment from "./config/Environment"
+import Server from './server'
+import Mongoose from 'mongoose'
+import Environment from './config/Environment'
+import { initEvents } from './controllers/NodeEvent.controller'
 
 Server.listen(Server.get('port'))
 
 Mongoose.set('strictQuery', false)
 Mongoose.connect(Environment.MonogoDB.uri)
 Mongoose.connection.once('open', () => {
+  initEvents()
 }).on('error', error => {
   console.error(error)
   process.exit(0)
