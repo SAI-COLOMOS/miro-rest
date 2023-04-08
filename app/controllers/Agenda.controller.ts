@@ -6,6 +6,7 @@ import Environment from '../config/Environment'
 import schedule from 'node-schedule'
 import { mensaje, sendEmail } from '../config/Mailer'
 import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
+import { startEvent, publishEvent, endEvent } from './NodeEvent.controller'
 
 export const getAgenda = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -125,14 +126,14 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
         sendEmail(from, user.email, subject, body)
       }
     } else {
-      emailNotifications(event.event_identifier, event.publishing_date.toISOString())
+      publishEvent(event.event_identifier, event.publishing_date.toISOString())
     }
 
     const time: Date = event.ending_date
     time.setHours(time.getHours() + 1)
     endEvent(event.event_identifier, event.author_name, time.toISOString())
 
-    startingEvent(event.event_identifier, event.starting_date.toISOString())
+    startEvent(event.event_identifier, event.starting_date.toISOString())
 
     return res.status(201).json({ message: "Evento creado" })
   } catch (error) {
@@ -201,7 +202,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
           await sendEmail(from, user.email, subject, body)
         }
       } else {
-        emailNotifications(event.event_identifier, event.publishing_date.toISOString())
+        publishEvent(event.event_identifier, event.publishing_date.toISOString())
       }
     }
 
@@ -214,7 +215,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
 
     if (event && req.body.starting_date) {
       schedule.cancelJob(`start_${event.event_identifier}`)
-      startingEvent(event.event_identifier, event.starting_date.toISOString())
+      startEvent(event.event_identifier, event.starting_date.toISOString())
     }
 
     return res.status(200).json({ message: `Se actualizó la información del evento ${req.params.id}` })
@@ -297,67 +298,4 @@ export const deleteEvent = async (req: Request, res: Response): Promise<Response
       error: error?.toString()
     })
   }
-}
-
-const emailNotifications = async (event_identifier: string, time: string): Promise<void> => {
-  schedule.scheduleJob(event_identifier, time,
-    async function (event_identifier: string) {
-      const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
-      if (!event) return
-      event.attendance.status = 'Disponible'
-      event.save()
-      const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
-      const from = `"SAI" ${Environment.Mailer.email}`
-      const subject = '¡Hay un evento disponible para tí!'
-      const body = mensaje(`La inscripción para el evento  ${event.name} empieza en una hora.`)
-      for (const user of users) {
-        sendEmail(from, user.email, subject, body)
-      }
-    }.bind(null, event_identifier)
-  )
-}
-
-const startingEvent = async (event_identifier: string, time: string) => {
-  schedule.scheduleJob(`start_${event_identifier}`, time,
-    async function (event_identifier: string) {
-      const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
-      if (!event) return
-      event.attendance.status = 'En proceso'
-      event.save()
-    }.bind(null, event_identifier)
-  )
-}
-
-const endEvent = async (event_identifier: string, author_name: string, time: string): Promise<void> => {
-  schedule.scheduleJob(`end_${event_identifier}`, time,
-    async function (event_identifier: string, author_name: string) {
-      const event = await Agenda.findOne({ "event_identifier": event_identifier })
-
-      if (!event || event.attendance.status === 'Concluido' || 'Concluido por sistema') return
-
-      event.attendance.status = 'Concluido por sistema'
-      const currentDate = new Date()
-      for (const [index, attendee] of event.attendance.attendee_list.entries()) {
-        if (attendee.status === 'Inscrito') {
-          event.attendance.attendee_list[index].status = 'No asistió'
-          continue
-        }
-
-        const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
-        if (!card) continue
-
-        card.activities.push({
-          "activity_name": event.name,
-          "hours": event.offered_hours,
-          "responsible_register": event.author_register,
-          "assignation_date": currentDate,
-          "responsible_name": author_name
-        })
-
-        card.markModified('activities')
-        card.save()
-        event.save()
-      }
-    }.bind(null, event_identifier, author_name)
-  )
 }
