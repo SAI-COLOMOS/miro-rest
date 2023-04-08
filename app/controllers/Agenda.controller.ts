@@ -114,15 +114,15 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     if (!event) res.status(500).json({ message: "No se pudo crear el evento" })
 
     const currentDate: Date = new Date()
-    if (event.publishing_date < currentDate) {
+    if (event.publishing_date <= currentDate) {
       event.attendance.status = 'Disponible'
       event.save()
       const users = await User.find({ "status": "Activo", "role": "Prestador" })
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = '¡Hay un evento disponible para tí!'
-      const body = mensaje(`La inscripción para el evento  ${event.name} empieza en una hora.`)
+      const body = mensaje(`La inscripción para el evento  ${event.name} ya se encuentra habilitada.`)
       for (const user of users) {
-        await sendEmail(from, user.email, subject, body)
+        sendEmail(from, user.email, subject, body)
       }
     } else {
       emailNotifications(event.event_identifier, event.publishing_date.toISOString())
@@ -306,12 +306,12 @@ const emailNotifications = async (event_identifier: string, time: string): Promi
       if (!event) return
       event.attendance.status = 'Disponible'
       event.save()
-      const users = await User.find({ "status": "Activo", "role": "Prestador" })
+      const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = '¡Hay un evento disponible para tí!'
       const body = mensaje(`La inscripción para el evento  ${event.name} empieza en una hora.`)
       for (const user of users) {
-        await sendEmail(from, user.email, subject, body)
+        sendEmail(from, user.email, subject, body)
       }
     }.bind(null, event_identifier)
   )
