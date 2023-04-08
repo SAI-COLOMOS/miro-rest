@@ -3,16 +3,16 @@
 //Importaciones de librerías
 import express from 'express'
 import morgan from 'morgan'
-import passport from "passport"
-import ControlAccess from "./middleware/AccessControl"
+import passport from 'passport'
+import ControlAccess from './middleware/AccessControl'
 // import bodyParser from "body-parser"
 //import path from 'path'
 //import { fileURLToPath } from "url"
 
 // Importaciones de rutas
-import Auth from "./routes/Auth.routes"
-import Users from "./routes/Users.routes"
-import Profile from "./routes/Profile.routes"
+import Auth from './routes/Auth.routes'
+import Users from './routes/Users.routes'
+import Profile from './routes/Profile.routes'
 import Card from './routes/Card.routes'
 import Agenda from './routes/Agenda.routes'
 import Place from './routes/Place.routes'
@@ -33,7 +33,7 @@ app.use(express.static(__dirname + '/public'))
 
 /* Middleware */
 app.use(morgan('dev'))
-app.use(express.json({limit: '5mb'}))
+app.use(express.json({ limit: '5mb' }))
 // app.use(bodyParser.json({limit: '5mb'}))
 app.use(express.urlencoded({ extended: false }))
 app.use(passport.initialize())
