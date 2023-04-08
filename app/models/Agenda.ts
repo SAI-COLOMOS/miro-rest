@@ -5,6 +5,8 @@ export interface AttendeeInterface {
   first_name: string
   first_last_name: string
   second_last_name: string
+  provider_type: string
+  role: string
   status: string
   check_in?: Date
   enrollment_date?: Date
@@ -55,6 +57,16 @@ const AttendeeSchema = new Schema({
   second_last_name: {
     type: String,
     trim: true
+  },
+  provider_type: {
+    type: String,
+    enum: ["Servicio social", "Prácticas profesionales", "No aplica"],
+    default: "No aplica"
+  },
+  role: {
+    type: String,
+    enum: ["Administrador", "Encargado", "Prestador"],
+    required: [true, "El rol es necesario"],
   },
   status: {
     type: String,

@@ -48,6 +48,8 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
         first_name: user.first_name,
         first_last_name: user.first_last_name,
         second_last_name: user.second_last_name,
+        provider_type: user.provider_type,
+        role: user.role,
         status: 'Inscrito'
       })
     else {
@@ -91,6 +93,8 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
           first_name: user.first_name,
           first_last_name: user.first_last_name,
           second_last_name: user.second_last_name,
+          provider_type: user.provider_type,
+          role: user.role,
           status: 'Inscrito'
         })
       }
