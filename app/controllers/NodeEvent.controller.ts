@@ -11,6 +11,7 @@ export const publishEvent = async (event_identifier: string, time: string): Prom
       const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
       if (!event) return
       event.attendance.status = 'Disponible'
+      event.has_been_published = true
       event.save()
       const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
       const from = `"SAI" ${Environment.Mailer.email}`
@@ -76,7 +77,7 @@ export const initEvents = async () => {
   }, { "avatar": 0 })
 
   events.forEach((event: AgendaInterface) => {
-    publishEvent(event.event_identifier, event.publishing_date.toISOString())
+    if (!event.has_been_published) publishEvent(event.event_identifier, event.publishing_date.toISOString())
     startEvent(event.event_identifier, event.starting_date.toISOString())
     endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
   })

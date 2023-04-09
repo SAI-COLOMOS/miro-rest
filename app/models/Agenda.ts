@@ -31,6 +31,7 @@ export interface AgendaInterface extends Document {
   author_register: string
   author_name: string
   publishing_date: Date
+  has_been_published: boolean
   place: string
   belonging_area: string
   belonging_place: string
@@ -148,6 +149,10 @@ const AgendaSchema = new Schema({
   publishing_date: {
     type: Date,
     required: [true, "La fecha de publicación del evento es obligatoria"]
+  },
+  has_been_published: {
+    type: Boolean,
+    default: false
   },
   place: {
     type: String,
