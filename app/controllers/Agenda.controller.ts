@@ -13,7 +13,6 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     __Query(req.query.items, `items`, `number`)
     __Query(req.query.page, `page`, `number`)
 
-    const currentDate = new Date()
     const user: UserInterface = new User(req.user)
     const history: boolean = Boolean(String(req.query.history).toLowerCase() === 'true')
     const avatar: boolean = Boolean(req.query.avatar)
@@ -21,8 +20,8 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
     let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
-    filterRequest.starting_date = { $gte: filterRequest.starting_date ? new Date(filterRequest.starting_date) : currentDate }
 
+    if (filterRequest.starting_date) filterRequest.starting_date = { $gte: new Date(filterRequest.starting_date) }
     if (history) delete filterRequest.starting_date
 
     if (req.query.search)
@@ -98,7 +97,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     }
 
     req.body.author_register = user.register
-    req.body.author_name = `${user.first_name} ${user.first_last_name}${user.second_last_name ? ` ${user.second_last_name}` : ''}`
+    req.body.author_name = `${user.first_name} ${user.first_last_name} ${user.second_last_name ? ` ${user.second_last_name}` : ''}`
     __Required(req.body.name, `name`, `string`, null)
     __Required(req.body.tolerance, `tolerance`, `number`, null)
     __Required(req.body.description, `description`, `string`, null)
@@ -144,6 +143,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    console.log(response)
     return res.status(statusCode).json(response)
   }
 }
@@ -155,6 +155,9 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
 
     if (req.body.author_register)
       __ThrowError("El campo 'author_register' no se puede modificar")
+
+    if (req.body.author_name)
+      __ThrowError("El campo 'author_name' no se puede modificar")
 
     if (req.body.belonging_area)
       __ThrowError("El campo 'belonging_area' no se puede modificar")
