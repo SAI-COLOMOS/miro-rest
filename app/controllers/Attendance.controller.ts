@@ -50,7 +50,8 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
         second_last_name: user.second_last_name,
         provider_type: user.provider_type,
         role: user.role,
-        status: 'Inscrito'
+        status: 'Inscrito',
+        enrollment_date: new Date()
       })
     else {
       event.attendance.attendee_list[registeredIndex].status = 'Inscrito'
@@ -127,7 +128,15 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 
     event.attendance.attendee_list[attendee_index].status = 'Desinscrito'
     event.markModified('attendance.attendee_list')
-    event.save()
+
+    let list: number = 0
+    event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
+      if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
+    })
+
+    if (list < event.vacancy) event.attendance.status === 'Disponible'
+
+    await event.save()
 
     return res.status(200).json({ message: 'Se desinscribió el usuario del evento' })
   } catch (error) {
