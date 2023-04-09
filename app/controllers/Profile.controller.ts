@@ -33,10 +33,11 @@ export const getProfile = async (req: Request, res: Response): Promise<Response>
 export const getFeed = async (req: Request, res: Response): Promise<Response> => {
   try {
     const user = new User(req.user)
-    const currentDate = new Date()
-    let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: 'Concluido' } } }
-    if (user.register === 'Prestador') querySearch["attendance.attendee_list.attendee_register"] = user.register
-    else querySearch = {
+    let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: /^Concluido|Por publicar/ } } }
+    if (user.role === 'Prestador') {
+      querySearch["attendance.attendee_list.attendee_register"] = user.register
+      querySearch["attendance.attendee_list.status"] = 'Inscrito'
+    } else querySearch = {
       ...querySearch, $or: [
         { "author_register": user.register },
         { "attendance.attendee_list.attendee_register": user.register }
@@ -44,7 +45,6 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     }
 
     const enrolled_events: AgendaInterface[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
-
     const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
 
     if (user.role === 'Prestador') {
@@ -55,7 +55,6 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
         "belonging_area": user.assigned_area,
         "attendance.status": "Disponible",
         "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } },
-        "starting_date": { $gte: currentDate }
       }, { avatar: 0 }).sort({ "starting_date": "asc" })
 
       responseBody.achieved_hours = card?.achieved_hours
