@@ -34,9 +34,14 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
   try {
     const user = new User(req.user)
     const currentDate = new Date()
-    const querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: 'Concluido' } } }
+    let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: 'Concluido' } } }
     if (user.register === 'Prestador') querySearch["attendance.attendee_list.attendee_register"] = user.register
-    else querySearch.author_register = user.register
+    else querySearch = {
+      ...querySearch, $or: [
+        { "author_register": user.register },
+        { "attendance.attendee_list.attendee_register": user.register }
+      ]
+    }
 
     const enrolled_events: AgendaInterface[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
 
