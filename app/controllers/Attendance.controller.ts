@@ -30,7 +30,7 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
-      if (attendee.status === 'Inscrito') list++
+      if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
     })
     if (list === event.vacancy)
       __ThrowError('El evento tiene todas las vacantes ocupadas')
