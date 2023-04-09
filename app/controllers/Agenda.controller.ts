@@ -21,7 +21,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
     let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
-    filterRequest.starting_date = { $gte: currentDate }
+    filterRequest.starting_date = { $gte: filterRequest.starting_date ? new Date(filterRequest.starting_date) : currentDate }
 
     if (history) delete filterRequest.starting_date
 
@@ -69,7 +69,7 @@ export const getEvent = async (req: Request, res: Response): Promise<Response> =
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
-      if (attendee.status === 'Inscrito') list++
+      if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
     })
 
     const mutatedEvent = { ...event.toObject(), registered_users: list }
@@ -117,6 +117,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     const currentDate: Date = new Date()
     if (event.publishing_date <= currentDate) {
       event.attendance.status = 'Disponible'
+      event.has_been_published = true
       event.save()
       const users = await User.find({ "status": "Activo", "role": "Prestador" })
       const from = `"SAI" ${Environment.Mailer.email}`
@@ -145,11 +146,6 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
 
 export const updateEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
-    Object.keys(req.body).forEach((key: string) => {
-      if (req.body[key] === "")
-        delete req.body[key]
-    })
-
     if (req.body.event_identifier)
       __ThrowError("El campo 'event_identifier' no se puede modificar")
 
@@ -191,8 +187,9 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
     if (event && req.body.publishing_date) {
       schedule.cancelJob(event.event_identifier)
       const currentDate: Date = new Date()
-      if (event.publishing_date < currentDate) {
+      if (!event.has_been_published && event.publishing_date < currentDate) {
         event.attendance.status = 'Disponible'
+        event.has_been_published = true
         event.save()
         const users = await User.find({ "status": "Activo", "role": "Prestador" })
         const from = `"SAI" ${Environment.Mailer.email}`
