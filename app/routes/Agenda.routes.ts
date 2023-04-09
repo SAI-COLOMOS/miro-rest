@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import Passport from 'passport'
-import { addAttendee, checkAttendace, getAttendees, removeAttendee, updateAttendee } from '../controllers/Attendance.controller'
+import { addAttendee, addSeveralAttendees, checkAttendance, getAttendees, removeAttendee, updateAttendee } from '../controllers/Attendance.controller'
 import { createEvent, deleteEvent, getAgenda, getEvent, updateEvent, updateEventStatus } from '../controllers/Agenda.controller'
 import { isAdministradorOrEncargado } from '../middleware/RoleControl'
 
@@ -31,21 +31,21 @@ route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), is
 // -------------------------- Attendance ------------------------------------
 
 // Añadir a la lista de asistencia un usuario
-route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), addAttendee)
-
-// Añadir varios a la lista de asistencia un usuario
-route.post(`${path}/:id/several`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, addAttendee)
+route.post(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), addAttendee)
 
 // Remover de la lista de asistencia un usuario
-route.patch(`${path}/:id/unsubscribe`, Passport.authenticate('jwt', { session: false }), removeAttendee)
+route.delete(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), removeAttendee)
 
 // Actualizar el estado de un usuario en la lista de asistencia
-route.patch(`${path}/:id/status`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
-
-// Actualizar la asistencia del evento de un usuario
-route.patch(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, checkAttendace)
+route.patch(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
 
 // Obtener todos los usuarios en la lista de asistencia
 route.get(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), getAttendees)
+
+// Añadir varios a la lista de asistencia un usuario
+route.post(`${path}/:id/attendance/several`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, addSeveralAttendees)
+
+// Tomar asistencia
+route.patch(`${path}/:id/attendance/take`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, checkAttendance) 
 
 export default route

@@ -137,7 +137,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
   }
 }
 
-export const checkAttendace = async (req: Request, res: Response): Promise<Response> => {
+export const checkAttendance = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
 
