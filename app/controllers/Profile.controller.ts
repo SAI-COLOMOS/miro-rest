@@ -5,7 +5,6 @@ import Card from "../models/Card"
 
 interface Request_body {
   enrolled_event: AgendaInterface | null
-  created_events?: AgendaInterface[]
   achieved_hours?: number
   total_hours?: number
   available_events?: object[]
@@ -35,11 +34,11 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
   try {
     const user = new User(req.user)
     const currentDate = new Date()
+    const querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: 'Concluido' } } }
+    if (user.register === 'Prestador') querySearch["attendance.attendee_list.attendee_register"] = user.register
+    else querySearch.author_register = user.register
 
-    const enrolled_events: AgendaInterface[] = await Agenda.find({
-      "attendance.attendee_list.attendee_register": user.register,
-      "attendance.status": { $not: { $regex: 'Concluido' } }
-    }, { avatar: 0 }).sort({ "starting_date": "asc" })
+    const enrolled_events: AgendaInterface[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
 
     const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
 
@@ -57,15 +56,6 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
       responseBody.achieved_hours = card?.achieved_hours
       responseBody.total_hours = card?.total_hours
       responseBody.available_events = availableEvents
-    }
-
-    if (user.role === 'Encargado') {
-      const created_events: AgendaInterface[] = await Agenda.find({
-        "author_register": user.register,
-        "attendance.status": { $not: { $regex: 'Concluido' } }
-      })
-
-      responseBody.created_events = created_events
     }
 
     return res.status(200).json(responseBody)

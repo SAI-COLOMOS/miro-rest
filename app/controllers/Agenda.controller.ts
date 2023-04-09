@@ -109,16 +109,20 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     __Required(req.body.publishing_date, `publishing_date`, `string`, null, true)
     __Required(req.body.place, `place`, `string`, null)
     __Optional(req.body.avatar, `avatar`, `string`, null)
+    __Optional(req.body.status, `status`, `string`, ['Borrador'])
 
-    const event: AgendaInterface = await new Agenda(req.body).save()
+    const event: AgendaInterface = new Agenda(req.body)
+    if (req.body.status) event.attendance.status = req.body.status
+    await event.save()
 
     if (!event) res.status(500).json({ message: "No se pudo crear el evento" })
+    if (event.attendance.status === 'Borrador') return res.status(201).json({ message: "Evento creado" })
 
     const currentDate: Date = new Date()
     if (event.publishing_date <= currentDate) {
       event.attendance.status = 'Disponible'
       event.has_been_published = true
-      event.save()
+      await event.save()
       const users = await User.find({ "status": "Activo", "role": "Prestador" })
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = '¡Hay un evento disponible para tí!'

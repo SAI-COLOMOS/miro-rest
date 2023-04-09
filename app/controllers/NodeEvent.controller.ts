@@ -77,6 +77,7 @@ export const initEvents = async () => {
   }, { "avatar": 0 })
 
   events.forEach((event: AgendaInterface) => {
+    if (event.attendance.status === 'Borrador') return
     if (!event.has_been_published) publishEvent(event.event_identifier, event.publishing_date.toISOString())
     startEvent(event.event_identifier, event.starting_date.toISOString())
     endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
