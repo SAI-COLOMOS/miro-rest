@@ -6,7 +6,7 @@ import Environment from '../config/Environment'
 import schedule from 'node-schedule'
 import { mensaje, sendEmail } from '../config/Mailer'
 import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
-import { startEvent, publishEvent, endEvent } from './NodeEvent.controller'
+import { startEvent, publishEvent, endEvent, aboutToStartEvent } from './NodeEvent.controller'
 
 export const getAgenda = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -158,6 +158,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
 
     endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
     startEvent(event.event_identifier, event.starting_date.toISOString())
+    aboutToStartEvent(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
 
     return res.status(201).json({ message: "Evento creado" })
   } catch (error) {
@@ -214,7 +215,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
     if (event && req.body.publishing_date) {
       schedule.cancelJob(event.event_identifier)
       const currentDate: Date = new Date()
-      if (!event.has_been_published && event.publishing_date < currentDate) {
+      if (!event.has_been_published && event.publishing_date <= currentDate) {
         event.attendance.status = 'Disponible'
         event.has_been_published = true
         event.save()
@@ -239,7 +240,9 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
 
     if (event && req.body.starting_date) {
       schedule.cancelJob(`start_${event.event_identifier}`)
+      schedule.cancelJob(`aboutToStart_${event.event_identifier}`)
       startEvent(event.event_identifier, event.starting_date.toISOString())
+      aboutToStartEvent(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
     }
 
     return res.status(200).json({ message: `Se actualizó la información del evento ${req.params.id}` })
@@ -307,6 +310,7 @@ export const deleteEvent = async (req: Request, res: Response): Promise<Response
       schedule.cancelJob(req.params.id)
       schedule.cancelJob(`end_${req.params.id}`)
       schedule.cancelJob(`start_${req.params.id}`)
+      schedule.cancelJob(`aboutToStart_${req.params.id}`)
 
       return res.status(200).json({
         message: "Evento eliminado"
