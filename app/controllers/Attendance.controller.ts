@@ -2,6 +2,8 @@ import { Request, Response } from 'express'
 import Agenda, { AgendaInterface, AttendeeInterface } from '../models/Agenda'
 import User, { UserInterface } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from '../middleware/ValidationControl'
+import { sendEmail, mensaje } from '../config/Mailer'
+import Environment from '../config/Environment'
 
 export const getAttendees = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -100,6 +102,15 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
         })
       }
     }
+    const responsible: UserInterface = new User(req.user)
+    for (const attendee of attendeeList) {
+      const user: UserInterface | null = await User.findOne({ "register": attendee.register })
+      if (!user) continue
+      const from = `"SAI" ${Environment.Mailer.email}`
+      const subject = 'Haz sido inscrito a un evento'
+      const body = mensaje(`Haz sido inscrito al evento ${event.name} por ${responsible.first_name}`)
+      sendEmail(from, user.email, subject, body)
+    }
 
     event.markModified('attendance.attendee_list')
     event.save()
@@ -108,6 +119,7 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    console.log(response)
     return res.status(statusCode).json(response)
   }
 }
@@ -134,7 +146,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
       if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
     })
 
-    if (list < event.vacancy) event.attendance.status === 'Disponible'
+    if (list < event.vacancy && event.attendance.status === 'Vacantes completas') event.attendance.status = 'Disponible'
 
     await event.save()
 
@@ -149,6 +161,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 export const checkAttendance = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
+    __Optional(req.body.status, `status`, `string`, ["Asistió", "Retardo"])
 
     const event: AgendaInterface | null = await Agenda.findOne({
       "event_identifier": req.params.id,
@@ -166,7 +179,7 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
     const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
 
-    currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
+    if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
 
     await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
       $set: {
@@ -179,6 +192,7 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    console.log(response)
     return res.status(statusCode).json(response)
   }
 }
