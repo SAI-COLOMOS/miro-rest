@@ -175,7 +175,7 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
       attendee.attendee_register === req.body.attendee_register && (attendee.status === 'Asistió' || attendee.status === 'Retardo'))
 
     if (attendanceHasBeenChecked)
-      return res.status(202)
+      return res.status(200)
 
     const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
