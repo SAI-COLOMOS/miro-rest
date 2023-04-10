@@ -40,7 +40,7 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     } else querySearch = {
       ...querySearch, $or: [
         { "author_register": user.register },
-        { "attendance.attendee_list.attendee_register": user.register }
+        { "attendance.attendee_list.attendee_register": user.register, "attendance.attendee_list.status": 'Inscrito' }
       ]
     }
 
