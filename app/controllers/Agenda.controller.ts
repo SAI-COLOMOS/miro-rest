@@ -36,7 +36,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     if (user.role === 'Prestador') {
       filterRequest.belonging_place = user.place
       filterRequest.belonging_area = user.assigned_area
-      filterRequest['attendance.status'] = { $not: { $regex: /^Concluido|Por publicar/ } }
+      filterRequest['attendance.status'] = { $not: { $regex: /^Concluido|Por publicar|Vacantes completas|Borrador/ } }
     }
 
     const events: AgendaInterface[] = await Agenda.find(filterRequest, filterAvatar).sort({ "starting_date": "asc" }).limit(items).skip(page * items)
@@ -44,8 +44,20 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
 
     const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => {
       const list: AttendeeInterface[] = event.attendance.attendee_list
-      const registered: boolean = list.some((attendee: AttendeeInterface) => attendee.attendee_register === user.register)
-      return registered || event.attendance.status === 'Disponible'
+      const registered: boolean = list.some((attendee: AttendeeInterface) => {
+        const { attendee_register, status } = attendee
+        if (attendee_register === user.register && (status === 'Inscrito' || status === 'Asistió' || status === 'Inscrito'))
+          return true
+        return false
+      })
+
+      const status = event.attendance.status
+
+      if (status === 'Disponible') return true
+
+      if (status === 'En proceso' && registered) return true
+
+      return false
     })
 
     return res.status(200).json({ message: "Listo", events: filteredEvents })
@@ -56,6 +68,17 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     return res.status(statusCode).json(response)
   }
 }
+
+// export const getDrafts = async (req: Request, res: Response): Promise<Response> => {
+//   try {
+//     const drafts: AgendaInterface[] = await 
+//   } catch (error) {
+//     const statusCode: number = typeof error === 'string' ? 400 : 500
+//     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+//     if (statusCode === 500) console.log(error?.toString())
+//     return res.status(statusCode).json(response)
+//   }
+// }
 
 export const getEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -68,7 +91,7 @@ export const getEvent = async (req: Request, res: Response): Promise<Response> =
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
-      if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
+      if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
     })
 
     const mutatedEvent = { ...event.toObject(), registered_users: list }
@@ -133,10 +156,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
       publishEvent(event.event_identifier, event.publishing_date.toISOString())
     }
 
-    const time: Date = event.ending_date
-    time.setHours(time.getHours() + 1)
-    endEvent(event.event_identifier, event.author_name, time.toISOString())
-
+    endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
     startEvent(event.event_identifier, event.starting_date.toISOString())
 
     return res.status(201).json({ message: "Evento creado" })
