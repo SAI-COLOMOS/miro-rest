@@ -35,6 +35,17 @@ export const startEvent = async (event_identifier: string, time: string) => {
   )
 }
 
+export const aboutToStartEvent = async (event_identifier: string, time: string) => {
+  schedule.scheduleJob(`aboutToStart_${event_identifier}`, time,
+    async function (event_identifier: string) {
+      const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
+      if (!event) return
+      event.attendance.status = 'Por empezar'
+      await event.save()
+    }.bind(null, event_identifier)
+  )
+}
+
 export const endEvent = async (event_identifier: string, author_name: string, time: string): Promise<void> => {
   schedule.scheduleJob(`end_${event_identifier}`, time,
     async function (event_identifier: string, author_name: string) {
@@ -76,17 +87,26 @@ export const initEvents = async () => {
     "attendance.status": { $not: { $regex: "Concluido" } }
   }, { "avatar": 0 })
 
+  console.log('Eventos a analizar: ' + events.length)
+
   for (const event of events) {
-    if (event.attendance.status === 'Borrador') continue
+    if (event.attendance.status === 'Borrador') {
+      console.log('El evento ' + event.event_identifier + ' es un borrador')
+      continue
+    }
 
     if (currentDate >= event.ending_date) {
+      console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Concluido por sistema'
       await event.save()
       continue
-    } else
+    } else {
+      console.log(`Se agendó el término del evento ${event.event_identifier}`)
       endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
+    }
 
     if (!event.has_been_published && currentDate >= event.publishing_date) {
+      console.log(`Se habilitó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Disponible'
       event.has_been_published = true
       const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
@@ -96,13 +116,26 @@ export const initEvents = async () => {
       for (const user of users) {
         sendEmail(from, user.email, subject, body)
       }
-    } else if (!event.has_been_published)
+    } else if (!event.has_been_published) {
+      console.log(`se agendó la publicación del evento ${event.event_identifier}`)
       publishEvent(event.event_identifier, event.publishing_date.toISOString())
+    }
 
-    if (currentDate >= event.starting_date && event.attendance.status !== 'En proceso')
+    if (currentDate >= event.starting_date && event.attendance.status !== 'En proceso') {
+      console.log(`Se empezó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'En proceso'
-    else if (currentDate < event.starting_date && event.attendance.status !== 'En proceso')
+    }
+    else if (currentDate < event.starting_date && event.attendance.status !== 'En proceso') {
+      if (new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)) < currentDate) {
+        console.log(`Se cambió a por comenzar el evento ${event.event_identifier}`)
+        event.attendance.status = 'Por comenzar'
+      } else {
+        console.log(`Se agendó el cambio de por comenzar el evento ${event.event_identifier}`)
+        aboutToStartEvent(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
+      }
+      console.log(`Se agendó el comienzo del evento ${event.event_identifier}`)
       startEvent(event.event_identifier, event.starting_date.toISOString())
+    }
 
     await event.save()
   }
