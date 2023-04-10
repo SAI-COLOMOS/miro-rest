@@ -32,7 +32,7 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
-      if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
+      if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
     })
     if (list === event.vacancy)
       __ThrowError('El evento tiene todas las vacantes ocupadas')
@@ -143,7 +143,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
-      if (attendee.status === 'Inscrito' && attendee.role === 'Prestador') list++
+      if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
     })
 
     if (list < event.vacancy && event.attendance.status === 'Vacantes completas') event.attendance.status = 'Disponible'
@@ -165,16 +165,17 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
 
     const event: AgendaInterface | null = await Agenda.findOne({
       "event_identifier": req.params.id,
-      "attendance.attendee_list": {
-        $elemMatch: {
-          "attendee_register": req.body.attendee_register,
-          "status": 'Inscrito'
-        }
-      }
+      "attendance.attendee_list.attendee_register": req.body.attendee_register
     })
 
     if (!event)
       return res.status(400).json({ message: `No se encontró el evento ${req.params.id} o el usuario ${req.body.attendee_register} no está inscrito` })
+
+    const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: AttendeeInterface) =>
+      attendee.attendee_register === req.body.attendee_register && (attendee.status === 'Asistió' || attendee.status === 'Retardo'))
+
+    if (attendanceHasBeenChecked)
+      return res.status(202)
 
     const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
