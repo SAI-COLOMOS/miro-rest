@@ -12,11 +12,11 @@ export const publishEvent = async (event_identifier: string, time: string): Prom
       if (!event) return
       event.attendance.status = 'Disponible'
       event.has_been_published = true
-      event.save()
+      await event.save()
       const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = '¡Hay un evento disponible para tí!'
-      const body = mensaje(`La inscripción para el evento  ${event.name} empieza en una hora.`)
+      const body = mensaje(`La inscripción para el evento  ${event.name} ya comenzó.`)
       for (const user of users) {
         sendEmail(from, user.email, subject, body)
       }
@@ -30,7 +30,7 @@ export const startEvent = async (event_identifier: string, time: string) => {
       const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
       if (!event) return
       event.attendance.status = 'En proceso'
-      event.save()
+      await event.save()
     }.bind(null, event_identifier)
   )
 }
@@ -40,10 +40,12 @@ export const endEvent = async (event_identifier: string, author_name: string, ti
     async function (event_identifier: string, author_name: string) {
       const event = await Agenda.findOne({ "event_identifier": event_identifier })
 
-      if (!event || event.attendance.status === 'Concluido' || 'Concluido por sistema') return
+      if (!event || event.attendance.status === 'Concluido' || event.attendance.status === 'Concluido por sistema') return
 
       event.attendance.status = 'Concluido por sistema'
+      await event.save()
       const currentDate = new Date()
+      if (event.attendance.attendee_list.length === 0) return
       for (const [index, attendee] of event.attendance.attendee_list.entries()) {
         if (attendee.status === 'Inscrito') {
           event.attendance.attendee_list[index].status = 'No asistió'
@@ -62,8 +64,7 @@ export const endEvent = async (event_identifier: string, author_name: string, ti
         })
 
         card.markModified('activities')
-        card.save()
-        event.save()
+        await card.save()
       }
     }.bind(null, event_identifier, author_name)
   )
@@ -72,14 +73,37 @@ export const endEvent = async (event_identifier: string, author_name: string, ti
 export const initEvents = async () => {
   const currentDate: Date = new Date()
   const events: AgendaInterface[] = await Agenda.find({
-    "publishing_date": { $gte: currentDate },
     "attendance.status": { $not: { $regex: "Concluido" } }
   }, { "avatar": 0 })
 
-  events.forEach((event: AgendaInterface) => {
-    if (event.attendance.status === 'Borrador') return
-    if (!event.has_been_published) publishEvent(event.event_identifier, event.publishing_date.toISOString())
-    startEvent(event.event_identifier, event.starting_date.toISOString())
-    endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
-  })
+  for (const event of events) {
+    if (event.attendance.status === 'Borrador') continue
+
+    if (currentDate >= event.ending_date) {
+      event.attendance.status = 'Concluido por sistema'
+      await event.save()
+      continue
+    } else
+      endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
+
+    if (!event.has_been_published && currentDate >= event.publishing_date) {
+      event.attendance.status = 'Disponible'
+      event.has_been_published = true
+      const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
+      const from = `"SAI" ${Environment.Mailer.email}`
+      const subject = '¡Hay un evento disponible para tí!'
+      const body = mensaje(`La inscripción para el evento  ${event.name} ya comenzó.`)
+      for (const user of users) {
+        sendEmail(from, user.email, subject, body)
+      }
+    } else if (!event.has_been_published)
+      publishEvent(event.event_identifier, event.publishing_date.toISOString())
+
+    if (currentDate >= event.starting_date && event.attendance.status !== 'En proceso')
+      event.attendance.status = 'En proceso'
+    else if (currentDate < event.starting_date && event.attendance.status !== 'En proceso')
+      startEvent(event.event_identifier, event.starting_date.toISOString())
+
+    await event.save()
+  }
 }
