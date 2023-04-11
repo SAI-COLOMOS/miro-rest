@@ -75,6 +75,7 @@ export const getForm = async (req: Request, res: Response): Promise<Response> =>
 
 export const createForm = async (req: Request, res: Response): Promise<Response> => {
   try {
+    console.log(req.body)
     const user: UserInterface = new User(req.user)
     __Required(req.body.isTemplate, `isTemplate`, `boolean`, null)
     __Required(req.body.name, `name`, `string`, null)
@@ -95,10 +96,10 @@ export const createForm = async (req: Request, res: Response): Promise<Response>
     const questions: Array<QuestionInterface> = req.body.questions
     let last_identifier: string = "00"
     questions.forEach((question: QuestionInterface) => {
-      __Required(req.body.interrogation, `interrogation`, `string`, null)
-      __Required(req.body.question_type, `question_type`, `string`, ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala'])
-      if (req.body.question_type)
-        __Required(req.body.enum_options, `enum_options`, `array`, null)
+      __Required(question.interrogation, `interrogation`, `string`, null)
+      __Required(question.question_type, `question_type`, `string`, ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala'])
+      if ((/^Opción múltiple|Selección múltiple|Escala/).test(question.question_type))
+        __Required(question.enum_options, `enum_options`, `array`, null)
 
       const number_identifier: number = Number(last_identifier) + 1
       if (number_identifier < 9)
@@ -121,6 +122,7 @@ export const createForm = async (req: Request, res: Response): Promise<Response>
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    console.log(response)
     return res.status(statusCode).json(response)
   }
 }
