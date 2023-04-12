@@ -46,9 +46,9 @@ export const aboutToStartEvent = async (event_identifier: string, time: string) 
   )
 }
 
-export const endEvent = async (event_identifier: string, author_name: string, time: string): Promise<void> => {
+export const endEvent = async (event_identifier: string, time: string): Promise<void> => {
   schedule.scheduleJob(`end_${event_identifier}`, time,
-    async function (event_identifier: string, author_name: string) {
+    async function (event_identifier: string) {
       const event = await Agenda.findOne({ "event_identifier": event_identifier })
 
       if (!event || event.attendance.status === 'Concluido' || event.attendance.status === 'Concluido por sistema') return
@@ -71,13 +71,13 @@ export const endEvent = async (event_identifier: string, author_name: string, ti
           "hours": event.offered_hours,
           "responsible_register": event.author_register,
           "assignation_date": currentDate,
-          "responsible_name": author_name
+          "responsible_name": event.author_name
         })
 
         card.markModified('activities')
         await card.save()
       }
-    }.bind(null, event_identifier, author_name)
+    }.bind(null, event_identifier)
   )
 }
 
@@ -98,11 +98,35 @@ export const initEvents = async () => {
     if (currentDate >= event.ending_date) {
       console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Concluido por sistema'
+      if (event.attendance.attendee_list.length === 0) {
+        await event.save()
+        continue
+      }
+      for (const [index, attendee] of event.attendance.attendee_list.entries()) {
+        if (attendee.status === 'Inscrito') {
+          event.attendance.attendee_list[index].status = 'No asistió'
+          continue
+        }
+
+        const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
+        if (!card) continue
+
+        card.activities.push({
+          "activity_name": event.name,
+          "hours": event.offered_hours,
+          "responsible_register": event.author_register,
+          "assignation_date": currentDate,
+          "responsible_name": event.author_name
+        })
+
+        card.markModified('activities')
+        await card.save()
+      }
       await event.save()
       continue
     } else {
       console.log(`Se agendó el término del evento ${event.event_identifier}`)
-      endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
+      endEvent(event.event_identifier, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
     }
 
     if (!event.has_been_published && currentDate >= event.publishing_date) {
