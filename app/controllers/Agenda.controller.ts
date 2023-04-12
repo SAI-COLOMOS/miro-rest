@@ -156,7 +156,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
       publishEvent(event.event_identifier, event.publishing_date.toISOString())
     }
 
-    endEvent(event.event_identifier, event.author_name, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
+    endEvent(event.event_identifier, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
     startEvent(event.event_identifier, event.starting_date.toISOString())
     aboutToStartEvent(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
 
@@ -235,7 +235,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
       const time: Date = event.ending_date
       time.setHours(time.getHours() + 1)
       schedule.cancelJob(`end_${event.event_identifier}`)
-      endEvent(event.event_identifier, event.author_name, time.toISOString())
+      endEvent(event.event_identifier, time.toISOString())
     }
 
     if (event && req.body.starting_date) {
