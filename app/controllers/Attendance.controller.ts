@@ -171,11 +171,17 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
     if (!event)
       return res.status(400).json({ message: `No se encontró el evento ${req.params.id} o el usuario ${req.body.attendee_register} no está inscrito` })
 
-    const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: AttendeeInterface) =>
-      attendee.attendee_register === req.body.attendee_register && (attendee.status === 'Asistió' || attendee.status === 'Retardo'))
+    const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: AttendeeInterface) => {
+      const { status, attendee_register } = attendee
+      if (attendee_register === req.body.attendee_register)
+        if (status === 'Asistió' || status === 'Retardo')
+          return true
+
+      return false
+    })
 
     if (attendanceHasBeenChecked)
-      return res.status(200)
+      return res.status(200).json({ message: `La asistencia del usuario ${req.body.attendee_register} ya fué tomada anteriormente` })
 
     const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
