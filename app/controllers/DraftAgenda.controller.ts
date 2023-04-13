@@ -13,7 +13,7 @@ export const getDrafts = async (req: Request, res: Response): Promise<Response> 
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
-    if (filterRequest.starting_date) filterRequest.starting_date = { $gte: new Date(filterRequest.starting_date) }
+    if (filterRequest.createdAt) filterRequest.createdAt = { $gte: new Date(filterRequest.createdAt) }
 
     if (req.query.search)
       filterRequest = { ...filterRequest, $or: [{ "name": { $regex: req.query.search, $options: "i" } }] }
@@ -25,7 +25,7 @@ export const getDrafts = async (req: Request, res: Response): Promise<Response> 
 
     filterRequest['attendance.status'] = 'Borrador'
 
-    const draftEvents: AgendaInterface[] = await Agenda.find(filterRequest, { "avatar": 0 }).sort({ "starting_date": "asc" }).limit(items).skip(page * items)
+    const draftEvents: AgendaInterface[] = await Agenda.find(filterRequest, { "avatar": 0 }).sort({ "createdAt": "asc" }).limit(items).skip(page * items)
 
     return res.status(200).json({ message: 'Listo', draftEvents })
   } catch (error) {
