@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import Card, { CardInterface } from '../models/Card'
 import User from '../models/User'
 import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
+import { AgendaInterface } from '../models/Agenda'
 
 export const getCards = async (req: Request, res: Response) => {
   try {
@@ -108,10 +109,15 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
     __Required(req.body.activity_name, `activity_name`, `string`, null)
     __Required(req.body.hours, `hours`, `number`, null)
     __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
+    __Optional(req.body.toSubstract, `toSubstract`, `boolean`, null)
 
     const user = new User(req.user)
     req.body.responsible_register = user.register
     req.body.responsible_name = `${user.first_name} ${user.first_last_name}${user.second_last_name ? ` ${user.second_last_name}` : ''}`
+
+    const toSubstract: boolean = Boolean(req.body.toSubstract)
+
+    if (toSubstract) req.body.hours *= -1
 
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
@@ -202,7 +208,7 @@ export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<
   }
 }
 
-const CountHours = async (id: string, res: Response): Promise<Response | void> => {
+export const CountHours = async (id: string, res?: Response): Promise<Response | void> => {
   try {
     const card = await Card.findOne({ "provider_register": id })
 
@@ -220,9 +226,36 @@ const CountHours = async (id: string, res: Response): Promise<Response | void> =
       card.save()
     }
   } catch (error) {
+    if (!res) return
     return res.status(500).json({
       message: `Ocurrió un error en el servidor`,
       error: error?.toString()
     })
+  }
+}
+
+export const addHoursToSeveral = async (event: AgendaInterface): Promise<void> => {
+  const currentDate: Date = new Date()
+
+  for (const [index, attendee] of event.attendance.attendee_list.entries()) {
+    if (attendee.status === 'Inscrito') {
+      event.attendance.attendee_list[index].status = 'No asistió'
+      continue
+    } else if (attendee.status === 'Desinscrito') continue
+
+    const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
+    if (!card) continue
+
+    card.activities.push({
+      "activity_name": event.name,
+      "hours": event.offered_hours,
+      "responsible_register": event.author_register,
+      "assignation_date": currentDate,
+      "responsible_name": event.author_name
+    })
+
+    card.markModified('activities')
+    await card.save()
+    CountHours(card.provider_register)
   }
 }
