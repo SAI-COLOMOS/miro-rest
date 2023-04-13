@@ -22,7 +22,6 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
     if (filterRequest.starting_date) filterRequest.starting_date = { $gte: new Date(filterRequest.starting_date) }
-    if (history) delete filterRequest.starting_date
 
     if (req.query.search)
       filterRequest = { ...filterRequest, $or: [{ "name": { $regex: req.query.search, $options: "i" } }] }
@@ -37,6 +36,11 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       filterRequest.belonging_place = user.place
       filterRequest.belonging_area = user.assigned_area
       filterRequest['attendance.status'] = { $not: { $regex: /^Concluido|Por publicar|Vacantes completas|Borrador/ } }
+    }
+
+    if (history) {
+      delete filterRequest.starting_date
+      delete filterRequest['attendance.status']
     }
 
     const events: AgendaInterface[] = await Agenda.find(filterRequest, filterAvatar).sort({ "starting_date": history == true ? "desc" : "asc" }).limit(items).skip(page * items)
