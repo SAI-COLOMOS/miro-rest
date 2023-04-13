@@ -39,7 +39,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       filterRequest['attendance.status'] = { $not: { $regex: /^Concluido|Por publicar|Vacantes completas|Borrador/ } }
     }
 
-    const events: AgendaInterface[] = await Agenda.find(filterRequest, filterAvatar).sort({ "starting_date": "asc" }).limit(items).skip(page * items)
+    const events: AgendaInterface[] = await Agenda.find(filterRequest, filterAvatar).sort({ "starting_date": history == true ? "desc" : "asc" }).limit(items).skip(page * items)
     if (events.length === 0 || user.role !== 'Prestador') return res.status(200).json({ message: 'Listo', events })
 
     const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => {
