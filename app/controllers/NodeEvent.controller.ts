@@ -99,7 +99,7 @@ export const initEvents = async () => {
       console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Concluido por sistema'
       if (event.attendance.attendee_list.length === 0) {
-        await event.save()
+        event.save()
         continue
       }
       for (const [index, attendee] of event.attendance.attendee_list.entries()) {
@@ -120,9 +120,10 @@ export const initEvents = async () => {
         })
 
         card.markModified('activities')
-        await card.save()
+        card.save()
       }
-      await event.save()
+      event.markModified('attendance.attendee_list')
+      event.save()
       continue
     } else {
       console.log(`Se agendó el término del evento ${event.event_identifier}`)
