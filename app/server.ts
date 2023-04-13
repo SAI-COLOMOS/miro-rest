@@ -18,6 +18,8 @@ import Agenda from './routes/Agenda.routes'
 import Place from './routes/Place.routes'
 import School from './routes/School.routes'
 import Form from './routes/Form.routes'
+import DraftAgenda from './routes/DraftAgenda.routes'
+
 
 /* Variables */
 const app = express()
@@ -45,6 +47,7 @@ app.use(Users)
 app.use(Profile)
 app.use(Card)
 app.use(Agenda)
+app.use(DraftAgenda)
 app.use(Place)
 app.use(School)
 app.use(Form)
