@@ -158,13 +158,13 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
       update = { ...update, "activities.$.assignation_date": req.body.assignation_date }
 
     __Optional(req.body.toSubstract, `toSubstract`, `boolean`, null)
-    if (req.body.toSubstract)
+    if (req.body.toSubstract !== undefined)
       update = { ...update, "activities.$.toSubstract": req.body.toSubstract }
 
 
     const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.body._id }, { $set: update })
 
-    if (result.modifiedCount > 0 && req.body.hours)
+    if (result.modifiedCount > 0 && (req.body.hours || req.body.toSubstract !== undefined))
       CountHours(req.params.id, res)
 
     return result.modifiedCount > 0
