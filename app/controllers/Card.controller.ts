@@ -108,16 +108,12 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
 
     __Required(req.body.activity_name, `activity_name`, `string`, null)
     __Required(req.body.hours, `hours`, `number`, null)
-    __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
     __Optional(req.body.toSubstract, `toSubstract`, `boolean`, null)
+    __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
 
     const user = new User(req.user)
     req.body.responsible_register = user.register
     req.body.responsible_name = `${user.first_name} ${user.first_last_name}${user.second_last_name ? ` ${user.second_last_name}` : ''}`
-
-    const toSubstract: boolean = Boolean(req.body.toSubstract)
-
-    if (toSubstract) req.body.hours *= -1
 
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
@@ -160,6 +156,11 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
     __Optional(req.body.assignation_date, `assignation_date`, `string`, null, true)
     if (req.body.assignation_date)
       update = { ...update, "activities.$.assignation_date": req.body.assignation_date }
+
+    __Optional(req.body.toSubstract, `toSubstract`, `boolean`, null)
+    if (req.body.toSubstract)
+      update = { ...update, "activities.$.toSubstract": req.body.toSubstract }
+
 
     const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.body._id }, { $set: update })
 
@@ -215,7 +216,7 @@ export const CountHours = async (id: string, res?: Response): Promise<Response |
     let count: number = 0
     if (card && card.activities.length > 0) {
       for (const activity of card.activities)
-        count = count + activity.hours
+        count = activity.toSubstract ? count - activity.hours : count + activity.hours
 
       card.achieved_hours = count
       card.save()
