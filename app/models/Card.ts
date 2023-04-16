@@ -6,6 +6,7 @@ export interface HoursInterface {
   assignation_date: Date
   responsible_register: string
   responsible_name: string
+  toSubstract?: boolean
 }
 
 export interface CardInterface extends Document {
@@ -35,6 +36,10 @@ const ActivitySchema = new Schema({
   responsible_name: {
     type: String,
     required: [true, "El nombre del encargado es obligatorio"]
+  },
+  toSubstract: {
+    type: Boolean,
+    default: false
   }
 }, {
   versionKey: false,

@@ -2,8 +2,8 @@ import Agenda, { AgendaInterface } from '../models/Agenda'
 import schedule from 'node-schedule'
 import Environment from '../config/Environment'
 import User from '../models/User'
-import Card, { CardInterface } from '../models/Card'
 import { mensaje, sendEmail } from '../config/Mailer'
+import { addHoursToSeveral } from './Card.controller'
 
 export const publishEvent = async (event_identifier: string, time: string): Promise<void> => {
   schedule.scheduleJob(event_identifier, time,
@@ -55,28 +55,8 @@ export const endEvent = async (event_identifier: string, time: string): Promise<
 
       event.attendance.status = 'Concluido por sistema'
       await event.save()
-      const currentDate = new Date()
       if (event.attendance.attendee_list.length === 0) return
-      for (const [index, attendee] of event.attendance.attendee_list.entries()) {
-        if (attendee.status === 'Inscrito') {
-          event.attendance.attendee_list[index].status = 'No asistió'
-          continue
-        }
-
-        const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
-        if (!card) continue
-
-        card.activities.push({
-          "activity_name": event.name,
-          "hours": event.offered_hours,
-          "responsible_register": event.author_register,
-          "assignation_date": currentDate,
-          "responsible_name": event.author_name
-        })
-
-        card.markModified('activities')
-        await card.save()
-      }
+      addHoursToSeveral(event)
     }.bind(null, event_identifier)
   )
 }
@@ -99,30 +79,12 @@ export const initEvents = async () => {
       console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Concluido por sistema'
       if (event.attendance.attendee_list.length === 0) {
-        await event.save()
+        event.save()
         continue
       }
-      for (const [index, attendee] of event.attendance.attendee_list.entries()) {
-        if (attendee.status === 'Inscrito') {
-          event.attendance.attendee_list[index].status = 'No asistió'
-          continue
-        }
-
-        const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
-        if (!card) continue
-
-        card.activities.push({
-          "activity_name": event.name,
-          "hours": event.offered_hours,
-          "responsible_register": event.author_register,
-          "assignation_date": currentDate,
-          "responsible_name": event.author_name
-        })
-
-        card.markModified('activities')
-        await card.save()
-      }
-      await event.save()
+      addHoursToSeveral(event)
+      event.markModified('attendance.attendee_list')
+      event.save()
       continue
     } else {
       console.log(`Se agendó el término del evento ${event.event_identifier}`)
@@ -133,7 +95,14 @@ export const initEvents = async () => {
       console.log(`Se habilitó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Disponible'
       event.has_been_published = true
-      const users = await User.find({ "status": "Activo", "role": "Prestador", "place": event.belonging_place, "assigned_area": event.belonging_area })
+
+      const users = await User.find({
+        "status": "Activo",
+        "role": "Prestador",
+        "place": event.belonging_place,
+        "assigned_area": event.belonging_area
+      })
+
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = '¡Hay un evento disponible para tí!'
       const body = mensaje(`La inscripción para el evento  ${event.name} ya comenzó.`)
