@@ -1,7 +1,5 @@
 import multer, { FileFilterCallback } from "multer"
-import Jimp from "jimp"
-import { NextFunction, Request, Response } from "express"
-import { global_path } from "../server"
+import { Request } from "express"
 
 const storage_config = multer.diskStorage({
   destination: function (_req, file, done) {
@@ -28,16 +26,5 @@ const upload = multer({
   },
   storage: storage_config
 })
-
-export const resize = async (req: Request, _res: Response, next: NextFunction) => {
-  if (!req.file)
-    return next()
-
-  const photo = await Jimp.read(`${global_path}/temp/${req.file?.filename}`)
-  await photo.resize(250, 250, Jimp.RESIZE_BEZIER)
-  await photo.writeAsync(`${global_path}/temp/${req.file?.filename}`)
-
-  next()
-}
 
 export const fileMiddleware = upload.single('avatar')

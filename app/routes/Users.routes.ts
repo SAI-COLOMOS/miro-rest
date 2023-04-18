@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { UsersGet, UserGet, UserPost, UserDelete, UserPatch, updatePassword, updateAvatar, restorePassword } from "../controllers/Users.controller"
 import { isAdministradorOrEncargado } from "../middleware/RoleControl"
-import { fileMiddleware, resize } from "../middleware/fileControl"
+import { fileMiddleware } from "../middleware/fileControl"
 import Passport from "passport"
 
 const route = Router()
@@ -29,6 +29,6 @@ route.patch(`${path}/:id/restore_password`, Passport.authenticate('jwt', { sessi
 route.patch(`${path}/:id/password`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), updatePassword)
 
 // Actualizar foto de perfil
-route.post(`${path}/:id/avatar`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), fileMiddleware, resize, updateAvatar)
+route.post(`${path}/:id/avatar`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), fileMiddleware, updateAvatar)
 
 export default route
