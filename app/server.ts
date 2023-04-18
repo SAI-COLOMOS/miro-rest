@@ -52,4 +52,9 @@ app.use(Place)
 app.use(School)
 app.use(Form)
 
+app.use((req, res) => {
+  if (req.originalUrl === '/' || req.originalUrl === '') res.send('Root page')
+  else res.redirect('/')
+})
+
 export default app

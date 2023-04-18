@@ -6,10 +6,10 @@ import { getDraft, getDrafts, updateDraft } from '../controllers/DraftAgenda.con
 const route = Router()
 const path: string = '/draftAgenda'
 
-route.get(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getDrafts)
+route.get(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getDrafts)
 
-route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getDraft)
+route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getDraft)
 
-route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateDraft)
+route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, updateDraft)
 
 export default route

@@ -7,18 +7,18 @@ const route = Router()
 const path = "/cards"
 
 // Obtener todos los tarjetones de todos los prestadores
-route.get(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getCards)
+route.get(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getCards)
 
 // Obtener el tarjeton del usuario
-route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getProviderHours)
+route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), getProviderHours)
 
 // Añadir horas al tarjetón de un prestador
-route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, AddHoursToCard)
+route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, AddHoursToCard)
 
 // Actualizar información de una actividad
-route.patch(`${path}/:id/activity`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, UpdateHoursFromCard)
+route.patch(`${path}/:id/activity`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, UpdateHoursFromCard)
 
 // Eliminar horas del tarjetón de un prestador
-route.delete(`${path}/:id/activity`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, RemoveHoursFromCard)
+route.delete(`${path}/:id/activity`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, RemoveHoursFromCard)
 
 export default route

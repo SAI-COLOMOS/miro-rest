@@ -10,42 +10,42 @@ const path = '/agenda'
 // -------------------------- Events ------------------------------------
 
 // Obtener todos los eventos
-route.get(`${path}`, Passport.authenticate('jwt', { session: false }), getAgenda)
+route.get(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), getAgenda)
 
 // Obtener un solo evento
-route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), getEvent)
+route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), getEvent)
 
 // Crear un evento
-route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, createEvent)
+route.post(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, createEvent)
 
 // Actualizar un evento
-route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateEvent)
+route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, updateEvent)
 
 // Actualizar el estado de un evento
-route.patch(`${path}/:id/status`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateEventStatus)
+route.patch(`${path}/:id/status`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, updateEventStatus)
 
 // Eliminar un evento
-route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, deleteEvent)
+route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, deleteEvent)
 
 
 // -------------------------- Attendance ------------------------------------
 
 // Añadir a la lista de asistencia un usuario
-route.post(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), addAttendee)
+route.post(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), addAttendee)
 
 // Remover de la lista de asistencia un usuario
-route.delete(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), removeAttendee)
+route.delete(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), removeAttendee)
 
 // Actualizar el estado de un usuario en la lista de asistencia
-route.patch(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, updateAttendee)
+route.patch(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, updateAttendee)
 
 // Obtener todos los usuarios en la lista de asistencia
-route.get(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false }), getAttendees)
+route.get(`${path}/:id/attendance`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), getAttendees)
 
 // Añadir varios a la lista de asistencia un usuario
-route.post(`${path}/:id/attendance/several`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, addSeveralAttendees)
+route.post(`${path}/:id/attendance/several`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, addSeveralAttendees)
 
 // Tomar asistencia
-route.patch(`${path}/:id/attendance/take`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, checkAttendance) 
+route.patch(`${path}/:id/attendance/take`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, checkAttendance)
 
 export default route

@@ -7,17 +7,17 @@ const route = Router()
 const path = "/schools"
 
 // Obtener todas las escuelas
-route.get(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getSchools)
+route.get(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getSchools)
 
 // Obtener una escuela en específico
-route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministradorOrEncargado, getSchool)
+route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getSchool)
 
 // Crear una escuela
-route.post(`${path}`, Passport.authenticate('jwt', { session: false }), isAdministrador, postSchool)
+route.post(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministrador, postSchool)
 
 // Actualizar la información de una escuela
-route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, updateSchool)
+route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministrador, updateSchool)
 
 // Eliminar una escuela
-route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false }), isAdministrador, deleteSchool)
+route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministrador, deleteSchool)
 export default route

@@ -96,7 +96,7 @@
 		"scope": "javascript, typescript",
 		"prefix": "create::route",
 		"body": [
-			"route.$1(`${${path}}$2`, Passport.authenticate('jwt', { session: false }), $3)",
+			"route.$1(`${${path}}$2`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), $3)",
 		],
 		"description": "Retorna una plantilla de una ruta general"
 	}
