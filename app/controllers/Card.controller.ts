@@ -213,8 +213,8 @@ export const CountHours = async (id: string, res?: Response): Promise<Response |
   try {
     const card = await Card.findOne({ "provider_register": id })
 
-    let count: number = 0
     if (card && card.activities.length > 0) {
+      let count: number = 0
       for (const activity of card.activities)
         count = activity.toSubstract ? count - activity.hours : count + activity.hours
 
