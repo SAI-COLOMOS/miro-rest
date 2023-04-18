@@ -4,6 +4,7 @@ import Place, { AreaInterface } from "./Place"
 
 export interface UserInterface extends Document {
   register: string
+  avatar: string
   curp: string
   first_name: string
   first_last_name: string
@@ -33,8 +34,7 @@ const UserSchema = new Schema(
     curp: {
       type: String,
       required: [true, "La CURP es necesaria"],
-      trim: true,
-      unique: true
+      trim: true
     },
     first_name: {
       type: String,
@@ -154,7 +154,7 @@ async function newRegisterForProvider (inputPlace: string, inputAssigned_area: s
     }
   }
 
-  return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}${serie}`
+  return `${year}${seasson}${place!.place_identifier}${area[0].area_identifier}${serie}`.normalize('NFD')
 }
 
 async function newRegisterForAdministratorOrManager (
@@ -180,7 +180,7 @@ async function newRegisterForAdministratorOrManager (
 
   const random: string = `${Math.floor(Math.random() * 9).toString()}${Math.floor(Math.random() * 9).toString()}`
 
-  return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier}${area[0].area_identifier}${random}`
+  return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier}${area[0].area_identifier}${random}`.normalize('NFD')
 }
 
 UserSchema.pre<UserInterface>("save", async function (next) {
@@ -224,9 +224,7 @@ UserSchema.pre<UserInterface>("save", async function (next) {
   next()
 })
 
-UserSchema.methods.validatePassword = async function (
-  password: string
-): Promise<boolean> {
+UserSchema.methods.validatePassword = async function (password: string): Promise<boolean> {
   return await Bycrypt.compare(password, this.password)
 }
 

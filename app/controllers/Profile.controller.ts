@@ -4,11 +4,10 @@ import Agenda, { AgendaInterface } from "../models/Agenda"
 import Card from "../models/Card"
 
 interface Request_body {
-  message: string
-  events: AgendaInterface[]
+  enrolled_event: AgendaInterface | null
   achieved_hours?: number
   total_hours?: number
-  available_events?: Array<object>
+  available_events?: object[]
 }
 
 export const getProfile = async (req: Request, res: Response): Promise<Response> => {
@@ -34,46 +33,36 @@ export const getProfile = async (req: Request, res: Response): Promise<Response>
 export const getFeed = async (req: Request, res: Response): Promise<Response> => {
   try {
     const user = new User(req.user)
-
-    const registeredEvents: AgendaInterface[] = await Agenda.find({
-      "attendance.attendee_list.attendee_register": user.register,
-      "attendance.status": "Disponible"
-    }).sort({ "createdAt": "desc" })
-
-    const response_body: Request_body = {
-      message: "Feed lista",
-      events: registeredEvents
+    let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: /^Concluido|Por publicar/ } } }
+    if (user.role === 'Prestador') {
+      querySearch["attendance.attendee_list.attendee_register"] = user.register
+      querySearch["attendance.attendee_list.status"] = 'Inscrito'
+    } else querySearch = {
+      ...querySearch, $or: [
+        { "author_register": user.register },
+        { "attendance.attendee_list.attendee_register": user.register, "attendance.attendee_list.status": 'Inscrito' }
+      ]
     }
 
-    if (user.role === "Prestador") {
+    const enrolled_events: AgendaInterface[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
+    const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
+
+    if (user.role === 'Prestador') {
       const card = await Card.findOne({ "provider_register": user.register })
 
-      const events: AgendaInterface[] = await Agenda.find({
+      const availableEvents: AgendaInterface[] = await Agenda.find({
         "belonging_place": user.place,
         "belonging_area": user.assigned_area,
         "attendance.status": "Disponible",
-        "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } }
-      }).sort({ "createdAt": "desc" })
+        "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } },
+      }, { avatar: 0 }).sort({ "starting_date": "asc" })
 
-      const filteredEvents: AgendaInterface[] = events.filter((event: AgendaInterface) => event.vacancy > event.attendance.attendee_list.length)
-
-      const availableEvents: Array<object> = []
-
-      filteredEvents.forEach((event: AgendaInterface) => {
-        availableEvents.push({
-          "name": event.name,
-          "starting_date": event.starting_date.toISOString(),
-          "place": event.place
-        })
-      })
-
-      response_body.achieved_hours = card?.achieved_hours
-      response_body.total_hours = card?.total_hours
-      response_body.available_events = availableEvents
+      responseBody.achieved_hours = card?.achieved_hours
+      responseBody.total_hours = card?.total_hours
+      responseBody.available_events = availableEvents
     }
 
-    return res.status(200).json(response_body)
-
+    return res.status(200).json(responseBody)
   } catch (error) {
     return res.status(500).json({
       message: `Ocurrió un error en el servidor`,

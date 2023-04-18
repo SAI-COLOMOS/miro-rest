@@ -1,78 +1,56 @@
-import { Request, Response } from "express"
-import User, { UserInterface } from "../models/User"
-import Card, { CardInterface } from "../models/Card"
-import Environment from "../config/Environment"
-import { mensaje, sendEmail } from "../config/Mailer"
+import { Request, Response } from 'express'
+import User, { UserInterface } from '../models/User'
+import Card, { CardInterface } from '../models/Card'
+import Environment from '../config/Environment'
+import { mensaje, sendEmail } from '../config/Mailer'
 import fs from 'fs/promises'
-import { global_path } from "../server"
-import { __ThrowError, __Optional, __Required, __Query } from "../middleware/ValidationControl"
+import { global_path } from '../server'
+import { __ThrowError, __Optional, __Required, __Query } from '../middleware/ValidationControl'
 
 export const UsersGet = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Query(req.query.items, `items`, `number`)
-
     __Query(req.query.page, `page`, `number`)
-  } catch (error) {
-    return res.status(400).json({
-      error: error?.toString()
-    })
-  }
 
-  try {
     const user: UserInterface = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
-    let filter_request: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+    const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    let filterRequest: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
 
-    if (filter_request && filter_request.year && filter_request.period) {
-      const period_condition = filter_request.period === "A"
+    if (filterRequest && filterRequest.year && filterRequest.period) {
+      const period_condition = filterRequest.period === "A"
+        ? { $lte: [{ $month: '$createdAt' }, 6] }
+        : { $gte: [{ $month: '$createdAt' }, 7] }
+      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filterRequest.year)] }
+
+      filterRequest = { ...filterRequest, $expr: { $and: [year_condition, period_condition] } }
+
+      delete filterRequest.year
+      delete filterRequest.period
+    }
+
+    if (filterRequest && filterRequest.year) {
+      const year_condition = { $eq: [{ $year: '$createdAt' }, Number(filterRequest.year)] }
+      filterRequest = { ...filterRequest, $expr: year_condition }
+
+      delete filterRequest.year
+    }
+
+    if (filterRequest && filterRequest.period) {
+      const period_condition = filterRequest.period === "A"
         ? { $lte: [{ $month: '$createdAt' }, 6] }
         : { $gte: [{ $month: '$createdAt' }, 7] }
 
-      filter_request = {
-        ...filter_request, $expr: {
-          $and: [
-            { $eq: [{ $year: '$createdAt' }, Number(filter_request.year)] },
-            period_condition
-          ]
-        }
-      }
+      filterRequest = { ...filterRequest, $expr: period_condition }
 
-      delete filter_request.year
-      delete filter_request.period
-    }
-
-    if (filter_request && filter_request.year) {
-      filter_request = {
-        ...filter_request, $expr: {
-          $eq: [{ $year: '$createdAt' }, Number(filter_request.year)]
-        }
-      }
-
-      delete filter_request.year
-    }
-
-    if (filter_request && filter_request.period) {
-      if (filter_request.period === "A")
-        filter_request = {
-          ...filter_request, $expr: {
-            $lte: [{ $month: '$createdAt' }, 6]
-          }
-        }
-
-      if (filter_request.period === "B")
-        filter_request = {
-          ...filter_request, $expr: {
-            $gte: [{ $month: '$createdAt' }, 7]
-          }
-        }
-
-      delete filter_request.period
+      delete filterRequest.period
     }
 
     if (req.query.search)
-      filter_request = {
-        ...filter_request,
+      filterRequest = {
+        ...filterRequest,
         $or: [
           { "first_name": { $regex: req.query.search, $options: "i" } },
           { "first_last_name": { $regex: req.query.search, $options: "i" } },
@@ -83,29 +61,29 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
         ]
       }
 
-    if (user.role === "Encargado") {
-      filter_request.place = user.place
-      filter_request.assigned_area = user.assigned_area
-      filter_request.role = "Prestador"
+    if (user.role === 'Encargado') {
+      filterRequest.role = 'Prestador'
+      filterRequest.place = user.place
+      filterRequest.assigned_area = user.assigned_area
     }
 
-    const users: UserInterface[] = await User.find(filter_request).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    const users: UserInterface[] = await User.find(filterRequest, filterAvatar).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-    return res.status(200).json({
-      message: "Listo",
-      users
-    })
+    return res.status(200).json({ message: "Listo", users })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
 export const UserGet = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const user: UserInterface | null = await User.findOne({ 'register': req.params.id })
+    const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
+    const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
+    const user: UserInterface | null = await User.findOne({ 'register': req.params.id }, filterAvatar)
+
+    if (user && avatar) return res.status(200).json({ message: 'Lsito', avatar: user.avatar })
     let response: object | null = user ? { ...user.toObject() } : null
 
     if (user && user.role === 'Prestador') {
@@ -150,61 +128,44 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
       __Required(req.body.assigned_area, `assigned_area`, `string`, null)
     }
 
-    if (req.body.role === "Prestador") {
+    if (req.body.role === 'Prestador') {
       __Required(req.body.school, `school`, `string`, null)
       __Required(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales'])
       __Required(req.body.total_hours, `total_hours`, `number`, null)
     }
 
     __Required(req.body.first_name, `first_name`, `string`, null)
-
     __Required(req.body.first_last_name, `first_last_name`, `string`, null)
-
     __Required(req.body.curp, `curp`, `string`, null)
-
-    __Optional(req.body.second_last_name, `second_last_name`, `string`, null)
-
     __Required(req.body.age, `age`, `string`, null)
-
+    __Optional(req.body.second_last_name, `second_last_name`, `string`, null)
     __Required(req.body.email, `email`, `string`, null)
-
     __Required(req.body.phone, `phone`, `string`, null)
-
     __Required(req.body.emergency_contact, `emergency_contact`, `string`, null)
-
     __Required(req.body.emergency_phone, `emergency_phone`, `string`, null)
-
     __Required(req.body.blood_type, `blood_type`, `string`, ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'])
-
     __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
-
     __Optional(req.body.avatar, `avatar`, `string`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
-    const user = await new User(req.body).save()
+    const newUser = await new User(req.body).save()
 
-    if (user) {
+    if (newUser) {
       const from = `"SAI" ${Environment.Mailer.email}`
-      const to = String(user.email)
+      const to = String(newUser.email)
       const subject = "Bienvenido!"
-      const body = mensaje(`Bienvenido al ${user.assigned_area} de ${user.place}.\n
+      const body = mensaje(`Bienvenido al ${newUser.assigned_area} de ${newUser.place}.\n
       Revisa que tu información sea correcta:\n
-      - Nombre: ${user.first_name} ${user.first_last_name} ${user.second_last_name}\n
-      - Curp: ${user.curp}\n
-      - Teléfono: ${user.phone}\n
-      - Teléfono de emergencia: ${user.emergency_phone}\n
-      - Contácto de emergencia: ${user.emergency_contact}\n
-      - Tipo de sangre: ${user.blood_type}\n`)
+      - Nombre: ${newUser.first_name} ${newUser.first_last_name} ${newUser.second_last_name}\n
+      - Curp: ${newUser.curp}\n
+      - Teléfono: ${newUser.phone}\n
+      - Teléfono de emergencia: ${newUser.emergency_phone}\n
+      - Contácto de emergencia: ${newUser.emergency_contact}\n
+      - Tipo de sangre: ${newUser.blood_type}\n`)
       await sendEmail(from, to, subject, body)
     }
 
-    if (user && user.role === "Prestador")
-      await new Card({ "provider_register": user.register, "total_hours": req.body.total_hours }).save()
+    if (newUser && newUser.role === "Prestador")
+      await new Card({ "provider_register": newUser.register, "total_hours": req.body.total_hours }).save()
 
     return user
       ? res.status(201).json({
@@ -214,10 +175,9 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
         message: "No se pudo crear el usuario",
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -227,7 +187,7 @@ export const UserDelete = async (req: Request, res: Response): Promise<Response>
 
     let deletedCount: number = 0
 
-    if (user && user.role === "Prestador") {
+    if (user && user.role === 'Prestador') {
       const card_result = await Card.deleteOne({ "provider_register": req.params.id })
       const result = await User.deleteOne({ 'register': req.params.id })
 
@@ -259,13 +219,13 @@ export const UserPatch = async (req: Request, res: Response): Promise<Response> 
         delete req.body[key]
     })
 
-    const user = new User(req.user)
-
     if (req.body.password)
       __ThrowError("El campo 'password' no se puede actualizar")
 
     if (req.body.register)
       __ThrowError("El campo 'register' no se puede actualizar")
+
+    const user = new User(req.user)
 
     if (user.role === 'Encargado') {
       if (req.body.place)
@@ -277,47 +237,24 @@ export const UserPatch = async (req: Request, res: Response): Promise<Response> 
     }
 
     __Optional(req.body.first_name, `first_name`, `string`, null)
-
     __Optional(req.body.first_last_name, `first_last_name`, `string`, null)
-
     __Optional(req.body.second_last_name, `second_last_name`, `string`, null)
-
     __Optional(req.body.curp, `curp`, `string`, null)
-
     __Optional(req.body.age, `age`, `string`, null)
-
     __Optional(req.body.email, `email`, `string`, null)
-
     __Optional(req.body.phone, `phone`, `string`, null)
-
     __Optional(req.body.emergency_contact, `emergency_contact`, `string`, null)
-
     __Optional(req.body.emergency_phone, `emergency_phone`, `string`, null)
-
     __Optional(req.body.blood_type, `blood_type`, `string`, ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'])
-
     __Optional(req.body.place, `place`, `string`, null)
-
     __Optional(req.body.assigned_area, `assigned_area`, `string`, null)
-
     __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
-
     __Optional(req.body.school, `school`, `string`, null)
-
     __Optional(req.body.avatar, `avatar`, `string`, null)
-
     __Optional(req.body.provider_type, `provider_type`, `string`, ['Servicio social', 'Prácticas profesionales', 'No aplica'])
-
     __Optional(req.body.role, `role`, `string`, ['Encargado', 'Prestador', 'Administrador'])
-
     __Optional(req.body.total_hours, `total_hours`, `number`, null)
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const result = await User.updateOne({ 'register': req.params.id }, req.body)
     let card_results: number = 0
 
@@ -332,10 +269,9 @@ export const UserPatch = async (req: Request, res: Response): Promise<Response> 
         message: `Usuario ${req.params.id} no encontrado`
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 
@@ -370,13 +306,7 @@ export const updatePassword = async (req: Request, res: Response): Promise<Respo
 
     if (!(/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password))
       __ThrowError("La contraseña no cumple con la estructura deseada")
-  } catch (error) {
-    return res.status(400).json({
-      error
-    })
-  }
 
-  try {
     const user = await User.findOne({ "register": req.params.id })
 
     if (user && !(await user.validatePassword(req.body.password))) {
@@ -396,10 +326,9 @@ export const updatePassword = async (req: Request, res: Response): Promise<Respo
         message: `No se encontró el usuario ${req.params.id}`
       })
   } catch (error) {
-    return res.status(500).json({
-      message: "Ocurrió un error en el servidor",
-      error: error?.toString()
-    })
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
   }
 }
 

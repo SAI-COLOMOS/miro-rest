@@ -1369,7 +1369,7 @@ The `filter` parameter has to be an object with the following structure:
 |----------------|----------|----------|----------------|------------------------------------------------------------|
 | place          | `string` | No       | Any            | Name of the place where the event is going to be performed |
 | belonging_area | `string` | No       | Any            | Name of the area to which the event belongs                |
-| belonging_area | `string` | No       | Any            | Name of the place to which the event belongs               |
+| belonging_place | `string` | No       | Any            | Name of the place to which the event belongs               |
 
 __Items__
 
@@ -1456,7 +1456,7 @@ GET /agenda/:event_identifier
 
 ```javascript
 fetch(
-    `.../users/${event_identifier}`,
+    `.../agenda/${event_identifier}`,
     {
         method: "GET",
         headers: {
@@ -1676,3 +1676,207 @@ fetch(
 )
 ```
 
+### Forms
+
+All endpoints have a boolean parameter `isTemplate` which is used to redirect if the logic of the request is going to be applied to the forms collection or the formtemplates collection. 
+
+### Get forms
+
+- Endpoint
+
+``` http
+GET /forms
+```
+
+- Request
+
+Since this is a `GET` request all the parameter should be passed through the endpoint.
+
+__Filter__
+
+The `filter` parameter has to be an object with the following structure:
+> ⚠️ Note: If the user who made the request is an `Encargado` the parameters `belonging_place` and `belonging_area` will be overwritten by the values found in the user's data.
+
+| Parameters      | Type     | Required | Allowed values | Description                                                |
+|-----------------|----------|----------|----------------|------------------------------------------------------------|
+| author_register | `string` | No       | Any            | Register of the user who created the form                  |
+| belonging_area  | `string` | No       | Any            | Name of the area to which the form belongs                 |
+| belonging_place | `string` | No       | Any            | Name of the place to which the form belongs                |
+
+__Items__
+
+The `items` parameter has be a number with the value of the intented number of users to retrieve.
+
+__Page__
+
+The `page` parameter has to be a number with the value of the pagination one wants to access.
+
+__Search__
+
+The `search` parameter has to be a string with the query by which the results will be filtered. You can only search by the `name`.
+
+```javascript
+fetch(
+    `.../forms?filter=${JSON.stringify(filter)}&items=${items}&page=${page}&search=${search}&isTemplate=${isTemplate}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+### Get a form
+
+- Endpoint 
+
+``` http
+GET /forms/:form_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../forms/${form_identifier}?isTemplate=${isTemplate}`,
+    {
+        method: "GET",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        }
+    }
+)
+```
+
+### Create a form
+
+- Endpoint 
+
+```http
+POST /forms
+```
+
+- Request
+
+| Parameters                 | Type     | Required                   | Allowed values      | Description                                 |
+|----------------------------|----------|----------------------------|---------------------|---------------------------------------------|
+| name                       | `string` | Yes                        | Any                 | Name of the form                            |
+| description                | `string` | Yes                        | Any                 | Description of the form                     |
+| belonging_area             | `string` | Only for 'Administradores' | Any                 | Name of the area to which the form belongs  |
+| belonging_place            | `string` | Only for 'Administradores' | Any                 | Name of the place to which the form belongs |
+| belonging_event_identifier | `string` | Yes                        | Any                 | Event identifier to which the form belongs  |
+| version                    | `number` | No                         | Any                 | Version number                              |
+| questions                  | `array`  | Yes                        | An array of objects | The questions of the form                   |
+
+The objects of the array `questions` should have the following structure
+
+| Parameters    | Type     | Required | Allowed values                                                             | Description                                                    |
+|---------------|----------|----------|----------------------------------------------------------------------------|----------------------------------------------------------------|
+| interrogation | `string` | Yes      | Any                                                                        | The actual question to ask                                     |
+| question_type | `string` | Yes      | ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala'] | The type of the question                                       |
+| enum_options  | `array`  | No       | Any                                                                        | The response options in case the question type is no 'Abierta' |
+
+```javascript
+fetch(
+    `.../forms`,
+    {
+        method: "POST",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            isTemplate
+            name,
+            description,
+            belonging_area,
+            belonging_place,
+            version,
+            belonging_event_identifier,
+            questions
+        })
+    }
+)
+```
+
+### Update a form
+
+- Endpoint 
+
+```http
+POST /forms
+```
+Ideally when you update a form you should pass the whole object
+
+- Request
+
+| Parameters                 | Type     | Required                   | Allowed values      | Description                                 |
+|----------------------------|----------|----------------------------|---------------------|---------------------------------------------|
+| name                       | `string` | No                         | Any                 | Name of the form                            |
+| description                | `string` | No                         | Any                 | Description of the form                     |
+| belonging_area             | `string` | Only for 'Administradores' | Any                 | Name of the area to which the form belongs  |
+| belonging_place            | `string` | Only for 'Administradores' | Any                 | Name of the place to which the form belongs |
+| version                    | `number` | No                         | Any                 | Version number                              |
+| questions                  | `array`  | Yes                        | An array of objects | The questions of the form                   |
+
+The objects of the array `questions` should have the following structure
+
+| Parameters    | Type     | Required | Allowed values                                                             | Description                                                    |
+|---------------|----------|----------|----------------------------------------------------------------------------|----------------------------------------------------------------|
+| interrogation | `string` | Yes      | Any                                                                        | The actual question to ask                                     |
+| question_type | `string` | Yes      | ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala'] | The type of the question                                       |
+| enum_options  | `array`  | No       | Any    users                                                                    | The response options in case the question type is no 'Abierta' |
+
+```javascript
+fetch(
+    `.../forms`,
+    {
+        method: "PATCH",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body: JSON.stringtify({
+            isTemplate,
+            name,
+            description,
+            belonging_area,
+            belonging_place,
+            version,
+            questions
+        })
+    }
+)users
+```
+
+### Delete a form
+
+- Endpoint
+
+```http
+DELETE /forms/:form_identifier
+```
+
+- Request
+
+```javascript
+fetch(
+    `.../form/${form_identifier}`,
+    {
+        method: "DELETE",
+        headers: {
+          `Content-Type`: `application/json`,
+            `Authorization`: `Bearer ${token}`,
+            `Cache-Control`: `no-cache`
+        },
+        body:JSON.stringtify({isTemplate})
+    }
+)
+```

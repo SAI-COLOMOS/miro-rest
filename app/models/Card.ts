@@ -1,10 +1,12 @@
 import { model, Schema, Document } from "mongoose"
 
-export interface HoursInterface extends Document {
+export interface HoursInterface {
   activity_name: string
   hours: number
   assignation_date: Date
   responsible_register: string
+  responsible_name: string
+  toSubstract?: boolean
 }
 
 export interface CardInterface extends Document {
@@ -30,6 +32,14 @@ const ActivitySchema = new Schema({
   responsible_register: {
     type: String,
     required: [true, "El registro del encargado es necesario"]
+  },
+  responsible_name: {
+    type: String,
+    required: [true, "El nombre del encargado es obligatorio"]
+  },
+  toSubstract: {
+    type: Boolean,
+    default: false
   }
 }, {
   versionKey: false,
