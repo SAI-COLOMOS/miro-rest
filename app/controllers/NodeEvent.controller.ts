@@ -40,7 +40,7 @@ export const aboutToStartEvent = async (event_identifier: string, time: string) 
     async function (event_identifier: string) {
       const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
       if (!event) return
-      event.attendance.status = 'Por empezar'
+      event.attendance.status = 'Por comenzar'
       await event.save()
     }.bind(null, event_identifier)
   )
