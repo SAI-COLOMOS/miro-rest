@@ -38,7 +38,7 @@ const AnswerSchema = new Schema({
   versionKey: false
 })
 
-const QuestionSchema = new Schema({
+export const QuestionSchema = new Schema({
   interrogation: {
     type: String,
     required: [true, 'La interroagnte es obligatoria']
@@ -81,8 +81,7 @@ const FormSchema = new Schema({
     required: [true, 'El lugar de pertenencia es obligatorio']
   },
   belonging_event_identifier: {
-    type: String,
-    required: [true, 'El identificador del evento al que pertenece es obligatorio']
+    type: String
   },
   version: {
     type: Number,

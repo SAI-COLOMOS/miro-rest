@@ -1,6 +1,6 @@
 import { model, Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose'
 import Place, { PlaceInterface, AreaInterface } from './Place'
-import { QuestionInterface } from './Form'
+import { QuestionInterface, QuestionSchema } from './Form'
 
 export interface FormTemplateInterface extends Document {
   name: string
@@ -13,27 +13,6 @@ export interface FormTemplateInterface extends Document {
   form_identifier: string
   questions: QuestionInterface[]
 }
-
-const QuestionSchema = new Schema({
-  interrogation: {
-    type: String,
-    required: [true, 'La interroagnte es obligatoria']
-  },
-  question_identifier: {
-    type: String,
-    index: true,
-    required: [true, 'El identificador de pregunta es necesario']
-  },
-  question_type: {
-    type: String,
-    enum: ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala']
-  },
-  enum_options: {
-    type: [String]
-  }
-}, {
-  versionKey: false
-})
 
 const FormTemplateSchema = new Schema({
   name: {
@@ -56,10 +35,6 @@ const FormTemplateSchema = new Schema({
     type: String,
     required: [true, 'El lugar de pertenencia es obligatorio']
   },
-  belonging_event_identifier: {
-    type: String,
-    required: [true, 'El identificador del evento al que pertenece es obligatorio']
-  },
   version: {
     type: Number,
     default: 1.0
@@ -71,7 +46,7 @@ const FormTemplateSchema = new Schema({
   questions: {
     type: [QuestionSchema],
     required: [true, 'Las preguntas son obligatorias']
-  },
+  }
 }, {
   timestamps: true,
   versionKey: false
