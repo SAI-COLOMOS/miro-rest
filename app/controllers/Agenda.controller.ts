@@ -73,17 +73,6 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
   }
 }
 
-// export const getDrafts = async (req: Request, res: Response): Promise<Response> => {
-//   try {
-//     const drafts: AgendaInterface[] = await 
-//   } catch (error) {
-//     const statusCode: number = typeof error === 'string' ? 400 : 500
-//     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
-//     if (statusCode === 500) console.log(error?.toString())
-//     return res.status(statusCode).json(response)
-//   }
-// }
-
 export const getEvent = async (req: Request, res: Response): Promise<Response> => {
   try {
     const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
