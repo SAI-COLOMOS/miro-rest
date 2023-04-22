@@ -60,7 +60,7 @@ export const sendRecoveryToken = async (req: Request, res: Response): Promise<Re
 
     if (user) {
       const token = createToken(user, "5d")
-      newRoute = `exp://192.168.100.36:19000/--/recovery?token=${token}`
+      newRoute = `https://api.sai-colomos.dev/auth/recovery?token=${token}`
       const from = `"SAI" ${Environment.Mailer.email}`
       const to = String(user.email)
       const subject = "Recuperación de contraseña"
