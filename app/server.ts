@@ -5,8 +5,8 @@ import express from 'express'
 import morgan from 'morgan'
 import passport from 'passport'
 import ControlAccess from './middleware/AccessControl'
+import path from 'path'
 // import bodyParser from "body-parser"
-//import path from 'path'
 //import { fileURLToPath } from "url"
 
 // Importaciones de rutas
@@ -23,20 +23,19 @@ import DraftAgenda from './routes/DraftAgenda.routes'
 
 /* Variables */
 const app = express()
-export const global_path = __dirname
+export const global_path = path.join(__dirname, '..')
 //const __filename = fileURLToPath(import.meta.url)
 //const __dirname = path.dirname(__filename)
 
 /* Configuraciones */
 app.set('port', process.env.PORT || 3000)
 app.set('view engine', 'pug')
-app.set('views', `${__dirname}/views`)
-app.use(express.static(__dirname + '/public'))
+app.set('views', `${global_path}/views`)
+app.use(express.static(`${global_path}/public`))
 
 /* Middleware */
 app.use(morgan('dev'))
 app.use(express.json({ limit: '5mb' }))
-// app.use(bodyParser.json({limit: '5mb'}))
 app.use(express.urlencoded({ extended: false }))
 app.use(passport.initialize())
 passport.use(ControlAccess)
