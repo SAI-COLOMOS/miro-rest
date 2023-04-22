@@ -1,122 +1,104 @@
-import { Request, Response } from "express"
-import User, { UserInterface } from "../models/User"
-import JWT, { JwtPayload } from "jsonwebtoken"
-import Environment from "../config/Environment"
-import { link, mensaje, sendEmail } from "../config/Mailer"
-import { __Optional, __Required, __ThrowError } from "../middleware/ValidationControl"
+import { Request, Response } from 'express'
+import JWT, { JwtPayload } from 'jsonwebtoken'
 
-function createToken (user: UserInterface, time: String): string {
-  return JWT.sign({
-    register: user.register
-  },
-    Environment.JWT.secret,
-    {
-      expiresIn: String(time)
-    })
-}
+import User from '../models/User'
+
+import { authenticate, createToken } from '../services/Auth.services'
+import { credentialValidation, logInValidation, passwordValidation } from '../validators/Auth.validator'
+
+import { IUser } from '../types/User'
+import { ICredential, ILogIn } from '../types/Auth'
+
+import Environment from '../config/Environment'
+import { sendEmail, messageMail, recoverPasswordMail } from '../services/Mailer.services'
 
 export const LoginGet = async (req: Request, res: Response): Promise<Response> => {
   try {
-    __Required(req.body.credential, "credential", "string", null)
-    __Required(req.body.password, "password", "string", null)
-    __Optional(req.body.keepAlive, "keepAlive", "boolean", null)
+    const { error } = logInValidation.validate(req.body)
 
-    let user: UserInterface | null = null
-    if (req.body.credential.search('@') !== -1) {
-      user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
-    } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {
-      user = await User.findOne({ phone: req.body.credential }).sort({ "register": "desc" })
-    } else if (req.body.credential.length === 12) {
-      user = await User.findOne({ register: req.body.credential }).sort({ "register": "desc" })
-    }
+    if (error) return res.status(400).json({ message: error.message })
 
-    return user && await user.validatePassword(req.body.password)
+    const requestData: ILogIn = req.body
+
+    const user: IUser | null = await authenticate(requestData)
+
+    return user && await user.validatePassword(requestData.password)
       ? res.status(200).json({
-        message: "Sesión iniciada",
-        token: createToken(user, req.body.keepAlive ? "90d" : "3d")
+        message: 'Sesión iniciada',
+        token: createToken(user, requestData.keepAlive ? '90d' : '3d')
       })
       : res.status(401).json({
-        message: "Hubo un problema al tratar de iniciar sesión",
+        message: 'Hubo un problema al tratar de iniciar sesión',
       })
   } catch (error) {
-    const statusCode: number = typeof error === 'string' ? 400 : 500
-    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
-    return res.status(statusCode).json(response)
+    return res.status(500).json({
+      message: 'Ocurrió un error en el servidor',
+      error: error?.toString()
+    })
   }
 }
 
 export const sendRecoveryToken = async (req: Request, res: Response): Promise<Response> => {
   try {
-    __Required(req.body.credential, `credential`, `string`, null)
+    const { error } = credentialValidation.validate(req.body)
 
-    let user, newRoute
-    if (req.body.credential.search('@') !== -1) {
-      user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
-    } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {
-      user = await User.findOne({ phone: req.body.credential }).sort({ "register": "desc" })
-    } else if (req.body.credential.length === 12) {
-      user = await User.findOne({ register: req.body.credential }).sort({ "register": "desc" })
-    }
+    if (error) return res.status(400).json({ message: error.message })
+
+    const requestData: ICredential = req.body
+
+    const user: IUser | null = await authenticate(requestData)
 
     if (user) {
-      const token = createToken(user, "5d")
-      newRoute = `exp://192.168.100.36:19000/--/recovery?token=${token}`
-      const from = `"SAI" ${Environment.Mailer.email}`
+      const token = createToken(user, '5d')
+      const newRoute = `https://api.sai-colomos.dev/auth/recovery?token=${token}`
       const to = String(user.email)
-      const subject = "Recuperación de contraseña"
-      const body = link(newRoute)
-      await sendEmail(from, to, subject, body)
+      const subject = 'Recuperación de contraseña'
+      const body = recoverPasswordMail(newRoute)
+      await sendEmail(to, subject, body)
     }
 
-    return res.status(200).json({
-      message: "Si se encontró el usuario; Se mandó un correo de recuperación",
-      newRoute
-    })
+    return res.status(200).json({ message: 'Si se encontró el usuario; Se mandó un correo de recuperación' })
   } catch (error) {
-    const statusCode: number = typeof error === 'string' ? 400 : 500
-    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
-    return res.status(statusCode).json(response)
+    return res.status(500).json({
+      message: 'Ocurrió un error en el servidor',
+      error: error?.toString()
+    })
   }
 }
 
 export const recoverPassword = async (req: Request, res: Response): Promise<Response> => {
-  let token
+  let token: JwtPayload
   try {
     token = JWT.verify(String(req.query.token), Environment.JWT.secret) as JwtPayload
   } catch (error) {
     return res.status(400).json({
-      message: "El link ha caducado",
+      message: 'El link ha caducado',
     })
   }
 
   try {
-    __Required(req.body.password, `password`, `string`, null)
+    const { error } = passwordValidation.validate(req.body)
 
-    if (!(/^.*(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*\W).*$/).test(req.body.password))
-      __ThrowError("La contraseña no cumple con la estructura deseada")
+    if (error) return res.status(400).json({ message: error.message })
 
-    const user = await User.findOne({ register: token.register }).sort({ "register": "desc" })
+    const user: IUser | null = await User.findOne({ register: token.register })
 
     if (user && !(await user.validatePassword(req.body.password))) {
       user.password = req.body.password
       user.save()
-      const from = `"SAI" ${Environment.Mailer.email}`
       const to = user.email
-      const subject = "Recuperación de contraseña"
-      const body = mensaje("Se actualizó la contraseña de su usuario.")
-      await sendEmail(from, to, subject, body)
+      const subject = 'Recuperación de contraseña'
+      const body = messageMail('Se actualizó la contraseña de su usuario.')
+      await sendEmail(to, subject, body)
 
-      return res.status(200).json({
-        message: "Se actualizó la contraseña del usuario"
-      })
+      return res.status(200).json({ message: 'Se actualizó la contraseña del usuario' })
     }
 
-    return res.status(400).json({
-      message: "La nueva contraseña no puede ser igual a la actual"
-    })
+    return res.status(400).json({ message: 'La nueva contraseña no puede ser igual a la actual' })
   } catch (error) {
-    const statusCode: number = typeof error === 'string' ? 400 : 500
-    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
-    return res.status(statusCode).json(response)
+    return res.status(500).json({
+      message: 'Ocurrió un error en el servidor',
+      error: error?.toString()
+    })
   }
 }
