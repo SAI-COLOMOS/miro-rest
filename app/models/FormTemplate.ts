@@ -9,7 +9,7 @@ export interface FormTemplateInterface extends Document {
   belonging_area: string
   belonging_place: string
   belonging_event_identifier: string
-  version: number
+  version: string
   form_identifier: string
   questions: QuestionInterface[]
 }
@@ -36,8 +36,8 @@ const FormTemplateSchema = new Schema({
     required: [true, 'El lugar de pertenencia es obligatorio']
   },
   version: {
-    type: Number,
-    default: 1.0
+    type: String,
+    default: '1.0'
   },
   form_identifier: {
     type: String,

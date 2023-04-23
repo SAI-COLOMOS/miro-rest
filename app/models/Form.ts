@@ -20,7 +20,7 @@ export interface FormInterface extends Document {
   belonging_area: string
   belonging_place: string
   belonging_event_identifier: string
-  version: number
+  version: string
   form_identifier: string
   questions: QuestionInterface[]
   answers: AnswerInterface[]
@@ -85,8 +85,8 @@ const FormSchema = new Schema({
     type: String
   },
   version: {
-    type: Number,
-    default: 1.0.toFixed(1)
+    type: String,
+    default: '1.0'
   },
   form_identifier: {
     type: String,
