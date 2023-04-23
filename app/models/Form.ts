@@ -1,5 +1,5 @@
 import { model, Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose'
-import Place, { PlaceInterface, AreaInterface } from './Place'
+import Place, { IPlace, IArea } from './Place'
 
 export interface AnswerInterface {
   question_referenced: string
@@ -53,7 +53,8 @@ export const QuestionSchema = new Schema({
     enum: ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala']
   },
   enum_options: {
-    type: [String]
+    type: Schema.Types.Mixed
+    // type: [String]
   }
 }, {
   versionKey: false
@@ -107,8 +108,8 @@ FormSchema.pre<FormInterface>('save', async function (next: CallbackWithoutResul
   if (this.isNew) {
     let isUnique: boolean = false
     const pool: string = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
-    const place: PlaceInterface | null = await Place.findOne({ "place_name": this.belonging_place })
-    const area: AreaInterface | undefined = place!.place_areas.find((areaItem: AreaInterface) => areaItem.area_name === this.belonging_area)
+    const place: IPlace | null = await Place.findOne({ "place_name": this.belonging_place })
+    const area: IArea | undefined = place!.place_areas.find((areaItem: IArea) => areaItem.area_name === this.belonging_area)
 
     let suffix: string = ""
 

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { __Required, __Optional, __Query, __ThrowError } from '../middleware/ValidationControl'
 import Form, { FormInterface, QuestionInterface } from '../models/Form'
-import User, { UserInterface } from '../models/User'
+import User, { IUser } from '../models/User'
 import FormTemplate, { FormTemplateInterface } from '../models/FormTemplate'
 
 export const getForms = async (req: Request, res: Response): Promise<Response> => {
@@ -12,7 +12,7 @@ export const getForms = async (req: Request, res: Response): Promise<Response> =
     __Query(req.query.page, 'page', 'number')
     __Query(req.query.isTemplate, 'isTemplate', 'boolean')
 
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
     const isTemplate: boolean = Boolean((String(req.query.isTemplate).toLowerCase() === 'true'))
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
@@ -76,7 +76,7 @@ export const getForm = async (req: Request, res: Response): Promise<Response> =>
 export const createForm = async (req: Request, res: Response): Promise<Response> => {
   try {
     console.log(req.body)
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
     __Required(req.body.isTemplate, `isTemplate`, `boolean`, null)
     __Required(req.body.name, `name`, `string`, null)
     __Required(req.body.description, `description`, `string`, null)
