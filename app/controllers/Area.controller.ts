@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Place, { AreaInterface, PlaceInterface } from "../models/Place"
+import Place, { IArea, IPlace } from "../models/Place"
 import { __Required, __Optional, __Query } from "../middleware/ValidationControl"
 
 export const getAreas = async (req: Request, res: Response): Promise<Response> => {
@@ -25,10 +25,10 @@ export const getAreas = async (req: Request, res: Response): Promise<Response> =
 
     const places = await Place.find(filterRequest).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
-    const areas: Array<AreaInterface> = []
+    const areas: Array<IArea> = []
 
     if (places.length > 0)
-      places.forEach((place: PlaceInterface) => areas.push(...place.place_areas))
+      places.forEach((place: IPlace) => areas.push(...place.place_areas))
 
     return res.status(200).json({
       message: 'Listo',
@@ -65,7 +65,7 @@ export const getArea = async (req: Request, res: Response): Promise<Response> =>
   try {
     const place = await Place.findOne({ "place_identifier": req.params.id })
 
-    const area: AreaInterface | undefined = place?.place_areas.find((area_iterated: AreaInterface) => area_iterated.area_identifier === req.params.id2)
+    const area: IArea | undefined = place?.place_areas.find((area_iterated: IArea) => area_iterated.area_identifier === req.params.id2)
 
     return area
       ? res.status(200).json({

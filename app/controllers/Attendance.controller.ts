@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import Agenda, { AgendaInterface, AttendeeInterface } from '../models/Agenda'
-import User, { UserInterface } from '../models/User'
+import Agenda, { IEvent, IAttendee } from '../models/Agenda'
+import User, { IUser } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from '../middleware/ValidationControl'
 import { sendEmail, mensaje } from '../config/Mailer'
 import Environment from '../config/Environment'
@@ -27,19 +27,19 @@ export const getAttendees = async (req: Request, res: Response): Promise<Respons
 
 export const addAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": req.params.id })
+    const event: IEvent | null = await Agenda.findOne({ "event_identifier": req.params.id })
     if (!event) return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
 
     let list: number = 0
-    event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
+    event.attendance.attendee_list.forEach((attendee: IAttendee) => {
       if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
     })
     if (list === event.vacancy)
       __ThrowError('El evento tiene todas las vacantes ocupadas')
 
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
 
-    const registeredIndex: number = event.attendance.attendee_list.findIndex((attendee: AttendeeInterface) => user.register === attendee.attendee_register)
+    const registeredIndex: number = event.attendance.attendee_list.findIndex((attendee: IAttendee) => user.register === attendee.attendee_register)
 
     if (registeredIndex !== -1 && event.attendance.attendee_list[registeredIndex].status === 'Inscrito')
       __ThrowError('El usuario ya está inscrito')
@@ -64,7 +64,7 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
       event.attendance.status = 'Vacantes completas'
 
     event.markModified('attendance.attendee_list')
-    event.save()
+    await event.save()
 
     return res.status(201).json({
       message: `Se añadió el usuario a la lista`
@@ -78,18 +78,18 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
 
 export const addSeveralAttendees = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": req.params.id })
+    const event: IEvent | null = await Agenda.findOne({ "event_identifier": req.params.id })
     if (!event) return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
 
     const attendeeList: { register: string }[] = req.body.attendees
 
     for (const attendeeInList of attendeeList) {
-      const index: number = event.attendance.attendee_list.findIndex((attendee: AttendeeInterface) => attendeeInList.register === attendee.attendee_register)
+      const index: number = event.attendance.attendee_list.findIndex((attendee: IAttendee) => attendeeInList.register === attendee.attendee_register)
 
       if (index !== -1)
         event.attendance.attendee_list[index].status = 'Inscrito'
       else {
-        const user: UserInterface | null = await User.findOne({ 'register': attendeeInList.register })
+        const user: IUser | null = await User.findOne({ 'register': attendeeInList.register })
         if (!user) continue
         event.attendance.attendee_list.push({
           attendee_register: attendeeInList.register,
@@ -102,9 +102,9 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
         })
       }
     }
-    const responsible: UserInterface = new User(req.user)
+    const responsible: IUser = new User(req.user)
     for (const attendee of attendeeList) {
-      const user: UserInterface | null = await User.findOne({ "register": attendee.register })
+      const user: IUser | null = await User.findOne({ "register": attendee.register })
       if (!user) continue
       const from = `"SAI" ${Environment.Mailer.email}`
       const subject = 'Haz sido inscrito a un evento'
@@ -113,7 +113,7 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
     }
 
     event.markModified('attendance.attendee_list')
-    event.save()
+    await event.save()
 
     return res.status(201).json({ message: 'Se agregaron los prestadores que no estaban inscritos a la lista a la lista' })
   } catch (error) {
@@ -126,12 +126,12 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
 
 export const removeAttendee = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": req.params.id })
+    const event: IEvent | null = await Agenda.findOne({ "event_identifier": req.params.id })
     if (!event) return res.status(400).json({ message: `No se encontró el evento ${req.params.id}` })
 
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
 
-    const attendee_index: number = event.attendance.attendee_list.findIndex((attendee: AttendeeInterface) => attendee.attendee_register === user.register)
+    const attendee_index: number = event.attendance.attendee_list.findIndex((attendee: IAttendee) => attendee.attendee_register === user.register)
 
     if (attendee_index === -1) return res.status(400).json({ message: `El usuario no está inscrito al evento ${req.params.id}` })
 
@@ -142,7 +142,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
     event.markModified('attendance.attendee_list')
 
     let list: number = 0
-    event.attendance.attendee_list.forEach((attendee: AttendeeInterface) => {
+    event.attendance.attendee_list.forEach((attendee: IAttendee) => {
       if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
     })
 
@@ -163,7 +163,7 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
     __Optional(req.body.status, `status`, `string`, ["Asistió", "Retardo"])
 
-    const event: AgendaInterface | null = await Agenda.findOne({
+    const event: IEvent | null = await Agenda.findOne({
       "event_identifier": req.params.id,
       "attendance.attendee_list.attendee_register": req.body.attendee_register
     })
@@ -171,7 +171,7 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
     if (!event)
       return res.status(400).json({ message: `No se encontró el evento ${req.params.id} o el usuario ${req.body.attendee_register} no está inscrito` })
 
-    const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: AttendeeInterface) => {
+    const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: IAttendee) => {
       const { status, attendee_register } = attendee
       if (attendee_register === req.body.attendee_register)
         if (status === 'Asistió' || status === 'Retardo')

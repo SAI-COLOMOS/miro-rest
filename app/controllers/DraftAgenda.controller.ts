@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import Agenda, { AgendaInterface } from '../models/Agenda'
-import User, { UserInterface } from '../models/User'
+import Agenda, { IEvent } from '../models/Agenda'
+import User, { IUser } from '../models/User'
 import { __Query, __Optional, __ThrowError } from '../middleware/ValidationControl'
 
 export const getDrafts = async (req: Request, res: Response): Promise<Response> => {
@@ -8,7 +8,7 @@ export const getDrafts = async (req: Request, res: Response): Promise<Response> 
     __Query(req.query.items, `items`, `number`)
     __Query(req.query.page, `page`, `number`)
 
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
@@ -25,7 +25,7 @@ export const getDrafts = async (req: Request, res: Response): Promise<Response> 
 
     filterRequest['attendance.status'] = 'Borrador'
 
-    const draftEvents: AgendaInterface[] = await Agenda.find(filterRequest, { "avatar": 0 }).sort({ "createdAt": "asc" }).limit(items).skip(page * items)
+    const draftEvents: IEvent[] = await Agenda.find(filterRequest, { "avatar": 0 }).sort({ "createdAt": "asc" }).limit(items).skip(page * items)
 
     return res.status(200).json({ message: 'Listo', draftEvents })
   } catch (error) {
@@ -84,7 +84,7 @@ export const updateDraft = async (req: Request, res: Response): Promise<Response
     __Optional(req.body.ending_date, `ending_date`, `string`, null, true)
     __Optional(req.body.avatar, `avatar`, `string`, null)
 
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
     req.body.modifier_register = user.register
 
     const result = await Agenda.updateOne({ "event_identifier": req.params.id }, req.body)

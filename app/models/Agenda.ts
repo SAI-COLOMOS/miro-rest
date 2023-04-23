@@ -1,6 +1,6 @@
 import { model, Schema, Document } from 'mongoose'
 
-export interface AttendeeInterface {
+export interface IAttendee {
   attendee_register: string
   first_name: string
   first_last_name: string
@@ -12,12 +12,12 @@ export interface AttendeeInterface {
   enrollment_date?: Date
 }
 
-export interface AttendanceInterface extends Document {
-  attendee_list: AttendeeInterface[]
+export interface IAttendance extends Document {
+  attendee_list: IAttendee[]
   status: string
 }
 
-export interface AgendaInterface extends Document {
+export interface IEvent extends Document {
   event_identifier: string
   name: string
   avatar: string
@@ -25,7 +25,7 @@ export interface AgendaInterface extends Document {
   offered_hours: number
   tolerance: number
   vacancy: number
-  attendance: AttendanceInterface
+  attendance: IAttendance
   starting_date: Date
   ending_date: Date
   author_register: string
@@ -171,7 +171,7 @@ const AgendaSchema = new Schema({
   timestamps: true
 })
 
-AgendaSchema.pre<AgendaInterface>("save", async function (next) {
+AgendaSchema.pre<IEvent>("save", async function (next) {
   if (!this.isNew) next()
 
   const pool = '0123456789qwertyuioplkjhgfdsazxcvbnmMNBVCXZASDFGHJKLPOIUYTREWQ'
@@ -182,7 +182,7 @@ AgendaSchema.pre<AgendaInterface>("save", async function (next) {
       const random: number = Math.round(Math.random() * (pool.length - 1))
       identifier = identifier + pool[random]
     }
-    const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": identifier })
+    const event: IEvent | null = await Agenda.findOne({ "event_identifier": identifier })
     if (!event) {
       this.event_identifier = identifier
       flag = false
@@ -192,6 +192,6 @@ AgendaSchema.pre<AgendaInterface>("save", async function (next) {
   next()
 })
 
-const Agenda = model<AgendaInterface>("Agenda", AgendaSchema)
+const Agenda = model<IEvent>("Agenda", AgendaSchema)
 
 export default Agenda

@@ -1,11 +1,11 @@
 import { Request, Response } from "express"
-import User, { UserInterface } from "../models/User"
+import User, { IUser } from "../models/User"
 import JWT, { JwtPayload } from "jsonwebtoken"
 import Environment from "../config/Environment"
 import { link, mensaje, sendEmail } from "../config/Mailer"
 import { __Optional, __Required, __ThrowError } from "../middleware/ValidationControl"
 
-function createToken (user: UserInterface, time: String): string {
+function createToken (user: IUser, time: String): string {
   return JWT.sign({
     register: user.register
   },
@@ -21,7 +21,7 @@ export const LoginGet = async (req: Request, res: Response): Promise<Response> =
     __Required(req.body.password, "password", "string", null)
     __Optional(req.body.keepAlive, "keepAlive", "boolean", null)
 
-    let user: UserInterface | null = null
+    let user: IUser | null = null
     if (req.body.credential.search('@') !== -1) {
       user = await User.findOne({ email: req.body.credential }).sort({ "register": "desc" })
     } else if (!Number.isNaN(req.body.credential) && req.body.credential.length === 10) {

@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import Card, { CardInterface } from '../models/Card'
+import Card, { ICard } from '../models/Card'
 import User from '../models/User'
 import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
-import { AgendaInterface } from '../models/Agenda'
+import { IEvent } from '../models/Agenda'
 
 export const getCards = async (req: Request, res: Response) => {
   try {
@@ -62,7 +62,7 @@ export const getCards = async (req: Request, res: Response) => {
     }
 
     const users = await User.find(filterRequest).sort({ "createdAt": "desc" })
-    let cards: CardInterface[] = []
+    let cards: ICard[] = []
     if (users.length > 0)
       cards = await Card.find({ 'provider_register': { $in: users.map(user => user.register) } }).limit(items).skip(page * items)
 
@@ -235,7 +235,7 @@ export const CountHours = async (id: string, res?: Response): Promise<Response |
   }
 }
 
-export const addHoursToSeveral = async (event: AgendaInterface): Promise<void> => {
+export const addHoursToSeveral = async (event: IEvent): Promise<void> => {
   const currentDate: Date = new Date()
 
   for (const [index, attendee] of event.attendance.attendee_list.entries()) {
@@ -244,7 +244,7 @@ export const addHoursToSeveral = async (event: AgendaInterface): Promise<void> =
       continue
     } else if (attendee.status === 'Desinscrito') continue
 
-    const card: CardInterface | null = await Card.findOne({ "provider_register": attendee.attendee_register })
+    const card: ICard | null = await Card.findOne({ "provider_register": attendee.attendee_register })
     if (!card) continue
 
     card.activities.push({

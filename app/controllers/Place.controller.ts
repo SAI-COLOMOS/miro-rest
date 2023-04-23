@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import Place, { PlaceInterface } from "../models/Place"
+import Place, { IPlace } from "../models/Place"
 import { __ThrowError, __Query, __Required, __Optional } from "../middleware/ValidationControl"
 
 export const getPlaces = async (req: Request, res: Response): Promise<Response> => {
@@ -25,7 +25,7 @@ export const getPlaces = async (req: Request, res: Response): Promise<Response> 
     if (req.query.search)
       filterRequest = { ...filterRequest, $or: [{ "place_name": { $regex: req.query.search, $options: "i" } }] }
 
-    const places: PlaceInterface[] = await Place.find(filterRequest, filterAvatar).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    const places: IPlace[] = await Place.find(filterRequest, filterAvatar).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({ message: 'Listo', places })
   } catch (error) {

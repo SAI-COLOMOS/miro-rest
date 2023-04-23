@@ -1,10 +1,10 @@
 import { Request, Response } from "express"
 import User from "../models/User"
-import Agenda, { AgendaInterface } from "../models/Agenda"
+import Agenda, { IEvent } from "../models/Agenda"
 import Card from "../models/Card"
 
 interface Request_body {
-  enrolled_event: AgendaInterface | null
+  enrolled_event: IEvent | null
   achieved_hours?: number
   total_hours?: number
   available_events?: object[]
@@ -44,13 +44,13 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
       ]
     }
 
-    const enrolled_events: AgendaInterface[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
+    const enrolled_events: IEvent[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
     const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
 
     if (user.role === 'Prestador') {
       const card = await Card.findOne({ "provider_register": user.register })
 
-      const availableEvents: AgendaInterface[] = await Agenda.find({
+      const availableEvents: IEvent[] = await Agenda.find({
         "belonging_place": user.place,
         "belonging_area": user.assigned_area,
         "attendance.status": "Disponible",

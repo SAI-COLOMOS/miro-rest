@@ -1,8 +1,8 @@
 import { model, Schema, Document } from "mongoose"
 import Bycrypt from "bcrypt"
-import Place, { AreaInterface } from "./Place"
+import Place, { IArea } from "./Place"
 
-export interface UserInterface extends Document {
+export interface IUser extends Document {
   register: string
   avatar: string
   curp: string
@@ -127,7 +127,7 @@ async function newRegisterForProvider (inputPlace: string, inputAssigned_area: s
 
   const place = await Place.findOne({ place_name: inputPlace })
 
-  const area = place!.place_areas.filter((item: AreaInterface) =>
+  const area = place!.place_areas.filter((item: IArea) =>
     item.area_name === inputAssigned_area ? true : null
   )
 
@@ -174,7 +174,7 @@ async function newRegisterForAdministratorOrManager (
 
   const place = await Place.findOne({ place_name: inputPlace })
 
-  const area = place!.place_areas.filter((item: AreaInterface) =>
+  const area = place!.place_areas.filter((item: IArea) =>
     item.area_name === inputAssigned_area ? true : null
   )
 
@@ -183,7 +183,7 @@ async function newRegisterForAdministratorOrManager (
   return `${first_last_name}${second_last_name}${first_name}${place!.place_identifier}${area[0].area_identifier}${random}`.normalize('NFD')
 }
 
-UserSchema.pre<UserInterface>("save", async function (next) {
+UserSchema.pre<IUser>("save", async function (next) {
   if (this.isNew) {
     if (this.role === "Prestador") {
       const register = await newRegisterForProvider(
@@ -213,7 +213,7 @@ UserSchema.pre<UserInterface>("save", async function (next) {
   next()
 })
 
-UserSchema.pre<UserInterface>("save", async function (next) {
+UserSchema.pre<IUser>("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await Bycrypt.hash(
       this.password,
@@ -228,6 +228,6 @@ UserSchema.methods.validatePassword = async function (password: string): Promise
   return await Bycrypt.compare(password, this.password)
 }
 
-const User = model<UserInterface>("Users", UserSchema)
+const User = model<IUser>("Users", UserSchema)
 
 export default User

@@ -1,4 +1,4 @@
-import Agenda, { AgendaInterface } from '../models/Agenda'
+import Agenda, { IEvent } from '../models/Agenda'
 import schedule from 'node-schedule'
 import Environment from '../config/Environment'
 import User from '../models/User'
@@ -8,7 +8,7 @@ import { addHoursToSeveral } from './Card.controller'
 export const publishEvent = async (event_identifier: string, time: string): Promise<void> => {
   schedule.scheduleJob(event_identifier, time,
     async function (event_identifier: string) {
-      const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
+      const event: IEvent | null = await Agenda.findOne({ "event_identifier": event_identifier })
       if (!event) return
       event.attendance.status = 'Disponible'
       event.has_been_published = true
@@ -27,7 +27,7 @@ export const publishEvent = async (event_identifier: string, time: string): Prom
 export const startEvent = async (event_identifier: string, time: string) => {
   schedule.scheduleJob(`start_${event_identifier}`, time,
     async function (event_identifier: string) {
-      const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
+      const event: IEvent | null = await Agenda.findOne({ "event_identifier": event_identifier })
       if (!event) return
       event.attendance.status = 'En proceso'
       await event.save()
@@ -38,7 +38,7 @@ export const startEvent = async (event_identifier: string, time: string) => {
 export const aboutToStartEvent = async (event_identifier: string, time: string) => {
   schedule.scheduleJob(`aboutToStart_${event_identifier}`, time,
     async function (event_identifier: string) {
-      const event: AgendaInterface | null = await Agenda.findOne({ "event_identifier": event_identifier })
+      const event: IEvent | null = await Agenda.findOne({ "event_identifier": event_identifier })
       if (!event) return
       event.attendance.status = 'Por comenzar'
       await event.save()
@@ -63,7 +63,7 @@ export const endEvent = async (event_identifier: string, time: string): Promise<
 
 export const initEvents = async () => {
   const currentDate: Date = new Date()
-  const events: AgendaInterface[] = await Agenda.find({
+  const events: IEvent[] = await Agenda.find({
     "attendance.status": { $not: { $regex: "Concluido" } }
   }, { "avatar": 0 })
 
@@ -79,12 +79,12 @@ export const initEvents = async () => {
       console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
       event.attendance.status = 'Concluido por sistema'
       if (event.attendance.attendee_list.length === 0) {
-        event.save()
+        await event.save()
         continue
       }
       addHoursToSeveral(event)
       event.markModified('attendance.attendee_list')
-      event.save()
+      await event.save()
       continue
     } else {
       console.log(`Se agendó el término del evento ${event.event_identifier}`)

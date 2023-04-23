@@ -9,7 +9,7 @@ export interface HoursInterface {
   toSubstract?: boolean
 }
 
-export interface CardInterface extends Document {
+export interface ICard extends Document {
   provider_register: string
   achieved_hours: number
   total_hours: number
@@ -67,6 +67,6 @@ const CardSchema = new Schema({
   timestamps: true
 })
 
-const Card = model<CardInterface>("Cards", CardSchema)
+const Card = model<ICard>("Cards", CardSchema)
 
 export default Card

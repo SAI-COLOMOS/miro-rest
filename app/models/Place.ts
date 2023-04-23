@@ -1,12 +1,12 @@
 import { model, Schema, Document } from "mongoose"
 
-export interface AreaInterface extends Document {
+export interface IArea extends Document {
   area_identifier: string
   area_name: string,
   phone: string
 }
 
-export interface PlaceInterface extends Document {
+export interface IPlace extends Document {
   place_identifier: string
   avatar: string
   place_name: string
@@ -17,7 +17,7 @@ export interface PlaceInterface extends Document {
   colony: string
   phone: string
   reference: string
-  place_areas: AreaInterface[]
+  place_areas: IArea[]
 }
 
 const AreaSchema = new Schema({
@@ -85,7 +85,7 @@ const PlaceSchema = new Schema({
   timestamps: true
 })
 
-PlaceSchema.pre<PlaceInterface>("save", async function (next) {
+PlaceSchema.pre<IPlace>("save", async function (next) {
 
   if (this.isNew) {
     let serie = "01"
@@ -106,6 +106,6 @@ PlaceSchema.pre<PlaceInterface>("save", async function (next) {
   next()
 })
 
-const Place = model<PlaceInterface>("Places", PlaceSchema)
+const Place = model<IPlace>("Places", PlaceSchema)
 
 export default Place

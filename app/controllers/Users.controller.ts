@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
-import User, { UserInterface } from '../models/User'
-import Card, { CardInterface } from '../models/Card'
+import User, { IUser } from '../models/User'
+import Card, { ICard } from '../models/Card'
 import Environment from '../config/Environment'
 import { mensaje, sendEmail } from '../config/Mailer'
 import fs from 'fs/promises'
@@ -12,7 +12,7 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
     __Query(req.query.items, `items`, `number`)
     __Query(req.query.page, `page`, `number`)
 
-    const user: UserInterface = new User(req.user)
+    const user: IUser = new User(req.user)
     const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
@@ -67,7 +67,7 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
       filterRequest.assigned_area = user.assigned_area
     }
 
-    const users: UserInterface[] = await User.find(filterRequest, filterAvatar).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+    const users: IUser[] = await User.find(filterRequest, filterAvatar).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
 
     return res.status(200).json({ message: "Listo", users })
   } catch (error) {
@@ -81,13 +81,13 @@ export const UserGet = async (req: Request, res: Response): Promise<Response> =>
   try {
     const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
     const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
-    const user: UserInterface | null = await User.findOne({ 'register': req.params.id }, filterAvatar)
+    const user: IUser | null = await User.findOne({ 'register': req.params.id }, filterAvatar)
 
     if (user && avatar) return res.status(200).json({ message: 'Lsito', avatar: user.avatar })
     let response: object | null = user ? { ...user.toObject() } : null
 
     if (user && user.role === 'Prestador') {
-      const card: CardInterface | null = await Card.findOne({ "provider_register": user.register })
+      const card: ICard | null = await Card.findOne({ "provider_register": user.register })
       response = card ? { ...response, "total_hours": card.total_hours } : { ...response }
     }
 
