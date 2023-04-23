@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.sai_colomos.app_core",
+    "sha256_cert_fingerprints":
+    ["91:62:D3:4E:57:06:1B:D2:42:FA:FC:78:17:A5:D8:BD:0E:09:B1:F8:FC:27:4A:81:D7:28:BA:58:B3:8D:D5:7F"]
+  }
+}]

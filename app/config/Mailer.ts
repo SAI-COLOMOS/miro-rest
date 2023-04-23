@@ -19,7 +19,7 @@ export const sendEmail = async (from: string, to: string, subject: string, body:
     html: body,
     attachments: [{
       filename: 'logo.png',
-      path: './app/public/logo.png',
+      path: './public/logo.png',
       cid: 'SAI@logo'
     }]
   })
