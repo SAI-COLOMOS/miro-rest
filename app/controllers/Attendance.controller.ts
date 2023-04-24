@@ -3,7 +3,6 @@ import Agenda, { IEvent, IAttendee } from '../models/Agenda'
 import User, { IUser } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from '../middleware/ValidationControl'
 import { sendEmail, mensaje } from '../config/Mailer'
-import Environment from '../config/Environment'
 
 export const getAttendees = async (req: Request, res: Response): Promise<Response> => {
   try {
