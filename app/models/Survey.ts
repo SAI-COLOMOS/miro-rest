@@ -125,7 +125,12 @@ SurveySchema.pre<ISurvey>('save', async function (next) {
       }
       const identifier = `${place!.place_identifier}${area!.area_identifier}${suffix}`
 
-      const survey: ISurvey | null = await Survey.findOne({ "form_identifier": identifier })
+      const survey: ISurvey | null = await Survey.findOne({
+        $or: [
+          { form_identifier: identifier },
+          { survey_identifier: identifier }
+        ]
+      })
 
       if (survey === null) {
         isUnique = true
