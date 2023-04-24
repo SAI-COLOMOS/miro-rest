@@ -3,7 +3,7 @@ import Place, { IPlace, IArea } from './Place'
 
 export interface IAnswer {
   question_referenced: string
-  answer: string[]
+  answer: string[] | string[][]
 }
 
 export interface IQuestion {
@@ -33,7 +33,7 @@ const AnswerSchema = new Schema({
     required: [true, 'El identificador de la pregunta es obligatorio']
   },
   answer: {
-    type: [String]
+    type: []
   }
 }, {
   versionKey: false

@@ -5,6 +5,7 @@ import Form from '../models/Form'
 import Agenda, { IEvent } from '../models/Agenda'
 import Survey, { ISurvey } from '../models/Survey'
 import User, { IUser } from '../models/User'
+import { IAnswer } from '../models/Survey'
 
 export const createSurvey = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -17,9 +18,9 @@ export const createSurvey = async (req: Request, res: Response): Promise<Respons
     if (!form) return res.status(400).json({ message: `No se encontró el formulario ${form_identifier}` })
     const event: IEvent | null = await Agenda.findOne({ event_identifier })
     if (!event) return res.status(400).json({ message: `No se encontró el evento ${event_identifier}` })
-
+    const formObj = form.toObject()
     const survey: ISurvey = await new Survey({
-      ...form,
+      ...formObj,
       belonging_event_identifier: event.event_identifier,
       author_register: user.register
     }).save()
@@ -51,5 +52,33 @@ export const deleteSurvey = async (req: Request, res: Response): Promise<Respons
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
     return res.status(statusCode).json(response)
+  }
+}
+
+export const saveAnswers = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const survey: ISurvey | null = await Survey.findOne({ survey_identifier: req.params.id })
+    if (!survey) return res.status(400).json({ message: `No se encontró la encuesta ${req.params.id}` })
+
+    const answers = req.body.answers
+    Object.keys(answers).forEach((key: string) => {
+      const index = survey.answers.findIndex((answer: IAnswer) => answer.question_referenced === key)
+      if (index === -1) {
+        survey.answers.push({
+          question_referenced: key,
+          answer: [answers[key]]
+        })
+      } else {
+        survey.answers[index].answer.push(answers[key])
+      }
+    })
+    survey.markModified('answers')
+    await survey.save()
+    return res.status(200).json({ message: `Se guardaron las respuestas en el formulario ${req.params.id}` })
+  } catch (error) {
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
+
   }
 }
