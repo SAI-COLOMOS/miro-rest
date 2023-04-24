@@ -3,7 +3,6 @@ import Agenda, { IEvent, IAttendee } from '../models/Agenda'
 import User, { IUser } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from '../middleware/ValidationControl'
 import { sendEmail, mensaje } from '../config/Mailer'
-import Environment from '../config/Environment'
 
 export const getAttendees = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -106,10 +105,9 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
     for (const attendee of attendeeList) {
       const user: IUser | null = await User.findOne({ "register": attendee.register })
       if (!user) continue
-      const from = `"SAI" ${Environment.Mailer.email}`
       const subject = 'Haz sido inscrito a un evento'
       const body = mensaje(`Haz sido inscrito al evento ${event.name} por ${responsible.first_name}`)
-      sendEmail(from, user.email, subject, body)
+      sendEmail(user.email, subject, body)
     }
 
     event.markModified('attendance.attendee_list')
