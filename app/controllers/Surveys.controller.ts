@@ -27,7 +27,7 @@ export const createSurvey = async (req: Request, res: Response): Promise<Respons
     event.survey_identifier = survey.survey_identifier
     await event.save()
 
-    return res.status(200).json({ message: 'Encuesta creada' })
+    return res.status(201).json({ message: 'Encuesta creada' })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
