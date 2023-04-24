@@ -24,7 +24,8 @@ export const getForms = async (req: Request, res: Response): Promise<Response> =
         ...filterRequest,
         $or: [
           { "name": { $regex: req.query.search, $options: 'i' } },
-          { "form_identifier": { $regex: req.query.search, $options: 'i' } }
+          { "form_identifier": { $regex: req.query.search, $options: 'i' } },
+          { "version": { $regex: req.query.search, $options: 'i' } }
         ]
       }
 

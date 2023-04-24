@@ -6,6 +6,43 @@ import Agenda, { IEvent } from '../models/Agenda'
 import Survey, { ISurvey } from '../models/Survey'
 import User, { IUser } from '../models/User'
 import { IAnswer } from '../models/Survey'
+import { __Query } from '../middleware/ValidationControl'
+
+export const getSurveys = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    __Query(req.query.items, 'items', 'number')
+    __Query(req.query.page, 'page', 'number')
+
+    const user: IUser = new User(req.user)
+    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+    const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
+    let filterRequest: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
+
+    if (user.role === 'Encargado') {
+      filterRequest.belonging_area = user.assigned_area
+      filterRequest.belonging_place = user.place
+    }
+
+    if (req.query.search)
+      filterRequest = {
+        ...filterRequest,
+        $or: [
+          { "name": { $regex: req.query.search, $options: 'i' } },
+          { "form_identifier": { $regex: req.query.search, $options: 'i' } },
+          { "survey_identifier": { $regex: req.query.search, $options: 'i' } },
+          { "version": { $regex: req.query.search, $options: 'i' } }
+        ]
+      }
+
+    const surveys: ISurvey[] = await Survey.find(filterRequest).sort({ "createdAt": "desc" }).limit(items).skip(page * items)
+
+    return res.status(200).json({ message: 'Listo', surveys })
+  } catch (error) {
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    return res.status(statusCode).json(response)
+  }
+}
 
 export const createSurvey = async (req: Request, res: Response): Promise<Response> => {
   try {
