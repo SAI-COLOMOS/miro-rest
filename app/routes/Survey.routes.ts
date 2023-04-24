@@ -5,7 +5,7 @@ import { isAdministradorOrEncargado } from '../middleware/RoleControl'
 const route = Router()
 const path = '/surveys'
 
-route.get(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getSurveys)
+route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getSurveys)
 
 route.post(`${path}`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, createSurvey)
 
