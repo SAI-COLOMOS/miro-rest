@@ -96,9 +96,9 @@ export const addArea = async (req: Request, res: Response): Promise<Response> =>
       const areas = place.place_areas
 
       if (areas.length > 0) {
-        const last_identifier = areas[areas.length - 1].area_identifier
+        const lastIdentifier = areas[areas.length - 1].area_identifier
 
-        const next_identifier = Number(last_identifier) + 1
+        const next_identifier = Number(lastIdentifier) + 1
 
         next_identifier < 10
           ? serie = "0" + next_identifier

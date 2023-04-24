@@ -90,10 +90,10 @@ PlaceSchema.pre<IPlace>("save", async function (next) {
   if (this.isNew) {
     let serie = "01"
 
-    const last_identifier = await Place.findOne().sort({ "place_identifier": "desc" })
+    const lastIdentifier = await Place.findOne().sort({ "place_identifier": "desc" })
 
-    if (last_identifier) {
-      const next_identifier: number = Number(last_identifier.place_identifier) + 1
+    if (lastIdentifier) {
+      const next_identifier: number = Number(lastIdentifier.place_identifier) + 1
 
       next_identifier < 10
         ? serie = "0" + next_identifier

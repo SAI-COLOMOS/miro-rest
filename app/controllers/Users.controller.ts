@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import User, { IUser } from '../models/User'
 import Card, { ICard } from '../models/Card'
-import Environment from '../config/Environment'
 import { mensaje, sendEmail } from '../config/Mailer'
 import fs from 'fs/promises'
 import { global_path } from '../server'
@@ -150,18 +149,10 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
     const newUser = await new User(req.body).save()
 
     if (newUser) {
-      const from = `"SAI" ${Environment.Mailer.email}`
       const to = String(newUser.email)
       const subject = "Bienvenido!"
-      const body = mensaje(`Bienvenido al ${newUser.assigned_area} de ${newUser.place}.\n
-      Revisa que tu información sea correcta:\n
-      - Nombre: ${newUser.first_name} ${newUser.first_last_name} ${newUser.second_last_name}\n
-      - Curp: ${newUser.curp}\n
-      - Teléfono: ${newUser.phone}\n
-      - Teléfono de emergencia: ${newUser.emergency_phone}\n
-      - Contácto de emergencia: ${newUser.emergency_contact}\n
-      - Tipo de sangre: ${newUser.blood_type}\n`)
-      await sendEmail(from, to, subject, body)
+      const body = mensaje(`Bienvenido al ${newUser.assigned_area} de ${newUser.place}.`)
+      await sendEmail(to, subject, body)
     }
 
     if (newUser && newUser.role === "Prestador")
@@ -281,7 +272,7 @@ export const restorePassword = async (req: Request, res: Response): Promise<Resp
 
     if (user) {
       user.password = user.register
-      user.save()
+      await user.save()
     }
 
     return user
@@ -311,7 +302,7 @@ export const updatePassword = async (req: Request, res: Response): Promise<Respo
 
     if (user && !(await user.validatePassword(req.body.password))) {
       user.password = req.body.password
-      user.save()
+      await user.save()
 
       return res.status(200).json({
         message: "Se actualizó la contraseña del usuario"

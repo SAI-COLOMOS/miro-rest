@@ -1,11 +1,10 @@
 import { Request, Response } from 'express'
 import Agenda, { IEvent, IAttendee } from '../models/Agenda'
 import User, { IUser } from '../models/User'
-import Environment from '../config/Environment'
 import schedule from 'node-schedule'
-import { mensaje, sendEmail } from '../config/Mailer'
+import { sendMailForPublishing } from '../config/Mailer'
 import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
-import { startEvent, publishEvent, endEvent, aboutToStartEvent } from './NodeEvent.controller'
+import { scheduleAboutToStart, schedulePublication, scheduleStart, shceduleEnd } from './NodeEvent.controller'
 import { addHoursToSeveral } from './Card.controller'
 
 export const getAgenda = async (req: Request, res: Response): Promise<Response> => {
@@ -135,23 +134,14 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
 
     const currentDate: Date = new Date()
     if (event.publishing_date <= currentDate) {
-      event.attendance.status = 'Disponible'
-      event.has_been_published = true
-      await event.save()
-      const users = await User.find({ "status": "Activo", "role": "Prestador" })
-      const from = `"SAI" ${Environment.Mailer.email}`
-      const subject = '¡Hay un evento disponible para tí!'
-      const body = mensaje(`La inscripción para el evento  ${event.name} ya se encuentra habilitada.`)
-      for (const user of users) {
-        sendEmail(from, user.email, subject, body)
-      }
+      publishEvent(event.event_identifier, event)
     } else {
-      publishEvent(event.event_identifier, event.publishing_date.toISOString())
+      schedulePublication(event.event_identifier, event.publishing_date.toISOString())
     }
 
-    endEvent(event.event_identifier, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
-    startEvent(event.event_identifier, event.starting_date.toISOString())
-    aboutToStartEvent(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
+    shceduleEnd(event.event_identifier, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
+    scheduleStart(event.event_identifier, event.starting_date.toISOString())
+    scheduleAboutToStart(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
 
     return res.status(201).json({ message: "Evento creado" })
   } catch (error) {
@@ -209,18 +199,9 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
       schedule.cancelJob(event.event_identifier)
       const currentDate: Date = new Date()
       if (!event.has_been_published && event.publishing_date <= currentDate) {
-        event.attendance.status = 'Disponible'
-        event.has_been_published = true
-        await event.save()
-        const users = await User.find({ "status": "Activo", "role": "Prestador" })
-        const from = `"SAI" ${Environment.Mailer.email}`
-        const subject = '¡Hay un evento disponible para tí!'
-        const body = mensaje(`La inscripción para el evento  ${event.name} empieza en una hora.`)
-        for (const user of users) {
-          await sendEmail(from, user.email, subject, body)
-        }
+        publishEvent(event.event_identifier, event)
       } else {
-        publishEvent(event.event_identifier, event.publishing_date.toISOString())
+        schedulePublication(event.event_identifier, event.publishing_date.toISOString())
       }
     }
 
@@ -228,14 +209,14 @@ export const updateEvent = async (req: Request, res: Response): Promise<Response
       const time: Date = event.ending_date
       time.setHours(time.getHours() + 1)
       schedule.cancelJob(`end_${event.event_identifier}`)
-      endEvent(event.event_identifier, time.toISOString())
+      shceduleEnd(event.event_identifier, time.toISOString())
     }
 
     if (event && req.body.starting_date) {
       schedule.cancelJob(`start_${event.event_identifier}`)
       schedule.cancelJob(`aboutToStart_${event.event_identifier}`)
-      startEvent(event.event_identifier, event.starting_date.toISOString())
-      aboutToStartEvent(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
+      scheduleStart(event.event_identifier, event.starting_date.toISOString())
+      scheduleAboutToStart(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
     }
 
     return res.status(200).json({ message: `Se actualizó la información del evento ${req.params.id}` })
@@ -298,4 +279,35 @@ export const deleteEvent = async (req: Request, res: Response): Promise<Response
       error: error?.toString()
     })
   }
+}
+
+export const publishEvent = async (event_identifier: string, event?: IEvent) => {
+  const result: IEvent | null = event ? event : await Agenda.findOne({ "event_identifier": event_identifier })
+
+  if (!result) return
+  result.attendance.status = 'Disponible'
+  result.has_been_published = true
+  await result.save()
+  sendMailForPublishing(result)
+}
+
+export const changeEventStatus = async (event_identifier: string, status: string, event?: IEvent) => {
+  const result: IEvent | null = event ? event : await Agenda.findOne({ "event_identifier": event_identifier })
+
+  if (!result) return
+  result.attendance.status = status
+  await result.save()
+}
+
+export const endEvent = async (event_identifier: string, status?: string | null, event?: IEvent) => {
+  const result = event ? event : await Agenda.findOne({ "event_identifier": event_identifier })
+
+  if (!result || result.attendance.status === 'Concluido' || result.attendance.status === 'Concluido por sistema') return
+
+  result.attendance.status = status ? status : 'Concluido por sistema'
+  if (result.attendance.attendee_list.length === 0) {
+    await result.save()
+    return
+  }
+  addHoursToSeveral(result)
 }

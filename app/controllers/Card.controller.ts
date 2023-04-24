@@ -257,6 +257,7 @@ export const addHoursToSeveral = async (event: IEvent): Promise<void> => {
 
     card.markModified('activities')
     await card.save()
-    CountHours(card.provider_register)
+    await CountHours(card.provider_register)
   }
+  await event.save()
 }

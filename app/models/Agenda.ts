@@ -19,6 +19,7 @@ export interface IAttendance extends Document {
 
 export interface IEvent extends Document {
   event_identifier: string
+  survey_identifier?: string
   name: string
   avatar: string
   description: string
@@ -95,6 +96,10 @@ const AgendaSchema = new Schema({
   event_identifier: {
     type: String,
     unique: true,
+    index: true
+  },
+  survey_identifier: {
+    type: String,
     index: true
   },
   avatar: {

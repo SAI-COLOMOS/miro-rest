@@ -1,19 +1,8 @@
-import { model, Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose'
+import { model, Document, Schema } from 'mongoose'
 import Place, { IPlace, IArea } from './Place'
+import { IQuestion, QuestionSchema } from './Survey'
 
-export interface AnswerInterface {
-  question_referenced: string
-  answer: string[]
-}
-
-export interface QuestionInterface {
-  interrogation: string
-  question_identifier: string
-  question_type: string
-  enum_options: string[]
-}
-
-export interface FormInterface extends Document {
+export interface IForm extends Document {
   name: string
   description: string
   author_register: string
@@ -22,45 +11,10 @@ export interface FormInterface extends Document {
   belonging_event_identifier: string
   version: string
   form_identifier: string
-  questions: QuestionInterface[]
-  answers: AnswerInterface[]
+  questions: IQuestion[]
 }
 
-const AnswerSchema = new Schema({
-  question_referenced: {
-    type: String,
-    required: [true, 'El identificador de la pregunta es obligatorio']
-  },
-  answer: {
-    type: [String]
-  }
-}, {
-  versionKey: false
-})
-
-export const QuestionSchema = new Schema({
-  interrogation: {
-    type: String,
-    required: [true, 'La interroagnte es obligatoria']
-  },
-  question_identifier: {
-    type: String,
-    index: true,
-    required: true
-  },
-  question_type: {
-    type: String,
-    enum: ['Abierta', 'Numérica', 'Opción múltiple', 'Selección múltiple', 'Escala']
-  },
-  enum_options: {
-    type: Schema.Types.Mixed
-    // type: [String]
-  }
-}, {
-  versionKey: false
-})
-
-const FormSchema = new Schema({
+const SurveySchema = new Schema({
   name: {
     type: String,
     required: [true, 'El nombre del formulario es obligatorio']
@@ -81,9 +35,6 @@ const FormSchema = new Schema({
     type: String,
     required: [true, 'El lugar de pertenencia es obligatorio']
   },
-  belonging_event_identifier: {
-    type: String
-  },
   version: {
     type: String,
     default: '1.0'
@@ -95,16 +46,13 @@ const FormSchema = new Schema({
   questions: {
     type: [QuestionSchema],
     required: [true, 'Las preguntas son obligatorias']
-  },
-  answers: {
-    type: [AnswerSchema]
   }
 }, {
   timestamps: true,
   versionKey: false
 })
 
-FormSchema.pre<FormInterface>('save', async function (next: CallbackWithoutResultAndOptionalError) {
+SurveySchema.pre<IForm>('save', async function (next) {
   if (this.isNew) {
     let isUnique: boolean = false
     const pool: string = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
@@ -120,7 +68,7 @@ FormSchema.pre<FormInterface>('save', async function (next: CallbackWithoutResul
       }
       const identifier = `${place!.place_identifier}${area!.area_identifier}${suffix}`
 
-      const form: FormInterface | null = await Form.findOne({ "form_identifier": identifier })
+      const form: IForm | null = await Form.findOne({ "form_identifier": identifier })
 
       if (form === null) {
         isUnique = true
@@ -132,6 +80,6 @@ FormSchema.pre<FormInterface>('save', async function (next: CallbackWithoutResul
   next()
 })
 
-const Form = model<FormInterface>("Form", FormSchema)
+const Form = model<IForm>("Form", SurveySchema)
 
 export default Form

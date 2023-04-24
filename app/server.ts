@@ -19,7 +19,7 @@ import Place from './routes/Place.routes'
 import School from './routes/School.routes'
 import Form from './routes/Form.routes'
 import DraftAgenda from './routes/DraftAgenda.routes'
-
+import Survey from './routes/Survey.routes'
 
 /* Variables */
 const app = express()
@@ -50,6 +50,7 @@ app.use(DraftAgenda)
 app.use(Place)
 app.use(School)
 app.use(Form)
+app.use(Survey)
 
 app.use((req, res) => {
   if (req.originalUrl === '/' || req.originalUrl === '') res.send('Root page')

@@ -1,5 +1,5 @@
-// import { IEvent } from '../models/Agenda'
-// import { IUser } from '../models/User'
+import { IEvent } from '../models/Agenda'
+import User, { IUser } from '../models/User'
 import Environment from "./Environment"
 import nodemailer from "nodemailer"
 
@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
   },
 })
 
-export const sendEmail = async (_form: string, to: string, subject: string, body: string) => {
+export const sendEmail = async (to: string, subject: string, body: string) => {
   await transporter.sendMail({
     from: `"SAI" ${Environment.Mailer.email}`,
     to: to,
@@ -111,9 +111,17 @@ export const link = (link: String) => {
     `
 }
 
-// export const sendMailForPublishing = (event: IEvent, subject: string, body: string) => {
-  
-//   users.forEach((user: IUser) => {
-//     sendEmail(user.email, subject, body)
-//   })
-// }
+export const sendMailForPublishing = async (event: IEvent) => {
+  const users: IUser[] = await User.find({
+    "status": "Activo",
+    "role": "Prestador",
+    "place": event.belonging_place,
+    "assigned_area": event.belonging_area
+  })
+  const subject = '¡Hay un evento disponible para tí!'
+  const body = mensaje(`La inscripción para el evento  ${event.name} ya comenzó.`)
+
+  users.forEach((user: IUser) => {
+    sendEmail(user.email, subject, body)
+  })
+}
