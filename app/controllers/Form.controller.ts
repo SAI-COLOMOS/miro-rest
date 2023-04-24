@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { __Required, __Optional, __Query, __ThrowError } from '../middleware/ValidationControl'
-import Survey, { IQuestion, ISurvey } from '../models/Survey'
+import { IQuestion } from '../models/Survey'
 import User, { IUser } from '../models/User'
 import Form, { IForm } from '../models/Form'
 
