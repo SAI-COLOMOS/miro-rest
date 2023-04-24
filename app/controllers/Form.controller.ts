@@ -170,12 +170,6 @@ export const deleteForm = async (req: Request, res: Response): Promise<Response>
 
     if (!form) return res.status(400).json({ message: `No se encontró el formulario ${req.params.id}` })
 
-    const survey: ISurvey | null = await Survey.findOne({ form_identifier: form.form_identifier })
-    if (survey) {
-      survey.form_identifier = null
-      await survey.save()
-    }
-
     return res.status(200).json({ message: 'Se eliminó el formulario' })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
