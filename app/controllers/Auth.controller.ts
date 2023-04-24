@@ -61,11 +61,10 @@ export const sendRecoveryToken = async (req: Request, res: Response): Promise<Re
     if (user) {
       const token = createToken(user, "5d")
       newRoute = `https://api.sai-colomos.dev/auth/recovery?token=${token}`
-      const from = `"SAI" ${Environment.Mailer.email}`
       const to = String(user.email)
       const subject = "Recuperación de contraseña"
       const body = link(newRoute)
-      await sendEmail(from, to, subject, body)
+      await sendEmail(to, subject, body)
     }
 
     return res.status(200).json({
@@ -100,11 +99,10 @@ export const recoverPassword = async (req: Request, res: Response): Promise<Resp
     if (user && !(await user.validatePassword(req.body.password))) {
       user.password = req.body.password
       user.save()
-      const from = `"SAI" ${Environment.Mailer.email}`
       const to = user.email
       const subject = "Recuperación de contraseña"
       const body = mensaje("Se actualizó la contraseña de su usuario.")
-      await sendEmail(from, to, subject, body)
+      await sendEmail(to, subject, body)
 
       return res.status(200).json({
         message: "Se actualizó la contraseña del usuario"
