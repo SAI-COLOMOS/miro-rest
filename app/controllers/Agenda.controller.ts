@@ -112,7 +112,7 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     }
 
     req.body.author_register = user.register
-    req.body.author_name = `${user.first_name} ${user.first_last_name} ${user.second_last_name ? ` ${user.second_last_name}` : ''}`
+    req.body.author_name = `${user.first_name} ${user.first_last_name} ${user.second_last_name ? `${user.second_last_name}` : ''}`
     __Required(req.body.name, `name`, `string`, null)
     __Required(req.body.tolerance, `tolerance`, `number`, null)
     __Required(req.body.description, `description`, `string`, null)
