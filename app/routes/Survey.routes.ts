@@ -11,6 +11,6 @@ route.post(`${path}`, Passport.authenticate('jwt', { session: false, failureRedi
 
 route.delete(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, deleteSurvey)
 
-route.patch(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, saveAnswers)
+route.post(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, saveAnswers)
 
 export default route

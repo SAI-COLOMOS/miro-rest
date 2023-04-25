@@ -89,7 +89,7 @@ export const saveAnswers = async (req: Request, res: Response): Promise<Response
     })
     survey.markModified('answers')
     await survey.save()
-    return res.status(200).json({ message: `Se guardaron las respuestas en el formulario ${req.params.id}` })
+    return res.status(201).json({ message: `Se guardaron las respuestas en el formulario ${req.params.id}` })
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
