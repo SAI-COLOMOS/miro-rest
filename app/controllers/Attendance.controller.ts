@@ -222,3 +222,87 @@ export const updateAttendee = async (req: Request, res: Response): Promise<Respo
     return res.status(statusCode).json(response)
   }
 }
+
+export const checkAttendanceProximity = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    // __Required(req.body.attendee_register, `attendee_register`, `string`, null)
+    // __Optional(req.body.status, `status`, `string`, ["Asistió", "Retardo"])
+
+    const event: IEvent | null = await Agenda.findOne({
+      "event_identifier": req.params.id
+    })
+
+    if (!event)
+      return res.status(400).json({ message: `No se encontró el evento ${req.params.id} o el usuario ${req.body.attendee_register} no está inscrito` })
+
+    /* Bifurcación en función del rol del usuario */
+    const user = new User(req.user)
+
+    switch (user.role) {
+      case "Encargado": // Caso donde el usuario es un encargado
+        __Required(req.body.latitude, `latitude`, `number`, null)
+        __Required(req.body.longitude, `longitude`, `number`, null)
+        __Required(req.body.accuracy, `accuracy`, `number`, null)
+        
+        await Agenda.updateOne({ "event_identifier": req.params.id }, {
+          $set: {
+            "attendance.location.latitude": req.body.latitude,
+            "attendance.location.longitude": req.body.longitude,
+            "attendance.location.accuracy": req.body.accuracy,
+            "attendance.location.initialized": true
+          }
+        })
+
+        return res.status(200).json({ message: 'Se registró la ubicación' })
+        
+        case "Prestador": // Caso donde el usuario es un prestador
+        __Required(req.body.latitude, `latitude`, `number`, null)
+        __Required(req.body.longitude, `longitude`, `number`, null)
+
+        if (event.attendance.location.initialized == false) {
+          return res.status(102).json({ message: 'La toma de asistencia todavía no está disponible' })
+        }
+
+        const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: IAttendee) => {
+          const { status, attendee_register } = attendee
+          if (attendee_register === req.body.attendee_register)
+            if (status === 'Asistió' || status === 'Retardo')
+              return true
+    
+          return false
+        })
+    
+        if (attendanceHasBeenChecked)
+          return res.status(200).json({ message: `La asistencia del usuario ${user.register} ya fué tomada anteriormente` })
+
+        const eventLatitude = event.attendance.location.latitude
+        const eventLongitude = event.attendance.location.longitude
+        const userLatitude = req.body.latitude
+        const userLongitude = req.body.longitude
+        
+        const distance = Math.sqrt(Math.pow(userLatitude - eventLatitude, 2) + Math.pow(userLongitude - eventLongitude, 2))
+
+        if(distance <= 10) {
+          const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
+          const currentDate = new Date()
+      
+          if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
+      
+          await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
+            $set: {
+              "attendance.attendee_list.$.status": req.body.status,
+              "attendance.attendee_list.$.check_in": currentDate.toISOString()
+            }
+          })
+        }
+        return res.status(200).json({ message: 'Distancia insuficiente' })
+    }
+
+    return res.status(500).json({ message: 'Retorno de fin de camino' })
+  } catch (error) {
+    const statusCode: number = typeof error === 'string' ? 400 : 500
+    const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    console.log(response)
+    return res.status(statusCode).json(response)
+  }
+}

@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import Passport from 'passport'
-import { addAttendee, addSeveralAttendees, checkAttendance, getAttendees, removeAttendee, updateAttendee } from '../controllers/Attendance.controller'
+import { addAttendee, addSeveralAttendees, checkAttendance, getAttendees, removeAttendee, updateAttendee, checkAttendanceProximity } from '../controllers/Attendance.controller'
 import { createEvent, deleteEvent, getAgenda, getEvent, updateEvent, updateEventStatus } from '../controllers/Agenda.controller'
 import { isAdministradorOrEncargado } from '../middleware/RoleControl'
 
@@ -47,5 +47,8 @@ route.post(`${path}/:id/attendance/several`, Passport.authenticate('jwt', { sess
 
 // Tomar asistencia
 route.patch(`${path}/:id/attendance/take`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, checkAttendance)
+
+// Tomar asistencia por proximidad
+route.patch(`${path}/:id/attendance/proximity`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), checkAttendanceProximity)
 
 export default route
