@@ -262,7 +262,7 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
         __Required(req.body.longitude, `longitude`, `number`, null)
 
         if (event.attendance.location.initialized == false) {
-          return res.status(102).json({ message: 'La toma de asistencia todavía no está disponible' })
+          return res.status(403).json({ message: 'La toma de asistencia todavía no está disponible' })
         }
 
         const attendanceHasBeenChecked: boolean = event.attendance.attendee_list.some((attendee: IAttendee) => {
