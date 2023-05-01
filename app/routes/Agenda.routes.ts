@@ -49,6 +49,6 @@ route.post(`${path}/:id/attendance/several`, Passport.authenticate('jwt', { sess
 route.patch(`${path}/:id/attendance/take`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, checkAttendance)
 
 // Tomar asistencia por proximidad
-route.patch(`${path}/:id/attendance/proximity`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), checkAttendanceProximity)
+route.post(`${path}/:id/attendance/proximity`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), checkAttendanceProximity)
 
 export default route
