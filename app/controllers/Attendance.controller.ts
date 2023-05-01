@@ -238,6 +238,8 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
     /* Bifurcación en función del rol del usuario */
     const user = new User(req.user)
 
+    console.log(req.body)
+
     switch (user.role) {
       case "Encargado": // Caso donde el usuario es un encargado
         __Required(req.body.latitude, `latitude`, `number`, null)
@@ -253,7 +255,7 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
           }
         })
 
-        return res.status(200).json({ message: 'Se registró la ubicación' })
+        return res.status(201).json({ message: 'Se registró la ubicación' })
         
         case "Prestador": // Caso donde el usuario es un prestador
         __Required(req.body.latitude, `latitude`, `number`, null)
@@ -279,23 +281,35 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
         const eventLongitude = event.attendance.location.longitude
         const userLatitude = req.body.latitude
         const userLongitude = req.body.longitude
-        
-        const distance = Math.sqrt(Math.pow(userLatitude - eventLatitude, 2) + Math.pow(userLongitude - eventLongitude, 2))
 
-        if(distance <= 10) {
+        const R = 6371e3
+        const phi1 = eventLatitude * Math.PI/180
+        const phi2 = userLatitude * Math.PI/180
+        const deltaPhi = (userLatitude-eventLatitude) * Math.PI/180
+        const deltaLambda = (userLongitude-eventLongitude) * Math.PI/180
+      
+        const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
+                  Math.cos(phi1) * Math.cos(phi2) *
+                  Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2)
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+      
+        const distance = R * c
+        
+        if(distance <= 15) {
           const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
           const currentDate = new Date()
       
           if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
       
-          await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
+          await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": user.register }, {
             $set: {
-              "attendance.attendee_list.$.status": req.body.status,
+              "attendance.attendee_list.$.status": "Asistió",
               "attendance.attendee_list.$.check_in": currentDate.toISOString()
             }
           })
+          return res.status(201).json({ message: 'okey', distance: distance })
         }
-        return res.status(200).json({ message: 'Distancia insuficiente' })
+        return res.status(200).json({ message: 'Distancia insuficiente', distance: distance })
     }
 
     return res.status(500).json({ message: 'Retorno de fin de camino' })
