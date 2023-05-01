@@ -1,9 +1,11 @@
 import { Router } from 'express'
 import Passport from 'passport'
-import { createSurvey, deleteSurvey, getSurveys, saveAnswers } from '../controllers/Surveys.controller'
+import { createFile, createSurvey, deleteSurvey, getSurveys, saveAnswers } from '../controllers/Surveys.controller'
 import { isAdministradorOrEncargado } from '../middleware/RoleControl'
 const route = Router()
 const path = '/surveys'
+
+route.get(`${path}/:id/results`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), createFile)
 
 route.get(`${path}/:id`, Passport.authenticate('jwt', { session: false, failureRedirect: '/' }), isAdministradorOrEncargado, getSurveys)
 

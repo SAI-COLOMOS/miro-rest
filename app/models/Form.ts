@@ -14,7 +14,7 @@ export interface IForm extends Document {
   questions: IQuestion[]
 }
 
-const SurveySchema = new Schema({
+const FormSchema = new Schema({
   name: {
     type: String,
     required: [true, 'El nombre del formulario es obligatorio']
@@ -52,7 +52,7 @@ const SurveySchema = new Schema({
   versionKey: false
 })
 
-SurveySchema.pre<IForm>('save', async function (next) {
+FormSchema.pre<IForm>('save', async function (next) {
   if (this.isNew) {
     let isUnique: boolean = false
     const pool: string = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM'
@@ -80,6 +80,6 @@ SurveySchema.pre<IForm>('save', async function (next) {
   next()
 })
 
-const Form = model<IForm>("Form", SurveySchema)
+const Form = model<IForm>("Form", FormSchema)
 
 export default Form

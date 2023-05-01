@@ -2,7 +2,7 @@ import Server from './server'
 import Mongoose from 'mongoose'
 import Environment from './config/Environment'
 import { initEvents } from './controllers/NodeEvent.controller'
-import ngrok from 'ngrok'
+// import ngrok from 'ngrok'
 
 console.log(`
 
@@ -41,15 +41,15 @@ Mongoose.connection
   })
 
 /* Conexión al túnel de ngrok */
-if (Environment?.ngrok?.authtoken) {
-  ngrok.connect(Environment.ngrok)
-    .then(result => {
-      console.log(` ✓ - Servidor accesible de manera remota desde ${result}`)
-    })
-    .catch(error => {
-      console.error(" ‼ - Ocurrió un error: ", error)
-      process.exit(0)
-    })
-} else {
-  console.log(` ‼ - No se encontró un usuario válido para crear el túnel, por lo que solamente se puede hacer uso de la API de manera local`)
-}
+// if (Environment?.ngrok?.authtoken) {
+//   ngrok.connect(Environment.ngrok)
+//     .then(result => {
+//       console.log(` ✓ - Servidor accesible de manera remota desde ${result}`)
+//     })
+//     .catch(error => {
+//       console.error(" ‼ - Ocurrió un error: ", error)
+//       process.exit(0)
+//     })
+// } else {
+//   console.log(` ‼ - No se encontró un usuario válido para crear el túnel, por lo que solamente se puede hacer uso de la API de manera local`)
+// }
