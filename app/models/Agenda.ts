@@ -12,8 +12,16 @@ export interface IAttendee {
   enrollment_date?: Date
 }
 
+export interface ILocation {
+  latitude: number
+  longitude: number
+  accuracy: number
+  initialized: boolean
+}
+
 export interface IAttendance extends Document {
   attendee_list: IAttendee[]
+  location: ILocation
   status: string
 }
 
@@ -83,8 +91,32 @@ const AttendeeSchema = new Schema({
   }
 })
 
+const LocationSchema = new Schema({
+  latitude: {
+    type: Number
+  },
+  longitude: {
+    type: Number
+  },
+  accuracy: {
+    type: Number
+  },
+  initialized: {
+    type: Boolean
+  }
+})
+
 const AttendanceSchema = new Schema({
   attendee_list: [AttendeeSchema],
+  location: {
+    type: LocationSchema,
+    default: {
+      latitude: 0,
+      longitude: 0,
+      accuracy: 0,
+      initialized: false
+    }
+  },
   status: {
     type: String,
     required: [true, "El status es obligatorio"],
