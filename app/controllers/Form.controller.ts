@@ -66,7 +66,7 @@ export const createForm = async (req: Request, res: Response): Promise<Response>
     __Required(req.body.description, `description`, `string`, null)
     __Required(req.body.belonging_event_identifier, `belonging_event_identifier`, `string`, null)
     __Required(req.body.questions, `questions`, `array`, null)
-    __Optional(req.body.version, `version`, `number`, null)
+    __Optional(req.body.version, `version`, `string`, null)
 
     if (user.role === 'Encargado') {
       req.body.belonging_place = user.place
@@ -131,7 +131,7 @@ export const updateForm = async (req: Request, res: Response): Promise<Response>
     __Optional(req.body.description, `description`, `string`, null)
     __Optional(req.body.belonging_area, `belonging_area`, `string`, null)
     __Optional(req.body.belonging_place, `belonging_place`, `string`, null)
-    __Optional(req.body.version, `version`, `number`, null)
+    __Optional(req.body.version, `version`, `string`, null)
     __Optional(req.body.questions, `questions`, `array`, null)
 
     if (req.body.questions) {
