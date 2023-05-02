@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { createCanvas } from 'canvas'
+import { createCanvas } from '@napi-rs/canvas'
 import { Chart } from 'chart.js/auto'
 import PDFDocument from 'pdfkit'
 import Form, { IForm } from '../models/Form'
@@ -129,6 +129,7 @@ export const createFile = async (req: Request, res: Response): Promise<void | Re
   } catch (error) {
     const statusCode: number = typeof error === 'string' ? 400 : 500
     const response: object = statusCode === 400 ? { error } : { message: 'Ocurrió un error en el servidor', error: error?.toString() }
+    console.log(error)
     return res.status(statusCode).json(response)
   }
 }
@@ -174,11 +175,12 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
   }
 
   const chartBuffers: IImageData[] = dataArr.map((data: ICharData) => createChart(data))
-  const doc = new PDFDocument({ bufferPages: true, size: 'A4' })
+  const doc = new PDFDocument({ size: 'A4' })
 
+  // Response headers
   res.setHeader('Content-Type', 'application/pdf')
   res.setHeader('Content-Disposition', `attachment; filename=${event.event_identifier}.pdf`)
-
+  // res.set('Content-Length', '500')
   doc.pipe(res)
 
   const logo: Buffer = await fs.readFile(`${global_path}/public/logo.png`)
