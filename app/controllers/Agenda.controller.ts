@@ -15,7 +15,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
     const user: IUser = new User(req.user)
     const history: boolean = Boolean(String(req.query.history).toLowerCase() === 'true')
     const avatar: boolean = Boolean(req.query.avatar)
-    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 50
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
     let filterRequest = req.query.filter ? JSON.parse(String(req.query.filter)) : {}

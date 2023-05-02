@@ -10,7 +10,7 @@ export const getCards = async (req: Request, res: Response) => {
     __Query(req.query.page, `page`, `number`)
 
     const user = new User(req.user)
-    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 50
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     let filterRequest: { [index: string]: unknown } = req.query.filter ? JSON.parse(String(req.query.filter)) : {}
     filterRequest.role = 'Prestador'

@@ -12,7 +12,7 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
     __Query(req.query.page, `page`, `number`)
 
     const user: IUser = new User(req.user)
-    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 10
+    const items: number = Number(req.query.items) > 0 ? Number(req.query.items) : 50
     const page: number = Number(req.query.page) > 0 ? Number(req.query.page) - 1 : 0
     const avatar: boolean = Boolean(String(req.query.avatar).toLowerCase() === 'true')
     const filterAvatar: { avatar?: number } = avatar ? {} : { avatar: 0 }
