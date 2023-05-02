@@ -36,7 +36,7 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: /^Concluido|Por publicar/ } } }
     if (user.role === 'Prestador') {
       querySearch["attendance.attendee_list.attendee_register"] = user.register
-      querySearch["attendance.attendee_list.status"] = 'Inscrito'
+      querySearch["attendance.attendee_list.status"] = { $regex: /Inscrito|Asistió|Retardo/ }
     } else querySearch = {
       ...querySearch, $or: [
         { "author_register": user.register },
