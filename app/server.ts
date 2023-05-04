@@ -53,8 +53,11 @@ app.use(Form)
 app.use(Survey)
 
 app.use((req, res) => {
-  if (req.originalUrl === '/' || req.originalUrl === '') res.send('Root page')
-  else res.redirect('/')
+  if (req.originalUrl === '/' || req.originalUrl === '') {
+    res.sendFile("index.html")
+  } else {
+    res.redirect('/')
+  }
 })
 
 export default app

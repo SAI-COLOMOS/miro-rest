@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.js": "/static/js/main.fec4ec32.js",
+    "static/js/300.1c6a0d8a.js": "/static/js/300.1c6a0d8a.js",
+    "static/media/background.jpg": "/static/media/background.29b1b8fd50e59ae0f52c.jpg",
+    "static/media/MaterialCommunityIcons.ttf": "/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
+    "static/media/LexendDeca.ttf": "/static/media/LexendDeca.85a26ab7491852266e9b.ttf",
+    "static/media/app-core.png": "/static/media/app-core.0d93368079fd7dc0c269.png",
+    "static/media/miro-rest.png": "/static/media/miro-rest.0d93368079fd7dc0c269.png",
+    "static/media/sai.png": "/static/media/sai.e3771160b73de88dc392.png",
+    "static/media/ios.png": "/static/media/ios.7751f69fbba407de6b8e.png",
+    "static/media/android.png": "/static/media/android.1069615e0494feaf1759.png",
+    "favicon.ico": "/favicon.ico",
+    "index.html": "/index.html",
+    "favicon-32.png": "/favicon-32.png",
+    "favicon-16.png": "/favicon-16.png",
+    "serve.json": "/serve.json",
+    "manifest.json": "/manifest.json",
+    "main.fec4ec32.js.map": "/static/js/main.fec4ec32.js.map",
+    "300.1c6a0d8a.js.map": "/static/js/300.1c6a0d8a.js.map"
+  },
+  "entrypoints": [
+    "static/js/300.1c6a0d8a.js",
+    "static/js/main.fec4ec32.js"
+  ]
+}
