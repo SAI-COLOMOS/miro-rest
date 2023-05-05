@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import User, { IUser } from "../models/User"
 import JWT, { JwtPayload } from "jsonwebtoken"
 import Environment from "../config/Environment"
-import { link, mensaje, sendEmail } from "../config/Mailer"
+import { sendRecoveryEmail, sendConfirmationMessage } from "../config/Mailer"
 import { __Optional, __Required, __ThrowError } from "../middleware/ValidationControl"
 
 function createToken (user: IUser, time: String): string {
@@ -61,10 +61,7 @@ export const sendRecoveryToken = async (req: Request, res: Response): Promise<Re
     if (user) {
       const token = createToken(user, "5d")
       newRoute = `https://api.sai-colomos.dev/auth/recovery?token=${token}`
-      const to = String(user.email)
-      const subject = "Recuperación de contraseña"
-      const body = link(newRoute)
-      await sendEmail(to, subject, body)
+      sendRecoveryEmail(newRoute, user.email)
     }
 
     return res.status(200).json({
@@ -99,11 +96,7 @@ export const recoverPassword = async (req: Request, res: Response): Promise<Resp
     if (user && !(await user.validatePassword(req.body.password))) {
       user.password = req.body.password
       user.save()
-      const to = user.email
-      const subject = "Recuperación de contraseña"
-      const body = mensaje("Se actualizó la contraseña de su usuario.")
-      await sendEmail(to, subject, body)
-
+      sendConfirmationMessage(user.register, user.email)
       return res.status(200).json({
         message: "Se actualizó la contraseña del usuario"
       })
