@@ -83,7 +83,9 @@ export const getEvent = async (req: Request, res: Response): Promise<Response> =
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: IAttendee) => {
-      if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
+      if (attendee.role !== 'Prestador') return
+      if (!/Inscrito|Asistió|Retardo|No asistió/.test(attendee.status)) return
+      list++
     })
 
     const mutatedEvent = { ...event.toObject(), registered_users: list }
