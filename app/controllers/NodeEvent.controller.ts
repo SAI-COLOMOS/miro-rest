@@ -54,7 +54,7 @@ export const initEvents = async () => {
     if (currentDate >= event.ending_date) {
       console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
       if (event.attendance.attendee_list.length === 0) {
-        endEvent(event.event_identifier, null, event)
+        await endEvent(event.event_identifier, null, event)
         continue
       }
       addHoursToSeveral(event)
@@ -68,7 +68,7 @@ export const initEvents = async () => {
 
     if (!event.has_been_published && currentDate >= event.publishing_date) {
       console.log(`Se habilitó en el momento el evento ${event.event_identifier}`)
-      publishEvent(event.event_identifier, event)
+      await publishEvent(event.event_identifier, event)
     } else if (!event.has_been_published) {
       console.log(`se agendó la publicación del evento ${event.event_identifier}`)
       schedulePublication(event.event_identifier, event.publishing_date.toISOString())
@@ -76,12 +76,12 @@ export const initEvents = async () => {
 
     if (currentDate >= event.starting_date && event.attendance.status !== 'En proceso') {
       console.log(`Se empezó en el momento el evento ${event.event_identifier}`)
-      changeEventStatus(event.event_identifier, 'En proceso', event)
+      await changeEventStatus(event.event_identifier, 'En proceso', event)
     }
     else if (event.attendance.status !== 'En proceso') {
       if (new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)) < currentDate) {
         console.log(`Se cambió a por comenzar el evento ${event.event_identifier}`)
-        changeEventStatus(event.event_identifier, 'Por comenzar', event)
+        await changeEventStatus(event.event_identifier, 'Por comenzar', event)
       } else {
         console.log(`Se agendó el cambio de por comenzar el evento ${event.event_identifier}`)
         scheduleAboutToStart(event.event_identifier, new Date(event.starting_date.getTime() - (2 * 1000 * 60 * 60)).toISOString())
