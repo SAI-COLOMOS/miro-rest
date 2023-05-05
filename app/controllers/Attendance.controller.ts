@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import Agenda, { IEvent, IAttendee } from '../models/Agenda'
 import User, { IUser } from '../models/User'
 import { __CheckEnum, __ThrowError, __Required, __Optional } from '../middleware/ValidationControl'
-import { sendEmail, mensaje } from '../config/Mailer'
+import { sendEnrollmentNotification } from '../config/Mailer'
 
 export const getAttendees = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -31,7 +31,9 @@ export const addAttendee = async (req: Request, res: Response): Promise<Response
 
     let list: number = 0
     event.attendance.attendee_list.forEach((attendee: IAttendee) => {
-      if ((attendee.status === 'Inscrito' || attendee.status === 'Asistió' || attendee.status === 'Retardo') && attendee.role === 'Prestador') list++
+      if (attendee.role !== 'Prestador') return
+      if (!/Inscrito|Asistió|Retardo/.test(attendee.status)) return
+      list++
     })
     if (list === event.vacancy)
       __ThrowError('El evento tiene todas las vacantes ocupadas')
@@ -105,9 +107,8 @@ export const addSeveralAttendees = async (req: Request, res: Response): Promise<
     for (const attendee of attendeeList) {
       const user: IUser | null = await User.findOne({ "register": attendee.register })
       if (!user) continue
-      const subject = 'Haz sido inscrito a un evento'
-      const body = mensaje(`Haz sido inscrito al evento ${event.name} por ${responsible.first_name}`)
-      sendEmail(user.email, subject, body)
+      const name: string = `${responsible.first_name} ${responsible.first_last_name} ${responsible.second_last_name ? responsible.second_last_name : ''}`
+      sendEnrollmentNotification(name, event.name, user.email)
     }
 
     event.markModified('attendance.attendee_list')
@@ -245,7 +246,7 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
         __Required(req.body.latitude, `latitude`, `number`, null)
         __Required(req.body.longitude, `longitude`, `number`, null)
         __Required(req.body.accuracy, `accuracy`, `number`, null)
-        
+
         await Agenda.updateOne({ "event_identifier": req.params.id }, {
           $set: {
             "attendance.location.latitude": req.body.latitude,
@@ -256,8 +257,8 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
         })
 
         return res.status(201).json({ message: 'Se registró la ubicación' })
-        
-        case "Prestador": // Caso donde el usuario es un prestador
+
+      case "Prestador": // Caso donde el usuario es un prestador
         __Required(req.body.latitude, `latitude`, `number`, null)
         __Required(req.body.longitude, `longitude`, `number`, null)
 
@@ -270,10 +271,10 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
           if (attendee_register === req.body.attendee_register)
             if (status === 'Asistió' || status === 'Retardo')
               return true
-    
+
           return false
         })
-    
+
         if (attendanceHasBeenChecked)
           return res.status(200).json({ message: `La asistencia del usuario ${user.register} ya fué tomada anteriormente` })
 
@@ -283,24 +284,24 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
         const userLongitude = req.body.longitude
 
         const R = 6371e3
-        const phi1 = eventLatitude * Math.PI/180
-        const phi2 = userLatitude * Math.PI/180
-        const deltaPhi = (userLatitude-eventLatitude) * Math.PI/180
-        const deltaLambda = (userLongitude-eventLongitude) * Math.PI/180
-      
-        const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) +
-                  Math.cos(phi1) * Math.cos(phi2) *
-                  Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2)
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-      
+        const phi1 = eventLatitude * Math.PI / 180
+        const phi2 = userLatitude * Math.PI / 180
+        const deltaPhi = (userLatitude - eventLatitude) * Math.PI / 180
+        const deltaLambda = (userLongitude - eventLongitude) * Math.PI / 180
+
+        const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+          Math.cos(phi1) * Math.cos(phi2) *
+          Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2)
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+
         const distance = R * c
-        
-        if(distance <= 15) {
+
+        if (distance <= 15) {
           const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
           const currentDate = new Date()
-      
+
           if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
-      
+
           await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": user.register }, {
             $set: {
               "attendance.attendee_list.$.status": "Asistió",

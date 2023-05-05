@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import User, { IUser } from '../models/User'
 import Card, { ICard } from '../models/Card'
-import { mensaje, sendEmail } from '../config/Mailer'
+import { sendGreeting } from '../config/Mailer'
 import fs from 'fs/promises'
 import { global_path } from '../server'
 import { __ThrowError, __Optional, __Required, __Query } from '../middleware/ValidationControl'
@@ -148,12 +148,9 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
 
     const newUser = await new User(req.body).save()
 
-    if (newUser) {
-      const to = String(newUser.email)
-      const subject = "Bienvenido!"
-      const body = mensaje(`Bienvenido al ${newUser.assigned_area} de ${newUser.place}.`)
-      await sendEmail(to, subject, body)
-    }
+    if (newUser)
+      sendGreeting(newUser.register, newUser.place, newUser.assigned_area, newUser.email)
+
 
     if (newUser && newUser.role === "Prestador")
       await new Card({ "provider_register": newUser.register, "total_hours": req.body.total_hours }).save()
