@@ -56,7 +56,8 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
           { "second_last_name": { $regex: req.query.search, $options: "i" } },
           { "register": { $regex: req.query.search, $options: "i" } },
           { "curp": { $regex: req.query.search, $options: "i" } },
-          { "phone": { $regex: req.query.search } }
+          { "phone": { $regex: req.query.search } },
+          { "email": { $regex: req.query.search, $options: "i" } }
         ]
       }
 
