@@ -1,18 +1,21 @@
 {
   "files": {
-    "main.js": "/static/js/main.157c0f6b.js",
-    "static/js/529.253438a8.js": "/static/js/529.253438a8.js",
+    "main.js": "/static/js/main.ff748d0c.js",
+    "static/js/958.3daf8c35.js": "/static/js/958.3daf8c35.js",
     "static/media/background.jpg": "/static/media/background.29b1b8fd50e59ae0f52c.jpg",
     "static/media/MaterialCommunityIcons.ttf": "/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
+    "static/media/app-core.png": "/static/media/app-core.c6d8cc15a0004831d379.png",
+    "static/media/miro-rest.png": "/static/media/miro-rest.9f3b4f495951b9a16ca8.png",
     "static/media/LexendDeca.ttf": "/static/media/LexendDeca.85a26ab7491852266e9b.ttf",
     "static/media/ubuntuserver.png": "/static/media/ubuntuserver.fca5830985d91d4f0769.png",
-    "static/media/app-core.png": "/static/media/app-core.0d93368079fd7dc0c269.png",
-    "static/media/miro-rest.png": "/static/media/miro-rest.0d93368079fd7dc0c269.png",
     "static/media/mongodb.png": "/static/media/mongodb.3a364684503a40b5fbb2.png",
     "static/media/sai.png": "/static/media/sai.e3771160b73de88dc392.png",
     "static/media/ios.png": "/static/media/ios.7751f69fbba407de6b8e.png",
+    "static/media/section-actually.jpg": "/static/media/section-actually.6729cc9df1cfc8d35820.jpg",
     "static/media/saileft.png": "/static/media/saileft.519e1811a4480b05decb.png",
+    "static/media/section-security.jpg": "/static/media/section-security.079fde31563fdf7cd8c2.jpg",
     "static/media/nodejs.png": "/static/media/nodejs.abfaef34ea49d0c7cd3c.png",
+    "static/media/section-platform.jpg": "/static/media/section-platform.0332f0dfd0127fc41d8a.jpg",
     "static/media/android.png": "/static/media/android.1069615e0494feaf1759.png",
     "static/media/raspberrypi.png": "/static/media/raspberrypi.70eccdd62334be1be186.png",
     "static/media/docker.webp": "/static/media/docker.50ef259c2ba21b66c115.webp",
@@ -22,13 +25,13 @@
     "index.html": "/index.html",
     "favicon-32.png": "/favicon-32.png",
     "favicon-16.png": "/favicon-16.png",
-    "serve.json": "/serve.json",
     "manifest.json": "/manifest.json",
-    "main.157c0f6b.js.map": "/static/js/main.157c0f6b.js.map",
-    "529.253438a8.js.map": "/static/js/529.253438a8.js.map"
+    "serve.json": "/serve.json",
+    "main.ff748d0c.js.map": "/static/js/main.ff748d0c.js.map",
+    "958.3daf8c35.js.map": "/static/js/958.3daf8c35.js.map"
   },
   "entrypoints": [
-    "static/js/529.253438a8.js",
-    "static/js/main.157c0f6b.js"
+    "static/js/958.3daf8c35.js",
+    "static/js/main.ff748d0c.js"
   ]
 }

@@ -1,9 +1,9 @@
 {
-  "background_color": "#ffffff",
+  "background_color": "#000000",
   "display": "standalone",
   "lang": "en",
-  "name": "miro-app",
-  "short_name": "miro-app",
+  "name": "Sistema Administrativo de la Información",
+  "short_name": "Sistema Administrativo de la Información",
   "start_url": "/?utm_source=web_app_manifest",
   "orientation": "portrait"
 }
