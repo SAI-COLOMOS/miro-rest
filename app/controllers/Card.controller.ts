@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import Card, { ICard } from '../models/Card'
-import User from '../models/User'
+import User, { IUser } from '../models/User'
 import { __ThrowError, __Query, __Required, __Optional } from '../middleware/ValidationControl'
 import { IEvent } from '../models/Agenda'
 
@@ -118,7 +118,7 @@ export const AddHoursToCard = async (req: Request, res: Response): Promise<Respo
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $push: { "activities": req.body } })
 
     if (result.modifiedCount > 0 && req.body.hours)
-      CountHours(req.params.id, res)
+      await CountHours(req.params.id, res)
 
     return result.modifiedCount > 0
       ? res.status(201).json({
@@ -165,7 +165,7 @@ export const UpdateHoursFromCard = async (req: Request, res: Response): Promise<
     const result = await Card.updateOne({ "provider_register": req.params.id, "activities._id": req.body._id }, { $set: update })
 
     if (result.modifiedCount > 0 && (req.body.hours || req.body.toSubstract !== undefined))
-      CountHours(req.params.id, res)
+      await CountHours(req.params.id, res)
 
     return result.modifiedCount > 0
       ? res.status(200).json({
@@ -193,7 +193,7 @@ export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<
     const result = await Card.updateOne({ "provider_register": req.params.id }, { $pull: { "activities": { "_id": req.body._id } } })
 
     if (result.modifiedCount > 0)
-      CountHours(req.params.id, res)
+      await CountHours(req.params.id, res)
 
     return result.modifiedCount > 0
       ? res.status(200).json({
@@ -212,20 +212,25 @@ export const RemoveHoursFromCard = async (req: Request, res: Response): Promise<
 export const CountHours = async (id: string, res?: Response): Promise<Response | void> => {
   try {
     const card = await Card.findOne({ "provider_register": id })
+    if (!card) return
 
-    if (card && card.activities.length > 0) {
+    if (card.activities.length > 0) {
       let count: number = 0
       for (const activity of card.activities)
         count = activity.toSubstract ? count - activity.hours : count + activity.hours
 
       card.achieved_hours = count
-      card.save()
+    } else card.achieved_hours = 0
+
+    if (card.achieved_hours >= card.total_hours) {
+      const user: IUser | null = await User.findOne({ register: card.provider_register })
+      if (user) {
+        user.status = 'Finalizado'
+        await user.save()
+      }
     }
 
-    if (card?.activities.length === 0) {
-      card.achieved_hours = 0
-      card.save()
-    }
+    await card.save()
   } catch (error) {
     if (!res) return
     return res.status(500).json({
