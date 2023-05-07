@@ -307,9 +307,6 @@ export const endEvent = async (event_identifier: string, status?: string | null,
   if (!result || /Concluido|Concluido por sistema/.test(result.attendance.status)) return
 
   result.attendance.status = status ? status : 'Concluido por sistema'
-  if (result.attendance.attendee_list.length === 0) {
-    await result.save()
-    return
-  }
-  addHoursToSeveral(result)
+  if (result.attendance.attendee_list.length > 0) addHoursToSeveral(result)
+  await result.save()
 }
