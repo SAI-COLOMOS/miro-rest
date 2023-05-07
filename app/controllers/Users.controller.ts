@@ -147,6 +147,9 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
     __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
     __Optional(req.body.avatar, `avatar`, `string`, null)
 
+    if (!/^[a-zA-Z0-9]+(\.?[a-zA-Z0-9])+@+[a-zA-Z0-9_\-]+\.+[a-zA-Z0-9]/.test(req.body.email))
+      __ThrowError('El email ingresado no es válido')
+
     const newUser = await new User(req.body).save()
 
     if (newUser)
