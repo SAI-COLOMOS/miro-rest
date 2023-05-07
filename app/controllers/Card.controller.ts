@@ -222,12 +222,14 @@ export const CountHours = async (id: string, res?: Response): Promise<Response |
       card.achieved_hours = count
     } else card.achieved_hours = 0
 
+    const user: IUser | null = await User.findOne({ register: card.provider_register })
+    if (!user) return
     if (card.achieved_hours >= card.total_hours) {
-      const user: IUser | null = await User.findOne({ register: card.provider_register })
-      if (user) {
-        user.status = 'Finalizado'
-        await user.save()
-      }
+      user.status = 'Finalizado'
+      await user.save()
+    } else if (user.status === 'Finalizado') {
+      user.status = 'Activo'
+      await user.save()
     }
 
     await card.save()
