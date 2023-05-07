@@ -304,7 +304,7 @@ export const changeEventStatus = async (event_identifier: string, status: string
 export const endEvent = async (event_identifier: string, status?: string | null, event?: IEvent) => {
   const result = event ? event : await Agenda.findOne({ "event_identifier": event_identifier })
 
-  if (!result || result.attendance.status === 'Concluido' || result.attendance.status === 'Concluido por sistema') return
+  if (!result || /Concluido|Concluido por sistema/.test(result.attendance.status)) return
 
   result.attendance.status = status ? status : 'Concluido por sistema'
   if (result.attendance.attendee_list.length === 0) {

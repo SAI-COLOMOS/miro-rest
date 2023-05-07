@@ -53,10 +53,8 @@ export const initEvents = async () => {
 
     if (currentDate >= event.ending_date) {
       console.log(`Se concluyó en el momento el evento ${event.event_identifier}`)
-      if (event.attendance.attendee_list.length === 0) {
-        await endEvent(event.event_identifier, null, event)
-        continue
-      }
+      await endEvent(event.event_identifier, null, event)
+      if (event.attendance.attendee_list.length === 0) continue
       addHoursToSeveral(event)
       continue
     } else {
