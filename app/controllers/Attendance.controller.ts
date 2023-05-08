@@ -160,7 +160,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 export const checkAttendance = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
-    __Optional(req.body.status, `status`, `boolean`, null)
+    __Optional(req.body.status, `status`, `string`, null)
 
     const event: IEvent | null = await Agenda.findOne({
       "event_identifier": req.params.id,
