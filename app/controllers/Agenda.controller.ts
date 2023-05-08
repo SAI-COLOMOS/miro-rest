@@ -134,12 +134,12 @@ export const createEvent = async (req: Request, res: Response): Promise<Response
     if (!event) res.status(500).json({ message: "No se pudo crear el evento" })
     if (event.attendance.status === 'Borrador') return res.status(201).json({ message: "Evento creado" })
 
-    const currentDate: Date = new Date()
-    if (event.publishing_date <= currentDate) {
-      publishEvent(event.event_identifier, event)
-    } else {
-      schedulePublication(event.event_identifier, event.publishing_date.toISOString())
-    }
+    // const currentDate: Date = new Date()
+    // if (event.publishing_date <= currentDate) {
+    //   publishEvent(event.event_identifier, event)
+    // } else {
+    //   schedulePublication(event.event_identifier, event.publishing_date.toISOString())
+    // }
 
     shceduleEnd(event.event_identifier, new Date(event.ending_date.getTime() + (1 * 1000 * 60 * 60)).toISOString())
     scheduleStart(event.event_identifier, event.starting_date.toISOString())
