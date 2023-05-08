@@ -184,6 +184,8 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
 
     const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
+    console.log('Límite: ', limitDate.toTimeString())
+    console.log('Actual: ', currentDate.toTimeString())
 
     if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
 
