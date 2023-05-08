@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import User from "../models/User"
 import Agenda, { IEvent } from "../models/Agenda"
-import Card from "../models/Card"
+import Card, { ICard } from "../models/Card"
 
 interface Request_body {
   enrolled_event: IEvent | null
@@ -36,7 +36,7 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: /^Concluido|Por publicar/ } } }
     if (user.role === 'Prestador') {
       querySearch["attendance.attendee_list.attendee_register"] = user.register
-      querySearch["attendance.attendee_list.status"] = { $regex: /Inscrito|Asistió|Retardo/ }
+      querySearch["attendance.attendee_list.status"] = { $regex: /Inscrito|Asistió|Retardo|No asistió/ }
     } else querySearch = {
       ...querySearch, $or: [
         { "author_register": user.register },
@@ -48,7 +48,7 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
 
     if (user.role === 'Prestador') {
-      const card = await Card.findOne({ "provider_regiister": user.register })
+      const card: ICard | null = await Card.findOne({ "provider_regiister": user.register })
 
       const availableEvents: IEvent[] = await Agenda.find({
         "belonging_place": user.place,

@@ -49,7 +49,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       const list: IAttendee[] = event.attendance.attendee_list
       const registered: boolean = list.some((attendee: IAttendee) => {
         const { attendee_register, status } = attendee
-        if (attendee_register === user.register && (status === 'Inscrito' || status === 'Asistió' || status === 'Inscrito'))
+        if (attendee_register === user.register && (status !== 'Desinscrito'))
           return true
         return false
       })
