@@ -48,8 +48,7 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
 
     if (user.role === 'Prestador') {
-      console.log(user.register)
-      const card: ICard | null = await Card.findOne({ "provider_regiister": user.register })
+      const card: ICard | null = await Card.findOne({ provider_register: user.register })
 
       const availableEvents: IEvent[] = await Agenda.find({
         "belonging_place": user.place,
