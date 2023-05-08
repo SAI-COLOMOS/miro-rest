@@ -51,7 +51,6 @@ const AttendeeSchema = new Schema({
   attendee_register: {
     type: String,
     index: true,
-    unique: true,
     required: [true, "El registro del usuario es obligatorio"]
   },
   first_name: {
