@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import User from "../models/User"
 import Agenda, { IEvent } from "../models/Agenda"
-import Card from "../models/Card"
+import Card, { ICard } from "../models/Card"
 
 interface Request_body {
   enrolled_event: IEvent | null
@@ -36,7 +36,7 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
     let querySearch: { [index: string]: unknown } = { "attendance.status": { $not: { $regex: /^Concluido|Por publicar/ } } }
     if (user.role === 'Prestador') {
       querySearch["attendance.attendee_list.attendee_register"] = user.register
-      querySearch["attendance.attendee_list.status"] = { $regex: /Inscrito|Asistió|Retardo/ }
+      querySearch["attendance.attendee_list.status"] = { $regex: /Inscrito|Asistió|Retardo|No asistió/ }
     } else querySearch = {
       ...querySearch, $or: [
         { "author_register": user.register },
@@ -44,18 +44,18 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
       ]
     }
 
-    const enrolled_events: IEvent[] = await Agenda.find(querySearch, { avatar: 0 }).sort({ "starting_date": "asc" })
+    const enrolled_events: IEvent[] = await Agenda.find(querySearch).sort({ "starting_date": "asc" })
     const responseBody: Request_body = { enrolled_event: enrolled_events.length === 0 ? null : enrolled_events[0] }
 
     if (user.role === 'Prestador') {
-      const card = await Card.findOne({ "provider_register": user.register })
+      const card: ICard | null = await Card.findOne({ provider_register: user.register })
 
       const availableEvents: IEvent[] = await Agenda.find({
         "belonging_place": user.place,
         "belonging_area": user.assigned_area,
         "attendance.status": "Disponible",
         "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } },
-      }, { avatar: 0 }).sort({ "starting_date": "asc" })
+      }).sort({ "starting_date": "asc" })
 
       responseBody.achieved_hours = card?.achieved_hours
       responseBody.total_hours = card?.total_hours

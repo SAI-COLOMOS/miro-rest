@@ -160,7 +160,7 @@ export const removeAttendee = async (req: Request, res: Response): Promise<Respo
 export const checkAttendance = async (req: Request, res: Response): Promise<Response> => {
   try {
     __Required(req.body.attendee_register, `attendee_register`, `string`, null)
-    __Optional(req.body.status, `status`, `string`, ["Asistió", "Retardo"])
+    __Optional(req.body.status, `status`, `boolean`, null)
 
     const event: IEvent | null = await Agenda.findOne({
       "event_identifier": req.params.id,
@@ -185,7 +185,13 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
     const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
     const currentDate = new Date()
 
-    if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
+    if (!req.body.status) {
+      if (currentDate < limitDate) {
+        req.body.status = 'Asistió'
+      } else {
+        req.body.status = 'Retardo'
+      }
+    }
 
     await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
       $set: {
@@ -300,11 +306,11 @@ export const checkAttendanceProximity = async (req: Request, res: Response): Pro
           const limitDate = new Date(event.starting_date.getTime() + (event.tolerance * 60 * 1000))
           const currentDate = new Date()
 
-          if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
+          currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
 
           await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": user.register }, {
             $set: {
-              "attendance.attendee_list.$.status": "Asistió",
+              "attendance.attendee_list.$.status": req.body.status,
               "attendance.attendee_list.$.check_in": currentDate.toISOString()
             }
           })

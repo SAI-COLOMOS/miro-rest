@@ -49,7 +49,7 @@ export const getAgenda = async (req: Request, res: Response): Promise<Response> 
       const list: IAttendee[] = event.attendance.attendee_list
       const registered: boolean = list.some((attendee: IAttendee) => {
         const { attendee_register, status } = attendee
-        if (attendee_register === user.register && (status === 'Inscrito' || status === 'Asistió' || status === 'Inscrito'))
+        if (attendee_register === user.register && (status !== 'Desinscrito'))
           return true
         return false
       })
@@ -304,12 +304,9 @@ export const changeEventStatus = async (event_identifier: string, status: string
 export const endEvent = async (event_identifier: string, status?: string | null, event?: IEvent) => {
   const result = event ? event : await Agenda.findOne({ "event_identifier": event_identifier })
 
-  if (!result || result.attendance.status === 'Concluido' || result.attendance.status === 'Concluido por sistema') return
+  if (!result || /Concluido|Concluido por sistema/.test(result.attendance.status)) return
 
   result.attendance.status = status ? status : 'Concluido por sistema'
-  if (result.attendance.attendee_list.length === 0) {
-    await result.save()
-    return
-  }
-  addHoursToSeveral(result)
+  if (result.attendance.attendee_list.length > 0) addHoursToSeveral(result)
+  await result.save()
 }

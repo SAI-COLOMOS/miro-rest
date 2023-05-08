@@ -56,7 +56,8 @@ export const UsersGet = async (req: Request, res: Response): Promise<Response> =
           { "second_last_name": { $regex: req.query.search, $options: "i" } },
           { "register": { $regex: req.query.search, $options: "i" } },
           { "curp": { $regex: req.query.search, $options: "i" } },
-          { "phone": { $regex: req.query.search } }
+          { "phone": { $regex: req.query.search } },
+          { "email": { $regex: req.query.search, $options: "i" } }
         ]
       }
 
@@ -145,6 +146,9 @@ export const UserPost = async (req: Request, res: Response): Promise<Response> =
     __Required(req.body.blood_type, `blood_type`, `string`, ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'])
     __Optional(req.body.status, `status`, `string`, ['Activo', 'Suspendido', 'Inactivo', 'Finalizado'])
     __Optional(req.body.avatar, `avatar`, `string`, null)
+
+    if (!/^[a-zA-Z0-9]+(\.?[a-zA-Z0-9])+@+[a-zA-Z0-9_\-]+\.+[a-zA-Z0-9]/.test(req.body.email))
+      __ThrowError('El email ingresado no es válido')
 
     const newUser = await new User(req.body).save()
 
