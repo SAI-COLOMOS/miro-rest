@@ -57,8 +57,9 @@ export const getFeed = async (req: Request, res: Response): Promise<Response> =>
         "attendance.attendee_list.attendee_register": { $not: { $regex: user.register } },
       }).sort({ "starting_date": "asc" })
 
-      console.log(card?.achieved_hours)
-      console.log(card?.total_hours)
+      // console.log(card?.achieved_hours)
+      // console.log(card?.total_hours)
+      console.log(card)
       responseBody.achieved_hours = card?.achieved_hours
       responseBody.total_hours = card?.total_hours
       responseBody.available_events = availableEvents

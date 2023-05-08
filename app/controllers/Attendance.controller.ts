@@ -189,6 +189,9 @@ export const checkAttendance = async (req: Request, res: Response): Promise<Resp
 
     if (!req.body.status) currentDate < limitDate ? req.body.status = 'Asistió' : req.body.status = 'Retardo'
 
+    console.log(currentDate < limitDate)
+    console.log(req.body.status)
+
     await Agenda.updateOne({ "event_identifier": req.params.id, "attendance.attendee_list.attendee_register": req.body.attendee_register }, {
       $set: {
         "attendance.attendee_list.$.status": req.body.status,
