@@ -1,9 +1,9 @@
 {
-  "background_color": "#000000",
+  "background_color": "#ffffff",
   "display": "standalone",
   "lang": "en",
-  "name": "Sistema Administrativo de la Información",
-  "short_name": "Sistema Administrativo de la Información",
+  "name": "Manual de la aplicación Servicio social",
+  "short_name": "Manual de la aplicación Servicio social",
   "start_url": "/?utm_source=web_app_manifest",
   "orientation": "portrait"
 }

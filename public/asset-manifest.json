@@ -1,37 +1,26 @@
 {
   "files": {
-    "main.js": "/static/js/main.e8d6c904.js",
-    "static/js/958.3daf8c35.js": "/static/js/958.3daf8c35.js",
-    "static/media/background.jpg": "/static/media/background.29b1b8fd50e59ae0f52c.jpg",
+    "main.js": "/static/js/main.57af1397.js",
+    "static/js/231.cd03ac4a.js": "/static/js/231.cd03ac4a.js",
     "static/media/MaterialCommunityIcons.ttf": "/static/media/MaterialCommunityIcons.5d42b4e60858731e7b65.ttf",
-    "static/media/miro-rest.png": "/static/media/miro-rest.5f01768cd593059c90cd.png",
-    "static/media/sai.png": "/static/media/sai.22a68ad6c62ac595a7cd.png",
-    "static/media/saileft.png": "/static/media/saileft.22a68ad6c62ac595a7cd.png",
-    "static/media/app-core.png": "/static/media/app-core.80c3330efecebbd5330b.png",
+    "static/media/icon.png": "/static/media/icon.67b93b0ad4c3ff1465ce.png",
+    "static/media/3.png": "/static/media/3.608400392dc148871969.png",
+    "static/media/default.png": "/static/media/default.a88b21c55ce38af1f8ba.png",
+    "static/media/4.png": "/static/media/4.0f3b7df0fd937c57ca78.png",
     "static/media/LexendDeca.ttf": "/static/media/LexendDeca.85a26ab7491852266e9b.ttf",
-    "static/media/ubuntuserver.png": "/static/media/ubuntuserver.fca5830985d91d4f0769.png",
-    "static/media/mongodb.png": "/static/media/mongodb.3a364684503a40b5fbb2.png",
-    "static/media/ios.png": "/static/media/ios.7751f69fbba407de6b8e.png",
-    "static/media/section-actually.jpg": "/static/media/section-actually.6729cc9df1cfc8d35820.jpg",
-    "static/media/section-security.jpg": "/static/media/section-security.079fde31563fdf7cd8c2.jpg",
-    "static/media/nodejs.png": "/static/media/nodejs.abfaef34ea49d0c7cd3c.png",
-    "static/media/section-platform.jpg": "/static/media/section-platform.0332f0dfd0127fc41d8a.jpg",
-    "static/media/android.png": "/static/media/android.1069615e0494feaf1759.png",
-    "static/media/raspberrypi.png": "/static/media/raspberrypi.70eccdd62334be1be186.png",
-    "static/media/docker.webp": "/static/media/docker.50ef259c2ba21b66c115.webp",
+    "static/media/2.png": "/static/media/2.c7096029099d8d4cec58.png",
+    "static/media/1.png": "/static/media/1.dbc0ad213049cb996c4f.png",
     "favicon.ico": "/favicon.ico",
-    "static/media/ngrok.png": "/static/media/ngrok.96924a838aba064d84b3.png",
-    "static/media/express.png": "/static/media/express.9ca72e66d293a4b6af4b.png",
     "index.html": "/index.html",
     "favicon-32.png": "/favicon-32.png",
     "favicon-16.png": "/favicon-16.png",
     "manifest.json": "/manifest.json",
     "serve.json": "/serve.json",
-    "main.e8d6c904.js.map": "/static/js/main.e8d6c904.js.map",
-    "958.3daf8c35.js.map": "/static/js/958.3daf8c35.js.map"
+    "main.57af1397.js.map": "/static/js/main.57af1397.js.map",
+    "231.cd03ac4a.js.map": "/static/js/231.cd03ac4a.js.map"
   },
   "entrypoints": [
-    "static/js/958.3daf8c35.js",
-    "static/js/main.e8d6c904.js"
+    "static/js/231.cd03ac4a.js",
+    "static/js/main.57af1397.js"
   ]
 }
