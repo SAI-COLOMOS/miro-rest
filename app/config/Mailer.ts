@@ -324,6 +324,6 @@ export const sendMailForPublishing = async (event: IEvent) => {
   `
 
   users.forEach((user: IUser) => {
-    sendEmail(user.email, subject, body)
+    setTimeout(() => sendEmail(user.email, subject, body), 2000)
   })
 }
