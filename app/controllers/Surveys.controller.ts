@@ -152,7 +152,8 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
       title: '',
       data: [],
       labels: [],
-      type: ''
+      type: '',
+      comment: ''
     }
 
     data.title = question.interrogation
@@ -171,6 +172,8 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
       data.type = 'numeric'
     }
 
+    data.comment = await createClosedComments(data)
+
     dataArr.push(data)
   }
 
@@ -180,7 +183,6 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
   // Response headers
   res.setHeader('Content-Type', 'application/pdf')
   res.setHeader('Content-Disposition', `attachment; filename=${event.event_identifier}.pdf`)
-  // res.set('Content-Length', '500')
   doc.pipe(res)
 
   const logo: Buffer = await fs.readFile(`${global_path}/public/logo.png`)
@@ -237,6 +239,7 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
     doc.fontSize(15).list([imageData.title], 50, doc.y)
     doc.moveDown()
     doc.image(imageData.image, ((doc.page.width - (imageData.width * 0.6)) / 2), doc.y, { scale: 0.6 })
+    doc.font(regular).text(imageData.comment)
     doc.moveDown()
   })
 
@@ -389,6 +392,30 @@ const createOpenStats = async (data: any, title: string): Promise<IOpenData> => 
   return result
 }
 
+const createClosedComments = async (charData: ICharData): Promise<string> => {
+  const { title, data, labels } = charData
+  const stringData: string[] = data.map((stat: number, index: number) => `${stat}% ${labels[index]}`)
+  const prompt: string = `Dame un resumen del porcentaje de respuestas a la pregunta "${title}"\n${stringData.join('\n')}`
+  let result: string = ''
+  const configuration = new Configuration({
+    apiKey: Environment.openAPI.key,
+  })
+  const openai = new OpenAIApi(configuration)
+
+  const response = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt,
+    temperature: 0.3,
+    max_tokens: 150,
+    top_p: 1,
+    frequency_penalty: 0.5,
+    presence_penalty: 0.5,
+  })
+  if (response.data.choices[0].text)
+    result = response.data.choices[0].text
+  return result
+}
+
 const createChart = (data: ICharData): IImageData => {
   const canvas = createCanvas(data.type === 'numeric' ? 550 : 350, 350)
   const ctx: any = canvas.getContext('2d')
@@ -422,7 +449,8 @@ const createChart = (data: ICharData): IImageData => {
   const result: IImageData = {
     image: canvas.toBuffer('image/png'),
     title: data.title,
-    width: chart.width
+    width: chart.width,
+    comment: data.comment
   }
   return result
 }
