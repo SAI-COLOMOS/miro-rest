@@ -235,11 +235,11 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
   doc.moveDown()
 
   chartBuffers.forEach((imageData: IImageData) => {
-    if (doc.y + (350 * 0.6) > doc.page.height) doc.addPage()
+    if (doc.y + (300 * 0.6) > doc.page.height) doc.addPage()
     doc.fontSize(15).list([imageData.title], 50, doc.y)
     doc.moveDown()
     doc.image(imageData.image, ((doc.page.width - (imageData.width * 0.6)) / 2), doc.y, { scale: 0.6 })
-    doc.font(regular).text(imageData.comment)
+    doc.font(regular).fontSize(11).text(imageData.comment)
     doc.moveDown()
   })
 
@@ -417,7 +417,7 @@ const createClosedComments = async (charData: ICharData): Promise<string> => {
 }
 
 const createChart = (data: ICharData): IImageData => {
-  const canvas = createCanvas(data.type === 'numeric' ? 550 : 350, 350)
+  const canvas = createCanvas(data.type === 'numeric' ? 500 : 300, 300)
   const ctx: any = canvas.getContext('2d')
   const colors: string[] = new Array(data.data.length).fill('').map(() => {
     const red: number = Math.round(Math.random() * 150) + 50
