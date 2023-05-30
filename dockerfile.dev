@@ -1,6 +1,6 @@
-FROM node
+FROM node:latest
 
-RUN npm install -g nodemon
+RUN npm install -g pm2
 RUN mkdir /home/api
 
 WORKDIR /home/api
@@ -10,6 +10,7 @@ EXPOSE 3000
 
 #RUN npm --version
 
-CMD npm install && npm run dev
+CMD npm install && npm run build && pm2 start ./dist/index.js --name "miro"
+#npm run dev
 #[ "nodemon", "./dist/index.js" ]
 #CMD [ "npm", "run dev" ]
