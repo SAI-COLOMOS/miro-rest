@@ -3,14 +3,14 @@ export interface ICharData {
   title: string
   data: number[]
   type: 'closed' | 'numeric' | '',
-  comment: string
+  comment?: string
 }
 
 export interface IImageData {
   image: Buffer
   title: string
   width: number,
-  comment: string
+  comment?: string
 }
 
 export interface IOpenData {

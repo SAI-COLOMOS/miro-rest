@@ -142,7 +142,10 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
     const question: IQuestion | undefined = survey.questions.find((question: IQuestion) => question.question_identifier === answer.question_referenced)
     if (!question) continue
     if (question.question_type === 'Abierta') {
-      if (withOpenAI) openDataArr.push(await createOpenStats(answer.answer, question.interrogation))
+      if (withOpenAI) {
+        openDataArr.push(await createOpenStats(answer.answer, question.interrogation))
+        sleep(2000)
+      }
       else openAnswers.push({ title: question.interrogation, answers: answer.answer })
       continue
     }
@@ -171,8 +174,8 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
       data.data = resultData
       data.type = 'numeric'
     }
-
-    data.comment = await createClosedComments(data)
+    if (withOpenAI)
+      data.comment = await createClosedComments(data)
 
     dataArr.push(data)
   }
@@ -239,7 +242,8 @@ const createPDF = async (event: IEvent, survey: ISurvey, res: Response, withOpen
     doc.fontSize(15).list([imageData.title], 50, doc.y)
     doc.moveDown()
     doc.image(imageData.image, ((doc.page.width - (imageData.width * 0.6)) / 2), doc.y, { scale: 0.6 })
-    doc.font(regular).fontSize(11).text(imageData.comment)
+    if (imageData.comment)
+      doc.font(regular).fontSize(11).text(imageData.comment)
     doc.moveDown()
   })
 
@@ -453,4 +457,8 @@ const createChart = (data: ICharData): IImageData => {
     comment: data.comment
   }
   return result
+}
+
+function sleep (ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
